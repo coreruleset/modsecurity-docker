@@ -29,7 +29,8 @@ RUN cd /usr/share/ModSecurity/modsecurity-2.9.1/ && \
   sh autogen.sh && \
   ./configure && \
   make && \
-  make install
+  make install && \
+  make clean
 
 # Move Files
 RUN cd /usr/share/ModSecurity/modsecurity-2.9.1/ && \
