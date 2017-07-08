@@ -13,19 +13,20 @@ RUN dnf -y update && \
   yajl-devel \
   git \
   unzip \
-  ssdeep \ 
+  ssdeep \
   gcc \
-  wget
+  wget && \
+  dnf clean all
 
 # Download ModSecurity
 RUN mkdir -p /usr/share/ModSecurity && \
   cd /usr/share/ModSecurity && \
   wget --quiet "https://github.com/SpiderLabs/ModSecurity/releases/download/v2.9.1/modsecurity-2.9.1.tar.gz" && \
-  tar -xvzf modsecurity-2.9.1.tar.gz 
+  tar -xvzf modsecurity-2.9.1.tar.gz
 
 # Install ModSecurity
 RUN cd /usr/share/ModSecurity/modsecurity-2.9.1/ && \
-  sh autogen.sh && \ 
+  sh autogen.sh && \
   ./configure && \
   make && \
   make install
