@@ -13,27 +13,25 @@ RUN dnf -y update && \
   yajl-devel \
   git \
   unzip \
-  ssdeep \
+  ssdeep \ 
   gcc \
-  wget && \
-  dnf clean all
+  wget
 
 # Download ModSecurity
 RUN mkdir -p /usr/share/ModSecurity && \
   cd /usr/share/ModSecurity && \
-  wget --quiet "https://github.com/SpiderLabs/ModSecurity/releases/download/v2.9.1/modsecurity-2.9.1.tar.gz" && \
-  tar -xvzf modsecurity-2.9.1.tar.gz
+  wget --quiet "https://github.com/SpiderLabs/ModSecurity/releases/download/v2.9.2/modsecurity-2.9.2.tar.gz" && \
+  tar -xvzf modsecurity-2.9.2.tar.gz 
 
 # Install ModSecurity
-RUN cd /usr/share/ModSecurity/modsecurity-2.9.1/ && \
-  sh autogen.sh && \
+RUN cd /usr/share/ModSecurity/modsecurity-2.9.2/ && \
+  sh autogen.sh && \ 
   ./configure && \
   make && \
-  make install && \
-  make clean
+  make install
 
 # Move Files
-RUN cd /usr/share/ModSecurity/modsecurity-2.9.1/ && \
+RUN cd /usr/share/ModSecurity/modsecurity-2.9.2/ && \
   mkdir -p /etc/httpd/modsecurity.d && \
   mv modsecurity.conf-recommended  /etc/httpd/modsecurity.d/modsecurity.conf && \
   mv unicode.mapping /etc/httpd/modsecurity.d/
