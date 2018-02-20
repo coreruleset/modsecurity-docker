@@ -1,51 +1,60 @@
-FROM fedora:25
+FROM ubuntu:18.04
 MAINTAINER Chaim Sanders chaim.sanders@gmail.com
 
-# Install Prereqs
-RUN dnf -y update && \
-  dnf install -y httpd \
-  httpd-devel \
-  lua-devel \
-  pcre-devel \
-  libxml2-devel \
-  libcurl-devel \
-  libtool \
-  yajl-devel \
-  git \
-  unzip \
-  ssdeep \
-  gcc \
-  wget && \
-  dnf clean all
+RUN apt-get -y update && \
+    apt-get -y install git \
+    libtool \
+    dh-autoreconf \
+    pkgconf \
+    libcurl4-gnutls-dev \
+    libxml2 \
+    libpcre++-dev \
+    libxml2-dev \
+    libgeoip-dev \
+    libyajl-dev \
+    liblmdb-dev \
+    ssdeep \
+    lua5.2-dev \
+    apache2 \
+    apache2-dev
 
-# Download ModSecurity
-RUN mkdir -p /usr/share/ModSecurity && \
-  cd /usr/share/ModSecurity && \
-  wget --quiet "https://github.com/SpiderLabs/ModSecurity/releases/download/v2.9.2/modsecurity-2.9.2.tar.gz" && \
-  tar -xvzf modsecurity-2.9.2.tar.gz
+RUN cd /opt && \
+    git clone -b v3/master https://github.com/SpiderLabs/ModSecurity
 
-# Install ModSecurity
-RUN cd /usr/share/ModSecurity/modsecurity-2.9.2/ && \
-  sh autogen.sh && \
-  ./configure && \
-  make && \
-  make install && \
-  make clean
+RUN cd /opt/ModSecurity && \
+    sh build.sh && \
+    git submodule init && \
+    git submodule update && \
+    ./configure && \
+    make && \
+    make install
 
-# Move Files
-RUN cd /usr/share/ModSecurity/modsecurity-2.9.2/ && \
-  mkdir -p /etc/httpd/modsecurity.d && \
-  mv modsecurity.conf-recommended  /etc/httpd/modsecurity.d/modsecurity.conf && \
-  mv unicode.mapping /etc/httpd/modsecurity.d/
+RUN ln -s /usr/sbin/apache2 /usr/sbin/httpd
+ 
+    
+RUN cd /opt && \
+    git clone https://github.com/SpiderLabs/ModSecurity-apache
 
-# Setup Config
-Run printf "LoadModule security2_module modules/mod_security2.so\nInclude modsecurity.d/*.conf" > /etc/httpd/conf.modules.d/10-modsecurty.conf && \
-  echo "ServerName localhost" > /etc/httpd/conf.d/ServerName.conf
+RUN cd /opt/ModSecurity-apache/ && \
+    ./autogen.sh && \
+    ./configure && \
+    make && \
+    make install
+    
+RUN mkdir -p /etc/apache2/modsecurity.d/ && \
+    echo "LoadModule security3_module \"$(find /opt/ModSecurity-apache/ -name mod_security3.so)\"" > /etc/apache2/mods-enabled/security.conf && \
+    echo "modsecurity_rules 'SecRuleEngine On'" >> /etc/apache2/mods-enabled/security.conf && \
+    echo "modsecurity_rules_file '/etc/apache2/modsecurity.d/include.conf'" >> /etc/apache2/mods-enabled/security.conf
+    
 
-# Remove Apache defaults
-Run rm -f /etc/httpd/conf.d/welcome.conf && \
-  printf "hello world" > /var/www/html/index.html
-
+RUN cd /etc/apache2/modsecurity.d/  && \
+    mv /opt/ModSecurity/modsecurity.conf-recommended /etc/apache2/modsecurity.d/modsecurity.conf && \
+    echo include modsecurity.conf >> /etc/apache2/modsecurity.d/include.conf && \
+    git clone https://github.com/SpiderLabs/owasp-modsecurity-crs owasp-crs && \
+    mv /etc/apache2/modsecurity.d/owasp-crs/crs-setup.conf.example /etc/apache2/modsecurity.d/owasp-crs/crs-setup.conf && \
+    echo include owasp-crs/crs-setup.conf >> /etc/apache2/modsecurity.d/include.conf && \
+    echo include owasp-crs/rules/\*.conf >> /etc/apache2/modsecurity.d/include.conf
+    
 EXPOSE 80
 
 CMD ["httpd", "-D", "FOREGROUND"]
