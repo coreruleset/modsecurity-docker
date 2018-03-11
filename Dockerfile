@@ -8,45 +8,39 @@ RUN apt-get update && \
     automake \
     pkgconf \
     libcurl4-gnutls-dev \
-    apache2 \
     apache2-dev \
     libpcre++-dev \
     libxml2-dev \
     lua5.2-dev \
     libyajl-dev \
-    ssdeep &&\
+    ssdeep && \
     apt-get clean
 
 # Download ModSecurity
-RUN mkdir -p /usr/share/ModSecurity && \
-  cd /usr/share/ModSecurity && \
+RUN cd /opt && \
   wget --quiet "https://github.com/SpiderLabs/ModSecurity/releases/download/v2.9.2/modsecurity-2.9.2.tar.gz" && \
-  tar -xvzf modsecurity-2.9.2.tar.gz
-
+  tar -xvzf modsecurity-2.9.2.tar.gz && \
+  wget http://nginx.org/download/nginx-1.13.9.tar.gz && \
+  tar -xvzf nginx-1.13.9.tar.gz
 # Install ModSecurity
-RUN cd /usr/share/ModSecurity/modsecurity-2.9.2/ && \
+RUN cd /opt/modsecurity-2.9.2/ && \
   sh autogen.sh && \
-  ./configure && \
+  ./configure --enable-standalone-module && \
+  make
+RUN cd /opt/nginx-1.13.9 && \
+  ./configure --add-module=/opt/modsecurity-2.9.2/nginx/modsecurity && \
   make && \
   make install && \
   make clean
 
 # Move Files
-RUN cd /usr/share/ModSecurity/modsecurity-2.9.2/ && \
-  mkdir -p /etc/apache2/modsecurity.d && \
-  mv modsecurity.conf-recommended  /etc/apache2/modsecurity.d/modsecurity.conf && \
-  mv unicode.mapping /etc/apache2/modsecurity.d/
-  
-# Enable Mod_Unique_id
-RUN mv /etc/apache2/mods-available/unique_id.load /etc/apache2/mods-enabled/
-
-# Setup Config
-RUN printf "LoadModule security2_module /usr/lib/apache2/modules/mod_security2.so\nInclude modsecurity.d/*.conf" > /etc/apache2/mods-enabled/10-modsecurty.conf && \
-  echo "ServerName localhost" > /etc/apache2/conf-enabled/ServerName.conf
-
-# Remove Apache defaults
-RUN printf "hello world" > /var/www/html/index.html
+RUN cd /opt/modsecurity-2.9.2/ && \
+  mkdir -p /usr/local/nginx/conf/modsecurity.d && \
+  mv modsecurity.conf-recommended  /usr/local/nginx/conf/modsecurity.d/modsecurity.conf && \
+  mv unicode.mapping /usr/local/nginx/conf/modsecurity.d/ && \
+  printf "include modsecurity.conf" > /usr/local/nginx/conf/modsecurity.d/includes.conf && \
+  sed -i -e 's/^ *location \/.*/\tlocation \/ {\n\t    ModSecurityEnabled on;\n\t    ModSecurityConfig modsecurity.d\/includes.conf;/g' /usr/local/nginx/conf/nginx.conf
 
 EXPOSE 80
 
-CMD ["apachectl", "-D", "FOREGROUND"]
+CMD /usr/local/nginx/sbin/nginx -g "daemon off;"
