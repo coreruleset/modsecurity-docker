@@ -46,9 +46,6 @@ COPY --from=build /usr/share/ModSecurity/modsecurity-2.9.2/unicode.mapping      
 
 RUN sed -i -e 's/ServerSignature On/ServerSignature Off/g' \
            -e 's/ServerTokens OS/ServerTokens Prod/g'  /etc/apache2/conf-enabled/security.conf && \
-    sed -i -e 's#ErrorLog ${APACHE_LOG_DIR}/error.log#ErrorLog /dev/stderr#g' \
-           -e 's#CustomLog ${APACHE_LOG_DIR}/access.log combined#CustomLog /dev/stdout combined#g' \
-           /etc/apache2/apache2.conf /etc/apache2/sites-enabled/000-default.conf && \
     echo "Include modsecurity.d/*.conf"                                          > /etc/apache2/mods-available/modsecurity.conf && \
     echo "LoadModule security2_module /usr/lib/apache2/modules/mod_security2.so" > /etc/apache2/mods-available/modsecurity.load && \
     echo 'ServerName localhost' >>  /etc/apache2/conf-enabled/security.conf && \
