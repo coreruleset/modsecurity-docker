@@ -1,51 +1,59 @@
-FROM ubuntu:18.04
+FROM ubuntu:18.04 as build
 MAINTAINER Chaim Sanders chaim.sanders@gmail.com
 
 # Install Prereqs
-RUN apt-get update && \
-    apt-get -y install wget \
-    libtool \
-    automake \
-    pkgconf \
-    libcurl4-gnutls-dev \
-    apache2 \
-    apache2-dev \
-    libpcre++-dev \
-    libxml2-dev \
-    lua5.2-dev \
-    libyajl-dev \
-    ssdeep &&\
-    apt-get clean
+RUN DEBIAN_FRONTEND=noninteractive \
+    apt-get update -qq && \
+    apt-get install -qq -y --no-install-recommends --no-install-suggests \
+      apache2             \
+      apache2-dev         \
+      ca-certificates     \
+      automake            \
+      libcurl4-gnutls-dev \
+      libpcre++-dev       \
+      libtool             \
+      libxml2-dev         \
+      libyajl-dev         \
+      lua5.2-dev          \
+      pkgconf             \
+      ssdeep              \
+      wget            &&  \
+    apt-get clean && rm -rf /var/lib/apt/lists/* 
 
-# Download ModSecurity
-RUN mkdir -p /usr/share/ModSecurity && \
-  cd /usr/share/ModSecurity && \
-  wget --quiet "https://github.com/SpiderLabs/ModSecurity/releases/download/v2.9.2/modsecurity-2.9.2.tar.gz" && \
-  tar -xvzf modsecurity-2.9.2.tar.gz
+# Download ModSecurity & compile ModSecurity
+RUN mkdir -p /usr/share/ModSecurity && cd /usr/share/ModSecurity && \
+    wget --quiet "https://github.com/SpiderLabs/ModSecurity/releases/download/v2.9.2/modsecurity-2.9.2.tar.gz" && \
+    tar -xvzf modsecurity-2.9.2.tar.gz && cd /usr/share/ModSecurity/modsecurity-2.9.2/ && \
+    ./autogen.sh && ./configure && \
+    make && make install && make clean
 
-# Install ModSecurity
-RUN cd /usr/share/ModSecurity/modsecurity-2.9.2/ && \
-  sh autogen.sh && \
-  ./configure && \
-  make && \
-  make install && \
-  make clean
+FROM ubuntu:18.04
 
-# Move Files
-RUN cd /usr/share/ModSecurity/modsecurity-2.9.2/ && \
-  mkdir -p /etc/apache2/modsecurity.d && \
-  mv modsecurity.conf-recommended  /etc/apache2/modsecurity.d/modsecurity.conf && \
-  mv unicode.mapping /etc/apache2/modsecurity.d/
-  
-# Enable Mod_Unique_id
-RUN mv /etc/apache2/mods-available/unique_id.load /etc/apache2/mods-enabled/
+RUN DEBIAN_FRONTEND=noninteractive \
+    apt-get update -qq && \
+    apt-get install -qq -y --no-install-recommends --no-install-suggests \
+      apache2             \
+      libcurl3-gnutls     \
+      libxml2             \
+      libyajl2            \
+      ssdeep           && \
+    apt-get clean && rm -rf /var/lib/apt/lists/* && \
+    mkdir -p /etc/apache2/modsecurity.d 
 
-# Setup Config
-RUN printf "LoadModule security2_module /usr/lib/apache2/modules/mod_security2.so\nInclude modsecurity.d/*.conf" > /etc/apache2/mods-enabled/10-modsecurty.conf && \
-  echo "ServerName localhost" > /etc/apache2/conf-enabled/ServerName.conf
+COPY --from=build /usr/lib/apache2/modules/mod_security2.so                              /usr/lib/apache2/modules/mod_security2.so
+COPY --from=build /usr/share/ModSecurity/modsecurity-2.9.2/modsecurity.conf-recommended  /etc/apache2/modsecurity.d/modsecurity.conf
+COPY --from=build /usr/share/ModSecurity/modsecurity-2.9.2/unicode.mapping               /etc/apache2/modsecurity.d/unicode.mapping
 
-# Remove Apache defaults
-RUN printf "hello world" > /var/www/html/index.html
+RUN sed -i -e 's/ServerSignature On/ServerSignature Off/g' \
+           -e 's/ServerTokens OS/ServerTokens Prod/g'  /etc/apache2/conf-enabled/security.conf && \
+    sed -i -e 's#ErrorLog ${APACHE_LOG_DIR}/error.log#ErrorLog /dev/stderr#g' \
+           -e 's#CustomLog ${APACHE_LOG_DIR}/access.log combined#CustomLog /dev/stdout combined#g' \
+           /etc/apache2/apache2.conf /etc/apache2/sites-enabled/000-default.conf && \
+    echo "Include modsecurity.d/*.conf"                                          > /etc/apache2/mods-available/modsecurity.conf && \
+    echo "LoadModule security2_module /usr/lib/apache2/modules/mod_security2.so" > /etc/apache2/mods-available/modsecurity.load && \
+    echo 'ServerName localhost' >>  /etc/apache2/conf-enabled/security.conf && \
+    echo "hello world" > /var/www/html/index.html && \
+    a2enmod unique_id modsecurity
 
 EXPOSE 80
 
