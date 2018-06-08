@@ -23,7 +23,7 @@ Run the Image:
 docker run -ti --rm -p 80:80 modsec
 ```
 
-This will start an Apache Webserver,
+This will start an Nginx Webserver,
 on port 80,
 with ModSecurity installed.
 
