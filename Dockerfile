@@ -8,6 +8,7 @@ RUN DEBIAN_FRONTEND=noninteractive \
       apache2-dev         \
       automake            \
       ca-certificates     \
+      libssl-dev          \
       libcurl4-gnutls-dev \
       libpcre++-dev       \
       libtool             \
@@ -32,7 +33,7 @@ RUN cd /opt/modsecurity-2.9.2/ && \
     ./configure --enable-standalone-module && make
 
 RUN cd /opt/nginx-1.13.9 && \
-    ./configure --add-module=/opt/modsecurity-2.9.2/nginx/modsecurity --prefix=/usr/local/nginx && \
+    ./configure --add-module=/opt/modsecurity-2.9.2/nginx/modsecurity --prefix=/usr/local/nginx --with-http_ssl_module && \
     make && make install && make clean
 
 # Move Files
