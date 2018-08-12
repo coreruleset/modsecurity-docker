@@ -36,6 +36,7 @@ RUN DEBIAN_FRONTEND=noninteractive \
       libcurl3-gnutls     \
       libxml2             \
       libyajl2            \
+      iproute2            \
       ssdeep           && \
     apt-get clean && rm -rf /var/lib/apt/lists/* && \
     mkdir -p /etc/apache2/modsecurity.d 
@@ -43,6 +44,8 @@ RUN DEBIAN_FRONTEND=noninteractive \
 COPY --from=build /usr/lib/apache2/modules/mod_security2.so                              /usr/lib/apache2/modules/mod_security2.so
 COPY --from=build /usr/share/ModSecurity/modsecurity-2.9.2/modsecurity.conf-recommended  /etc/apache2/modsecurity.d/modsecurity.conf
 COPY --from=build /usr/share/ModSecurity/modsecurity-2.9.2/unicode.mapping               /etc/apache2/modsecurity.d/unicode.mapping
+COPY              proxy.conf                                                             /etc/apache2/modsecurity.d/proxy.conf
+COPY              docker-entrypoint.sh                                                   /
 
 RUN sed -i -e 's/ServerSignature On/ServerSignature Off/g' \
            -e 's/ServerTokens OS/ServerTokens Prod/g'  /etc/apache2/conf-enabled/security.conf && \
@@ -50,8 +53,9 @@ RUN sed -i -e 's/ServerSignature On/ServerSignature Off/g' \
     echo "LoadModule security2_module /usr/lib/apache2/modules/mod_security2.so" > /etc/apache2/mods-available/modsecurity.load && \
     echo 'ServerName localhost' >>  /etc/apache2/conf-enabled/security.conf && \
     echo "hello world" > /var/www/html/index.html && \
-    a2enmod unique_id modsecurity
+    a2enmod unique_id modsecurity proxy proxy_http
 
 EXPOSE 80
 
+ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["apachectl", "-D", "FOREGROUND"]
