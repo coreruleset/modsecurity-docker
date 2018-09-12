@@ -51,12 +51,14 @@ pkgconf         \
 wget            \
 git             \
 zlib1g-dev      \
+libssl-dev      \
 libpcre3-dev    \
 libxml2-dev     \
 libyajl-dev     \
 lua5.2-dev      \
 libgeoip-dev    \
-libcurl4-openssl-dev
+libcurl4-openssl-dev    \
+openssl
 
 RUN cd /opt && \
 git clone --depth 1 https://github.com/SpiderLabs/ModSecurity-nginx.git
@@ -90,6 +92,7 @@ RUN cd /opt/nginx-"$NGINX_VERSION" && \
         --with-http_random_index_module \
         --with-http_realip_module \
         --with-http_slice_module \
+        --with-http_ssl_module \
         --with-http_sub_module \
         --with-http_stub_status_module \
         --with-http_v2_module \
