@@ -49,6 +49,7 @@ RUN mkdir -p /etc/apache2/modsecurity.d/ && \
 
 RUN cd /etc/apache2/modsecurity.d/  && \
     mv /opt/ModSecurity/modsecurity.conf-recommended /etc/apache2/modsecurity.d/modsecurity.conf && \
+    mv /opt/ModSecurity/unicode.mapping /etc/apache2/modsecurity.d/unicode.mapping && \
     echo include modsecurity.conf >> /etc/apache2/modsecurity.d/include.conf && \
     git clone https://github.com/SpiderLabs/owasp-modsecurity-crs owasp-crs && \
     mv /etc/apache2/modsecurity.d/owasp-crs/crs-setup.conf.example /etc/apache2/modsecurity.d/owasp-crs/crs-setup.conf && \
@@ -57,4 +58,4 @@ RUN cd /etc/apache2/modsecurity.d/  && \
     
 EXPOSE 80
 
-CMD ["httpd", "-D", "FOREGROUND"]
+CMD ["apachectl", "-D", "FOREGROUND"]
