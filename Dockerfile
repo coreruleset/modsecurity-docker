@@ -7,14 +7,14 @@ RUN DEBIAN_FRONTEND=noninteractive \
     apt-get install -qq -y --no-install-recommends --no-install-suggests \
       ca-certificates     \
       automake            \
-	    g++				          \
+      g++	                \
       libcurl4-gnutls-dev \
       libpcre++-dev       \
       libtool             \
       libxml2-dev         \
       libyajl-dev         \
       lua5.2-dev          \
-	    make				        \
+      make	              \
       pkgconf             \
       wget            &&  \
     apt-get clean && rm -rf /var/lib/apt/lists/*
@@ -55,14 +55,14 @@ RUN DEBIAN_FRONTEND=noninteractive \
       libxml2             \
       libyajl2            && \
     apt-get clean && rm -rf /var/lib/apt/lists/* && \
-    mkdir -p /usr/local/apache2/modsecurity.d && \
+    mkdir -p /etc/modsecurity.d && \
     mkdir -p /var/log/apache2/
 
 COPY --from=build /usr/local/apache2/modules/mod_security2.so                            /usr/local/apache2/modules/mod_security2.so
-COPY --from=build /usr/share/ModSecurity/modsecurity-2.9.3/modsecurity.conf-recommended  /usr/local/apache2/modsecurity.d/modsecurity.conf
-COPY --from=build /usr/share/ModSecurity/modsecurity-2.9.3/unicode.mapping               /usr/local/apache2/modsecurity.d/unicode.mapping
-COPY --from=build /usr/local/lib/libfuzzy.so.2.1.0               						             /usr/local/lib/libfuzzy.so.2.1.0
-COPY --from=build /usr/local/bin/ssdeep               							 	          	       /usr/local/bin/ssdeep
+COPY --from=build /usr/share/ModSecurity/modsecurity-2.9.3/modsecurity.conf-recommended  /etc/modsecurity.d/modsecurity.conf
+COPY --from=build /usr/share/ModSecurity/modsecurity-2.9.3/unicode.mapping               /etc/modsecurity.d/unicode.mapping
+COPY --from=build /usr/local/lib/libfuzzy.so.2.1.0             		                 /usr/local/lib/libfuzzy.so.2.1.0
+COPY --from=build /usr/local/bin/ssdeep               		           	         /usr/local/bin/ssdeep
 COPY --from=build /usr/share/TLS/server.key                                              /usr/local/apache2/conf/server.key
 COPY --from=build /usr/share/TLS/server.crt                                              /usr/local/apache2/conf/server.crt
 
@@ -76,7 +76,7 @@ RUN sed -i -e 's/#LoadModule unique_id_module/LoadModule unique_id_module/g' /us
   echo "ErrorLog /var/log/apache2/error.log"                                        >>	/usr/local/apache2/conf/httpd.conf && \
 	echo "LoadModule security2_module /usr/local/apache2/modules/mod_security2.so"    >>	/usr/local/apache2/conf/httpd.conf && \
 	echo "Include conf/extra/httpd-default.conf"   									                  >>	/usr/local/apache2/conf/httpd.conf && \
-	echo "<IfModule security2_module>\nInclude modsecurity.d/*.conf\n</IfModule>" 	  >>	/usr/local/apache2/conf/httpd.conf && \
+	echo "<IfModule security2_module>\nInclude /etc/modsecurity.d/include.conf\n</IfModule>" 	  >>	/usr/local/apache2/conf/httpd.conf && \
   echo "ServerName $SERVERNAME" 												 	                        >> 	/usr/local/apache2/conf/httpd.conf && \
   echo "hello world" > /usr/local/apache2/htdocs/index.html
 
