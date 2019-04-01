@@ -63,15 +63,15 @@ RUN export version=$(echo `/usr/sbin/nginx -v 2>&1` | cut -d '/' -f 2) && \
     make modules && \
     cp objs/ngx_http_modsecurity_module.so /etc/nginx/modules
 
-RUN mkdir /etc/nginx/modsec && \
-    cd /etc/nginx/modsec && \
-    echo "include \"/etc/nginx/modsec/modsecurity.conf\"" > include.conf && \
+RUN mkdir /etc/modsecurity.d && \
+    cd /etc/modsecurity.d && \
+    echo "include \"/etc/modsecurity.d/modsecurity.conf\"" > include.conf && \
     wget https://raw.githubusercontent.com/SpiderLabs/ModSecurity/v3/master/modsecurity.conf-recommended && \
     mv modsecurity.conf-recommended modsecurity.conf && \
     wget https://raw.githubusercontent.com/SpiderLabs/ModSecurity/v3/master/unicode.mapping
 
 RUN sed -i '1iload_module modules/ngx_http_modsecurity_module.so;' /etc/nginx/nginx.conf && \
-    sed -i -e 's/http {/http {\n    modsecurity on;\n    modsecurity_rules_file \/etc\/nginx\/modsec\/include.conf;\n/g' /etc/nginx/nginx.conf
+    sed -i -e 's/http {/http {\n    modsecurity on;\n    modsecurity_rules_file \/etc\/modsecurity.d\/include.conf;\n/g' /etc/nginx/nginx.conf
 
 ENV LD_LIBRARY_PATH /lib:/usr/lib:/usr/local/lib
 
