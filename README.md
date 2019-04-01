@@ -45,6 +45,26 @@ This configuration blocks very little.
 Please see the [Recommended Configuration](https://github.com/SpiderLabs/ModSecurity/blob/v2/master/modsecurity.conf-recommended)
 for more details
 
+### Transport Layer Security
+
+Enable TLS by setting `ARG SETTLS=True`.  
+If you want to run your web traffic over SSL/TLS, the simplest setup is to COPY or mount (-v) your server.crt and server.key into /usr/local/apache2/conf/.  
+Basic support for generating a server certificate is provided by running `RUN openssl req -x509 ...` and thus creating a server.crt and server.key during `docker build`. Provide appropriate information in openssl.conf.
+
+### Reverse Proxy
+
+Enable Reverse Proxy mode by setting `ARG SETPROXY=True` and appropriate `ARG PROXYLOCATION=` in Dockerfile.  
+
+### Alternative: Custom httpd.conf
+
+You can also add your own httpd.conf and configure TLS and Reverse Proxy there:
+
+```
+docker run -v $(pwd)/httpd.conf:/usr/local/apache2/conf/httpd.conf -ti --rm -p 80:80 -p 443:443 modsec
+```
+
+Please provide all relevant information when using your own httpd.conf!
+
 ## Configuration
 
 At this point,
