@@ -45,12 +45,12 @@ RUN cd /opt/ModSecurity-apache/ && \
     make && \
     make install
 
-RUN mkdir -p /usr/local/apache2/modsecurity.d/ && \
+RUN mkdir -p /etc/modsecurity.d/ && \
         echo "include /usr/local/apache2/conf/security.conf" >> /usr/local/apache2/conf/httpd.conf && \
         echo "LoadModule security3_module \"/usr/local/apache2/modules/mod_security3.so\"" > /usr/local/apache2/conf/security.conf && \
-        echo "modsecurity_rules_file '/usr/local/apache2/modsecurity.d/include.conf'" >> /usr/local/apache2/conf/security.conf && \
-        mv /opt/ModSecurity/modsecurity.conf-recommended /usr/local/apache2/modsecurity.d/modsecurity.conf && \
-        mv /opt/ModSecurity/unicode.mapping /usr/local/apache2/modsecurity.d/ && \
-        echo include modsecurity.conf >> /usr/local/apache2/modsecurity.d/include.conf
+        echo "modsecurity_rules_file '/etc/modsecurity.d/include.conf'" >> /usr/local/apache2/conf/security.conf && \
+        mv /opt/ModSecurity/modsecurity.conf-recommended /etc/modsecurity.d/modsecurity.conf && \
+        mv /opt/ModSecurity/unicode.mapping /etc/modsecurity.d/ && \
+        echo include modsecurity.conf >> /etc/modsecurity.d/include.conf
 
 RUN ldconfig
