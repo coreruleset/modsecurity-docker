@@ -102,7 +102,6 @@ RUN if [ "$SETPROXY" = "True" ]; then \
         proxy_read_timeout 36000s;\n\
         proxy_redirect off; \
       	/g" /etc/nginx/conf.d/default.conf; \
-
         if [ "$SETTLS" = "True" ]; then \
           sed -i -e "s/location \/ {/resolver 8.8.8.8 valid=5s;\n    set \$upstream $PROXYLOCATION;\n    location \/ {\n\
             proxy_set_header Host \$upstream;\n\
