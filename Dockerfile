@@ -1,4 +1,4 @@
-FROM ubuntu:18.04 as build
+FROM marketplace.gcr.io/google/ubuntu1804 as build
 MAINTAINER Chaim Sanders chaim.sanders@gmail.com
 
 # Install Prereqs
@@ -27,7 +27,7 @@ RUN mkdir -p /usr/share/ModSecurity && cd /usr/share/ModSecurity && \
     ./autogen.sh && ./configure && \
     make && make install && make clean
 
-FROM ubuntu:18.04
+FROM marketplace.gcr.io/google/ubuntu1804
 
 RUN DEBIAN_FRONTEND=noninteractive \
     apt-get update -qq && \
