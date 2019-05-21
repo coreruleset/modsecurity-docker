@@ -77,7 +77,7 @@ RUN sed -i -e 's/#LoadModule unique_id_module/LoadModule unique_id_module/g' /us
 	echo "LoadModule security2_module /usr/local/apache2/modules/mod_security2.so"    >>	/usr/local/apache2/conf/httpd.conf && \
 	echo "Include conf/extra/httpd-default.conf"   									                  >>	/usr/local/apache2/conf/httpd.conf && \
 	echo "<IfModule security2_module>\nInclude /etc/modsecurity.d/include.conf\n</IfModule>" 	  >>	/usr/local/apache2/conf/httpd.conf && \
-  echo "include \"/etc/modsecurity.d/modsecurity.conf\"" > /etc/modsecurity.d/include.conf"
+  echo "include \"/etc/modsecurity.d/modsecurity.conf\" > /etc/modsecurity.d/include.conf" && \
   echo "ServerName $SERVERNAME" 												 	                        >> 	/usr/local/apache2/conf/httpd.conf && \
   echo "hello world" > /usr/local/apache2/htdocs/index.html
 
