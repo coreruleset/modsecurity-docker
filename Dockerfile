@@ -38,15 +38,15 @@ RUN DEBIAN_FRONTEND=noninteractive \
       libyajl2            \
       ssdeep           && \
     apt-get clean && rm -rf /var/lib/apt/lists/* && \
-    mkdir -p /etc/apache2/modsecurity.d 
+    mkdir -p /etc/modsecurity.d 
 
 COPY --from=build /usr/lib/apache2/modules/mod_security2.so                              /usr/lib/apache2/modules/mod_security2.so
-COPY --from=build /usr/share/ModSecurity/modsecurity-2.9.2/modsecurity.conf-recommended  /etc/apache2/modsecurity.d/modsecurity.conf
-COPY --from=build /usr/share/ModSecurity/modsecurity-2.9.2/unicode.mapping               /etc/apache2/modsecurity.d/unicode.mapping
+COPY --from=build /usr/share/ModSecurity/modsecurity-2.9.2/modsecurity.conf-recommended  /etc/modsecurity.d/modsecurity.conf
+COPY --from=build /usr/share/ModSecurity/modsecurity-2.9.2/unicode.mapping               /etc/modsecurity.d/unicode.mapping
 
 RUN sed -i -e 's/ServerSignature On/ServerSignature Off/g' \
            -e 's/ServerTokens OS/ServerTokens Prod/g'  /etc/apache2/conf-enabled/security.conf && \
-    echo "Include modsecurity.d/*.conf"                                          > /etc/apache2/mods-available/modsecurity.conf && \
+    echo "Include /etc/modsecurity.d/*.conf"                                          > /etc/apache2/mods-available/modsecurity.conf && \
     echo "LoadModule security2_module /usr/lib/apache2/modules/mod_security2.so" > /etc/apache2/mods-available/modsecurity.load && \
     echo 'ServerName localhost' >>  /etc/apache2/conf-enabled/security.conf && \
     echo "hello world" > /var/www/html/index.html && \
