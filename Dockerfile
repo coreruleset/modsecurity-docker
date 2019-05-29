@@ -22,8 +22,8 @@ RUN DEBIAN_FRONTEND=noninteractive \
 
 # Download ModSecurity & compile ModSecurity
 RUN mkdir -p /usr/share/ModSecurity && cd /usr/share/ModSecurity && \
-    wget --quiet "https://github.com/SpiderLabs/ModSecurity/releases/download/v2.9.2/modsecurity-2.9.2.tar.gz" && \
-    tar -xvzf modsecurity-2.9.2.tar.gz && cd /usr/share/ModSecurity/modsecurity-2.9.2/ && \
+    wget --quiet "https://github.com/SpiderLabs/ModSecurity/releases/download/v2.9.3/modsecurity-2.9.3.tar.gz" && \
+    tar -xvzf modsecurity-2.9.3.tar.gz && cd /usr/share/ModSecurity/modsecurity-2.9.3/ && \
     ./autogen.sh && ./configure && \
     make && make install && make clean
 
@@ -41,8 +41,8 @@ RUN DEBIAN_FRONTEND=noninteractive \
     mkdir -p /etc/modsecurity.d 
 
 COPY --from=build /usr/lib/apache2/modules/mod_security2.so                              /usr/lib/apache2/modules/mod_security2.so
-COPY --from=build /usr/share/ModSecurity/modsecurity-2.9.2/modsecurity.conf-recommended  /etc/modsecurity.d/modsecurity.conf
-COPY --from=build /usr/share/ModSecurity/modsecurity-2.9.2/unicode.mapping               /etc/modsecurity.d/unicode.mapping
+COPY --from=build /usr/share/ModSecurity/modsecurity-2.9.3/modsecurity.conf-recommended  /etc/modsecurity.d/modsecurity.conf
+COPY --from=build /usr/share/ModSecurity/modsecurity-2.9.3/unicode.mapping               /etc/modsecurity.d/unicode.mapping
 
 RUN sed -i -e 's/ServerSignature On/ServerSignature Off/g' \
            -e 's/ServerTokens OS/ServerTokens Prod/g'  /etc/apache2/conf-enabled/security.conf && \
