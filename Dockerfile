@@ -134,7 +134,9 @@ libyajl-dev \
 lua5.2-dev \
 libgeoip-dev \
 vim \
-libxml2
+libxml2 \
+wget
+
 RUN apt clean && \
 rm -rf /var/lib/apt/lists/*
 
@@ -158,7 +160,9 @@ RUN echo "include /etc/nginx/modsecurity.d/modsecurity.conf" > /etc/nginx/modsec
 COPY --from=modsecurity-build /opt/ModSecurity/modsecurity.conf-recommended /etc/nginx/modsecurity.d
 RUN cd /etc/nginx/modsecurity.d && \
     mv modsecurity.conf-recommended modsecurity.conf
-
+RUN cd /etc/nginx/modsecurity.d && \
+    wget https://raw.githubusercontent.com/SpiderLabs/ModSecurity/v3/master/unicode.mapping
+    
 EXPOSE 80
 
 STOPSIGNAL SIGTERM
