@@ -40,12 +40,12 @@ RUN openssl req -x509 -days 365 -new -config /usr/share/TLS/openssl.conf -keyout
 
 FROM httpd:2.4
 
-ARG SERVERNAME=localhost
 ARG SETPROXY=False
 ARG SETTLS=False
 ARG TLSPUBLICFILE=./server.crt
 ARG TLSPRIVATEFILE=./server.key
-ARG PROXYLOCATION=http://localhost
+ENV PROXYLOCATION=http://localhost/
+ENV SERVERNAME=localhost
 
 
 RUN DEBIAN_FRONTEND=noninteractive \
@@ -73,13 +73,13 @@ RUN ln -s libfuzzy.so.2.1.0 /usr/local/lib/libfuzzy.so && \
 
 RUN sed -i -e 's/#LoadModule unique_id_module/LoadModule unique_id_module/g' /usr/local/apache2/conf/httpd.conf && \
 	sed -i -e 's/ServerTokens Full/ServerTokens Prod/g' /usr/local/apache2/conf/extra/httpd-default.conf && \
-  echo "ErrorLog /var/log/apache2/error.log"                                        >>	/usr/local/apache2/conf/httpd.conf && \
+	echo "ErrorLog /var/log/apache2/error.log"                                        >>	/usr/local/apache2/conf/httpd.conf && \
 	echo "LoadModule security2_module /usr/local/apache2/modules/mod_security2.so"    >>	/usr/local/apache2/conf/httpd.conf && \
-	echo "Include conf/extra/httpd-default.conf"   									                  >>	/usr/local/apache2/conf/httpd.conf && \
-	echo "<IfModule security2_module>\nInclude /etc/modsecurity.d/include.conf\n</IfModule>" 	  >>	/usr/local/apache2/conf/httpd.conf && \
-  echo "include \"/etc/modsecurity.d/modsecurity.conf\"" > /etc/modsecurity.d/include.conf && \
-  echo "ServerName $SERVERNAME" 												 	                        >> 	/usr/local/apache2/conf/httpd.conf && \
-  echo "hello world" > /usr/local/apache2/htdocs/index.html
+	echo "Include conf/extra/httpd-default.conf"                                      >>	/usr/local/apache2/conf/httpd.conf && \
+	echo "<IfModule security2_module>\nInclude /etc/modsecurity.d/include.conf\n</IfModule>"  >>   /usr/local/apache2/conf/httpd.conf && \
+	echo "include \"/etc/modsecurity.d/modsecurity.conf\""                            >     /etc/modsecurity.d/include.conf && \
+	echo "ServerName \${SERVERNAME}"                                                  >>	/usr/local/apache2/conf/httpd.conf && \
+	echo "hello world" > /usr/local/apache2/htdocs/index.html
 
 RUN if [ "$SETTLS" = "True" ]; then echo "setting TLS"; sed -i \
         -e 's/^#\(Include .*httpd-ssl.conf\)/\1/' \
@@ -94,9 +94,9 @@ RUN if [ "$SETPROXY" = "True" ]; then echo "setting Proxy"; sed -i \
         conf/httpd.conf; \
 		echo "<IfModule proxy_module>\nInclude conf/extra/httpd-proxy.conf\n</IfModule>" >> /usr/local/apache2/conf/httpd.conf; \
     if [ "$SETTLS" = "True" ]; then \
-      echo "<ifModule proxy_module>\nSSLProxyEngine on\nProxyPass / $PROXYLOCATION\nProxyPassReverse / $PROXYLOCATION\n</ifModule>" > /usr/local/apache2/conf/extra/httpd-proxy.conf; \
+      echo "<ifModule proxy_module>\nSSLProxyEngine on\nProxyPass / \${PROXYLOCATION}\nProxyPassReverse / \${PROXYLOCATION}\n</ifModule>" > /usr/local/apache2/conf/extra/httpd-proxy.conf; \
     else \
-      echo "<ifModule proxy_module>\nProxyPass / $PROXYLOCATION\nProxyPassReverse / $PROXYLOCATION\n</ifModule>" > /usr/local/apache2/conf/extra/httpd-proxy.conf; \
+      echo "<ifModule proxy_module>\nProxyPass / \${PROXYLOCATION}\nProxyPassReverse / \${PROXYLOCATION}\n</ifModule>" > /usr/local/apache2/conf/extra/httpd-proxy.conf; \
     fi; \
 	fi
 
