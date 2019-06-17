@@ -73,7 +73,8 @@ RUN ln -s libfuzzy.so.2.1.0 /usr/local/lib/libfuzzy.so && \
 
 RUN sed -i -e 's/#LoadModule unique_id_module/LoadModule unique_id_module/g' /usr/local/apache2/conf/httpd.conf && \
 	sed -i -e 's/ServerTokens Full/ServerTokens Prod/g' /usr/local/apache2/conf/extra/httpd-default.conf && \
-  echo "ErrorLog /var/log/apache2/error.log"                                        >>	/usr/local/apache2/conf/httpd.conf && \
+	echo "ErrorLog /var/log/apache2/error.log"                                        >>	/usr/local/apache2/conf/httpd.conf && \
+	echo "CustomLog /var/log/apache2/access.log combined"                             >>	/usr/local/apache2/conf/httpd.conf && \
 	echo "LoadModule security2_module /usr/local/apache2/modules/mod_security2.so"    >>	/usr/local/apache2/conf/httpd.conf && \
 	echo "Include conf/extra/httpd-default.conf"   									                  >>	/usr/local/apache2/conf/httpd.conf && \
 	echo "<IfModule security2_module>\nInclude /etc/modsecurity.d/include.conf\n</IfModule>" 	  >>	/usr/local/apache2/conf/httpd.conf && \
