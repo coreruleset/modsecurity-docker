@@ -65,6 +65,8 @@ COPY --from=build /usr/local/lib/libfuzzy.so.2.1.0             		               
 COPY --from=build /usr/local/bin/ssdeep               		           	         /usr/local/bin/ssdeep
 COPY --from=build /usr/share/TLS/server.key                                              /usr/local/apache2/conf/server.key
 COPY --from=build /usr/share/TLS/server.crt                                              /usr/local/apache2/conf/server.crt
+COPY httpd-logging-before-modsec.conf                                                    /usr/local/apache2/conf/extra/httpd-logging-before-modsec.conf
+COPY httpd-logging-after-modsec.conf                                                     /usr/local/apache2/conf/extra/httpd-logging-after-modsec.conf
 
 RUN ln -s libfuzzy.so.2.1.0 /usr/local/lib/libfuzzy.so && \
 	ln -s libfuzzy.so.2.1.0 /usr/local/lib/libfuzzy.so.2 && \
@@ -73,11 +75,12 @@ RUN ln -s libfuzzy.so.2.1.0 /usr/local/lib/libfuzzy.so && \
 
 RUN sed -i -e 's/#LoadModule unique_id_module/LoadModule unique_id_module/g' /usr/local/apache2/conf/httpd.conf && \
 	sed -i -e 's/ServerTokens Full/ServerTokens Prod/g' /usr/local/apache2/conf/extra/httpd-default.conf && \
-  echo "ErrorLog /var/log/apache2/error.log"                                        >>	/usr/local/apache2/conf/httpd.conf && \
 	echo "LoadModule security2_module /usr/local/apache2/modules/mod_security2.so"    >>	/usr/local/apache2/conf/httpd.conf && \
 	echo "Include conf/extra/httpd-default.conf"   									                  >>	/usr/local/apache2/conf/httpd.conf && \
+	echo "Include conf/extra/httpd-logging-before-modsec.conf"							>>	/usr/local/apache2/conf/httpd.conf && \
 	echo "<IfModule security2_module>\nInclude /etc/modsecurity.d/include.conf\n</IfModule>" 	  >>	/usr/local/apache2/conf/httpd.conf && \
   echo "include \"/etc/modsecurity.d/modsecurity.conf\"" > /etc/modsecurity.d/include.conf && \
+	echo "Include conf/extra/httpd-logging-after-modsec.conf"  	                	  >>	/usr/local/apache2/conf/httpd.conf && \
   echo "ServerName $SERVERNAME" 												 	                        >> 	/usr/local/apache2/conf/httpd.conf && \
   echo "hello world" > /usr/local/apache2/htdocs/index.html
 
