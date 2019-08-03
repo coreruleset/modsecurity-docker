@@ -1,11 +1,12 @@
 FROM nginx:1 as build
 MAINTAINER Chaim Sanders chaim.sanders@gmail.com
 
-RUN apt-get update && apt-get install -y git cmake libtool automake g++ libxml2-dev libcurl4-gnutls-dev doxygen liblua5.3-dev libpcre++-dev wget libgeoip-dev make
+RUN apt-get update && apt-get install -y git cmake libtool automake g++ libxml2-dev libcurl4-gnutls-dev doxygen liblua5.3-dev libpcre++-dev wget libgeoip-dev make zlib1g-dev gcc
+
 RUN git clone https://github.com/SpiderLabs/ModSecurity
-RUN wget https://github.com/LMDB/lmdb/archive/LMDB_0.9.23.tar.gz
-RUN tar -xvzf LMDB_0.9.23.tar.gz
-RUN cd lmdb-LMDB_0.9.23/libraries/liblmdb && \
+RUN wget https://github.com/LMDB/lmdb/archive/LMDB_0.9.24.tar.gz
+RUN tar -xvzf LMDB_0.9.24.tar.gz
+RUN cd lmdb-LMDB_0.9.24/libraries/liblmdb && \
     make && \
     make install
 RUN wget https://github.com/lloyd/yajl/archive/2.1.0.tar.gz
@@ -30,6 +31,16 @@ RUN cd ModSecurity && \
     make && \
     make install
 
+RUN git clone --depth 1 https://github.com/SpiderLabs/ModSecurity-nginx.git
+
+RUN export version=$(echo `/usr/sbin/nginx -v 2>&1` | cut -d '/' -f 2) && \
+    wget http://nginx.org/download/nginx-$version.tar.gz && \
+    tar -xvzf nginx-$version.tar.gz && \
+    cd /nginx-$version && \
+    ./configure --with-compat --add-dynamic-module=../ModSecurity-nginx && \
+    make modules && \
+    cp objs/ngx_http_modsecurity_module.so /etc/nginx/modules
+
 # Generate self-signed certificates (if needed)
 RUN mkdir -p /usr/share/TLS
 COPY openssl.conf /usr/share/TLS
@@ -43,9 +54,9 @@ ARG SETPROXY=False
 ARG SETTLS=False
 ARG PROXYLOCATION=www.example.com
 
-RUN apt-get update && apt-get install -y zlib1g-dev git wget gcc  libxml2-dev libcurl4-gnutls-dev liblua5.3-dev libpcre++-dev make
-
-RUN git clone --depth 1 https://github.com/SpiderLabs/ModSecurity-nginx.git
+RUN apt-get update && \
+    apt-get install -y curl zlib1g libxml2 libcurl3-gnutls liblua5.3 libpcre++0v5 && \
+    apt-get clean
 
 RUN mkdir /etc/nginx/ssl/
 
@@ -55,29 +66,19 @@ COPY --from=build /usr/share/TLS/server.key /etc/nginx/conf/server.key
 COPY --from=build /usr/share/TLS/server.crt /etc/nginx/conf/server.crt
 COPY ./tls.conf /etc/nginx/conf.d/tls.conf.disabled
 
-RUN export version=$(echo `/usr/sbin/nginx -v 2>&1` | cut -d '/' -f 2) && \
-    wget http://nginx.org/download/nginx-$version.tar.gz && \
-    tar -xvzf nginx-$version.tar.gz && \
-    cd /nginx-$version && \
-    ./configure --with-compat --add-dynamic-module=../ModSecurity-nginx && \
-    make modules && \
-    cp objs/ngx_http_modsecurity_module.so /etc/nginx/modules
+COPY --from=build /etc/nginx/modules/ngx_http_modsecurity_module.so /etc/nginx/modules/ngx_http_modsecurity_module.so
 
 RUN mkdir /etc/modsecurity.d && \
     cd /etc/modsecurity.d && \
     echo "include \"/etc/modsecurity.d/modsecurity.conf\"" > include.conf && \
-    wget https://raw.githubusercontent.com/SpiderLabs/ModSecurity/v3/master/modsecurity.conf-recommended && \
-    mv modsecurity.conf-recommended modsecurity.conf && \
-    wget https://raw.githubusercontent.com/SpiderLabs/ModSecurity/v3/master/unicode.mapping
+    curl -o modsecurity.conf https://raw.githubusercontent.com/SpiderLabs/ModSecurity/v3/master/modsecurity.conf-recommended && \
+    curl -o unicode.mapping https://raw.githubusercontent.com/SpiderLabs/ModSecurity/v3/master/unicode.mapping
 
 RUN sed -i '1iload_module modules/ngx_http_modsecurity_module.so;' /etc/nginx/nginx.conf && \
     sed -i -e 's/http {/http {\n    modsecurity on;\n    modsecurity_rules_file \/etc\/modsecurity.d\/include.conf;\n/g' /etc/nginx/nginx.conf
 
 ENV LD_LIBRARY_PATH /lib:/usr/lib:/usr/local/lib
 
-
-RUN apt-get install -y vim
-RUN echo $SERVERNAME
 RUN sed -i -E "s/server_name .*;/server_name $SERVERNAME;/g" /etc/nginx/conf.d/default.conf
 
 RUN if [ "$SETTLS" = "True" ]; then \
