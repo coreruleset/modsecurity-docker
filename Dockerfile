@@ -40,11 +40,11 @@ RUN openssl req -x509 -days 365 -new -config /usr/share/TLS/openssl.conf -keyout
 
 FROM httpd:2.4
 
-ARG SETPROXY=False
-ARG SETTLS=False
+ARG SETPROXY=True
+ARG SETTLS=True
 ARG TLSPUBLICFILE=./server.crt
 ARG TLSPRIVATEFILE=./server.key
-ENV PROXYLOCATION=http://localhost/
+ENV PROXYLOCATION=http://www.example.com/
 ENV SERVERNAME=localhost
 
 
