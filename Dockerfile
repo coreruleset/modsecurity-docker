@@ -92,7 +92,9 @@ RUN if [ "$SETTLS" = "True" ]; then echo "setting TLS"; sed -i \
         -e 's/^#\(LoadModule .*mod_socache_shmcb.so\)/\1/' \
         conf/httpd.conf; sed -i \
         -e 's/^ServerName www\.example\.com:443/ServerName \${SERVERNAME}/' \
-	    -e 's/TransferLog \/proc\/self\/fd\/1/Include conf\/extra\/httpd-logging-before-modsec.conf/' \
+	    -e 's/^CustomLog \/proc\/self\/fd\/1 \\/CustomLog		${ACCESSLOG} extended/' \
+	    -e 's/"%t %h %{SSL_PROTOCOL}x %{SSL_CIPHER}x \\"%r\\" %b"//' \
+	    -e 's/ErrorLog \/proc\/self\/fd\/2/ErrorLog		${ERRORLOG}/' \
         conf/extra/httpd-ssl.conf; \
 	fi
 
