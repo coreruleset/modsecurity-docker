@@ -1,5 +1,7 @@
-FROM ubuntu:18.04 as build 
+FROM nginx:1 as build
 MAINTAINER Chaim Sanders chaim.sanders@gmail.com
+
+ARG MODSEC_VERSION='2.9.3'
 
 # Install Prereqs
 RUN DEBIAN_FRONTEND=noninteractive \
@@ -17,38 +19,38 @@ RUN DEBIAN_FRONTEND=noninteractive \
       lua5.2-dev          \
       pkgconf             \
       ssdeep              \
+      zlib1g-dev          \
       wget             && \
     apt-get clean && rm -rf /var/lib/apt/lists/* 
 
 # Download ModSecurity
 RUN cd /opt && \
-    wget  --quiet https://github.com/SpiderLabs/ModSecurity/releases/download/v2.9.2/modsecurity-2.9.2.tar.gz && \
-    wget  --quiet https://nginx.org/download/nginx-1.13.9.tar.gz && \
-    tar -xzf modsecurity-2.9.2.tar.gz && \
-    tar -xzf nginx-1.13.9.tar.gz
+    wget  --quiet https://github.com/SpiderLabs/ModSecurity/releases/download/v$MODSEC_VERSION/modsecurity-$MODSEC_VERSION.tar.gz && \
+    tar -xzf modsecurity-$MODSEC_VERSION.tar.gz
 
 # Install ModSecurity
-RUN cd /opt/modsecurity-2.9.2/ && \
+RUN cd /opt/modsecurity-$MODSEC_VERSION/ && \
     sh autogen.sh && \
-    ./configure --enable-standalone-module && make
-
-RUN cd /opt/nginx-1.13.9 && \
-    ./configure --add-module=/opt/modsecurity-2.9.2/nginx/modsecurity --prefix=/usr/local/nginx --with-http_ssl_module && \
+    ./configure --enable-standalone-module && \
     make && make install && make clean
 
 # Move Files
-RUN cd /opt/modsecurity-2.9.2/ && \
-    mkdir -p /usr/local/nginx/conf/modsecurity.d && \
-    mv modsecurity.conf-recommended  /usr/local/nginx/conf/modsecurity.d/modsecurity.conf && \
-    mv unicode.mapping /usr/local/nginx/conf/modsecurity.d/ && \
-    printf "include modsecurity.conf" > /usr/local/nginx/conf/modsecurity.d/includes.conf && \
-    sed -i -e 's/^ *location \/.*/\tlocation \/ {\n\t    ModSecurityEnabled on;\n\t    ModSecurityConfig modsecurity.d\/includes.conf;/g' /usr/local/nginx/conf/nginx.conf
+RUN cd /opt/modsecurity-$MODSEC_VERSION/ && \
+    mkdir -p /etc/modsecurity.d && \
+    mv modsecurity.conf-recommended  /etc/modsecurity.d/modsecurity.conf && \
+    mv unicode.mapping /etc/modsecurity.d/ && \
+    printf "include modsecurity.conf" > /etc/modsecurity.d/includes.conf && \
+    sed -i '1iload_module modules/ngx_http_modsecurity_module.so;' /etc/nginx/nginx.conf && \
+    sed -i '1iload_module modules/ngx_http_modsecurity_module.so;' /etc/nginx/nginx.conf && \
+    sed -i -e 's/http {/http {\n    modsecurity on;\n    modsecurity_rules_file \/etc\/modsecurity.d\/include.conf;\n/g' /etc/nginx/nginx.conf
 
 ####################
 
-FROM ubuntu:18.04
+FROM nginx:1
 
-COPY --from=build /usr/local/nginx /usr/local/nginx
+COPY --from=build /etc/nginx/nginx.conf /etc/nginx/nginx.conf
+COPY --from=build /etc/modsecurity.d /etc/modsecurity.d
+COPY --from=build /usr/local/modsecurity/lib/standalone.so /etc/nginx/modules/ngx_http_modsecurity_module.so
 
 RUN DEBIAN_FRONTEND=noninteractive \
     apt-get update -qq && \
@@ -66,4 +68,4 @@ EXPOSE 80
 
 STOPSIGNAL SIGTERM
 
-CMD ["/usr/local/nginx/sbin/nginx", "-g", "daemon off;"]
+CMD ["/usr/sbin/nginx", "-g", "daemon off;"]
