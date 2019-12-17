@@ -10,48 +10,50 @@ RUN apt-get update && \
         doxygen \
         g++ \
         git \
-        make \
         libcurl4-gnutls-dev \
         libgeoip-dev \
         liblua5.3-dev \
         libpcre++-dev \
         libtool \
         libxml2-dev \
+        make \
+        ruby \
         wget
 
-RUN git clone https://github.com/SpiderLabs/ModSecurity --branch v3.0.3 --depth 1
-RUN wget https://github.com/LMDB/lmdb/archive/LMDB_0.9.23.tar.gz
-RUN tar -xvzf LMDB_0.9.23.tar.gz
-RUN cd lmdb-LMDB_0.9.23/libraries/liblmdb && \
-    make && \
-    make install
-RUN wget https://github.com/lloyd/yajl/archive/2.1.0.tar.gz
-RUN tar -xvzf 2.1.0.tar.gz
-RUN cd yajl-2.1.0/ && \
-    ./configure && \
-    make && \
-    make install
+RUN git clone https://github.com/LMDB/lmdb --branch LMDB_0.9.23 --depth 1 \
+ && cd lmdb/libraries/liblmdb \
+ && make \
+ && make install
 
-RUN wget https://github.com/ssdeep-project/ssdeep/releases/download/release-2.14.1/ssdeep-2.14.1.tar.gz
-RUN tar -xvzf ssdeep-2.14.1.tar.gz
-RUN cd ssdeep-2.14.1 && \
-    ./configure && \
-    make && \
-    make install
+RUN git clone https://github.com/lloyd/yajl --branch 2.1.0 --depth 1 \
+ && cd yajl \
+ && ./configure \
+ && make \
+ && make install
 
-RUN cd ModSecurity && \
-    ./build.sh && \
-    git submodule init && \
-    git submodule update && \
-    ./configure && \
-    make && \
-    make install
+RUN wget --quiet https://github.com/ssdeep-project/ssdeep/releases/download/release-2.14.1/ssdeep-2.14.1.tar.gz \
+ && tar -xvzf ssdeep-2.14.1.tar.gz \
+ && cd ssdeep-2.14.1 \
+ && ./configure \
+ && make \
+ && make install
+
+RUN git clone https://github.com/SpiderLabs/ModSecurity --branch v3.0.3 --depth 1 \
+ && cd ModSecurity \
+ && ./build.sh \
+ && git submodule init \
+ && git submodule update \
+ && ./configure \
+ && make \
+ && make install
 
 # Generate self-signed certificates (if needed)
 RUN mkdir -p /usr/share/TLS
 COPY openssl.conf /usr/share/TLS
-RUN openssl req -x509 -days 365 -new -config /usr/share/TLS/openssl.conf -keyout /usr/share/TLS/server.key -out /usr/share/TLS/server.crt
-
+RUN openssl req -x509 -days 365 -new \
+        -config /usr/share/TLS/openssl.conf \
+        -keyout /usr/share/TLS/server.key \
+        -out /usr/share/TLS/server.crt
 
 FROM nginx:1
 
@@ -60,9 +62,19 @@ ARG SETPROXY=False
 ARG SETTLS=False
 ARG PROXYLOCATION=www.example.com
 
-RUN apt-get update && apt-get install -y zlib1g-dev git wget gcc  libxml2-dev libcurl4-gnutls-dev liblua5.3-dev libpcre++-dev make
+RUN apt-get update \
+ && apt-get install -y \
+        gcc \
+        git \
+        libcurl4-gnutls-dev \
+        liblua5.3-dev \
+        libpcre++-dev \
+        libxml2-dev \
+        make \
+        wget \
+        zlib1g-dev
 
-RUN git clone --depth 1 https://github.com/SpiderLabs/ModSecurity-nginx.git
+RUN git clone https://github.com/SpiderLabs/ModSecurity-nginx --branch v1.0.1 --depth 1
 
 RUN mkdir /etc/nginx/ssl/
 
@@ -97,10 +109,10 @@ RUN echo $SERVERNAME
 RUN sed -i -E "s/server_name .*;/server_name $SERVERNAME;/g" /etc/nginx/conf.d/default.conf
 
 RUN if [ "$SETTLS" = "True" ]; then \
-      echo "setting TLS"; \
-      mv /etc/nginx/conf.d/tls.conf.disabled /etc/nginx/conf.d/tls.conf; \
-      sed -i -E 's/server_name .*;/server_name $SERVERNAME;/g' /etc/nginx/conf.d/tls.conf; \
-	fi
+        echo "setting TLS"; \
+        mv /etc/nginx/conf.d/tls.conf.disabled /etc/nginx/conf.d/tls.conf; \
+        sed -i -E 's/server_name .*;/server_name $SERVERNAME;/g' /etc/nginx/conf.d/tls.conf; \
+    fi
 
 RUN if [ "$SETPROXY" = "True" ]; then \
       echo "setting Proxy"; \
