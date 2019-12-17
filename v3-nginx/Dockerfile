@@ -1,8 +1,25 @@
 FROM nginx:1 as build
-MAINTAINER Chaim Sanders chaim.sanders@gmail.com
 
-RUN apt-get update && apt-get install -y git cmake libtool automake g++ libxml2-dev libcurl4-gnutls-dev doxygen liblua5.3-dev libpcre++-dev wget libgeoip-dev make
-RUN git clone https://github.com/SpiderLabs/ModSecurity
+LABEL version="3.0.3"
+LABEL maintainer="Chaim Sanders <chaim.sanders@gmail.com>"
+
+RUN apt-get update && \
+    apt-get install -y \
+        automake \
+        cmake \
+        doxygen \
+        g++ \
+        git \
+        make \
+        libcurl4-gnutls-dev \
+        libgeoip-dev \
+        liblua5.3-dev \
+        libpcre++-dev \
+        libtool \
+        libxml2-dev \
+        wget
+
+RUN git clone https://github.com/SpiderLabs/ModSecurity --branch v3.0.3 --depth 1
 RUN wget https://github.com/LMDB/lmdb/archive/LMDB_0.9.23.tar.gz
 RUN tar -xvzf LMDB_0.9.23.tar.gz
 RUN cd lmdb-LMDB_0.9.23/libraries/liblmdb && \
@@ -18,9 +35,9 @@ RUN cd yajl-2.1.0/ && \
 RUN wget https://github.com/ssdeep-project/ssdeep/releases/download/release-2.14.1/ssdeep-2.14.1.tar.gz
 RUN tar -xvzf ssdeep-2.14.1.tar.gz
 RUN cd ssdeep-2.14.1 && \
-       ./configure && \
-       make && \
-       make install
+    ./configure && \
+    make && \
+    make install
 
 RUN cd ModSecurity && \
     ./build.sh && \
@@ -75,7 +92,6 @@ RUN sed -i '1iload_module modules/ngx_http_modsecurity_module.so;' /etc/nginx/ng
 
 ENV LD_LIBRARY_PATH /lib:/usr/lib:/usr/local/lib
 
-
 RUN apt-get install -y vim
 RUN echo $SERVERNAME
 RUN sed -i -E "s/server_name .*;/server_name $SERVERNAME;/g" /etc/nginx/conf.d/default.conf
@@ -118,8 +134,7 @@ RUN if [ "$SETPROXY" = "True" ]; then \
             proxy_redirect off; \
           	/g" /etc/nginx/conf.d/tls.conf; \
         fi \
-	fi
-
+  fi
 
 EXPOSE 80
 EXPOSE 443
