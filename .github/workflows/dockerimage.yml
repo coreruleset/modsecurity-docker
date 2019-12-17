@@ -1,0 +1,31 @@
+name: Build images for Docker Hub
+on:
+  push:
+    branches:
+    - master
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        image:
+        - v2-apache
+        - v3-nginx
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        fetch-depth: 1
+
+    - name: Log in to Docker Hub
+      run: docker login
+           -u ${{ secrets.dockerhub_user }}
+           -p ${{ secrets.dockerhub_token }}
+
+    - name: Build ${{ matrix.image }}
+      run: docker build ${{ matrix.image }}
+           --tag owasp/modsecurity:$(./version.sh ${{ matrix.image }} -v)
+           --tag owasp/modsecurity:$(./version.sh ${{ matrix.image }} -vv)
+           --tag owasp/modsecurity:$(./version.sh ${{ matrix.image }} -vvv)
+
+    - name: Push ${{ matrix.image }}
+      run: docker push owasp/modsecurity
