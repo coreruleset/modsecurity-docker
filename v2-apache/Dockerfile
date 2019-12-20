@@ -3,26 +3,23 @@ FROM httpd:2.4 as build
 LABEL version="2.9.3"
 LABEL maintainer="Chaim Sanders <chaim.sanders@gmail.com>"
 
-# Install Prereqs
-RUN DEBIAN_FRONTEND=noninteractive \
-    apt-get update -qq \
- && apt-get install -qq -y --no-install-recommends --no-install-suggests \
-        automake \
-        ca-certificates \
-        g++ \
-        git \
-        libcurl4-gnutls-dev \
-        libpcre++-dev \
-        libtool \
-        libxml2-dev \
-        libyajl-dev \
-        lua5.2-dev \
-        make \
-        pkgconf \
-        wget
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends --no-install-suggests \
+      automake \
+      ca-certificates \
+      g++ \
+      git \
+      libcurl4-gnutls-dev \
+      libpcre++-dev \
+      libtool \
+      libxml2-dev \
+      libyajl-dev \
+      lua5.2-dev \
+      make \
+      pkgconf \
+      wget
 
-# Download and install SSDeep
-RUN wget --quiet "https://github.com/ssdeep-project/ssdeep/releases/download/release-2.14.1/ssdeep-2.14.1.tar.gz" \
+RUN wget --quiet https://github.com/ssdeep-project/ssdeep/releases/download/release-2.14.1/ssdeep-2.14.1.tar.gz \
  && tar -xvzf ssdeep-2.14.1.tar.gz \
  && cd ssdeep-2.14.1 \
  && ./configure \
@@ -30,7 +27,6 @@ RUN wget --quiet "https://github.com/ssdeep-project/ssdeep/releases/download/rel
  && make install \
  && make clean
 
-# Download ModSecurity & compile ModSecurity
 RUN git clone https://github.com/SpiderLabs/ModSecurity --branch v2.9.3 --depth 1 \
  && cd ModSecurity \
  && ./autogen.sh \
@@ -43,9 +39,9 @@ RUN git clone https://github.com/SpiderLabs/ModSecurity --branch v2.9.3 --depth 
 RUN mkdir -p /usr/share/TLS
 COPY openssl.conf /usr/share/TLS
 RUN openssl req -x509 -days 365 -new \
-        -config /usr/share/TLS/openssl.conf \
-        -keyout /usr/share/TLS/server.key \
-        -out /usr/share/TLS/server.crt
+      -config /usr/share/TLS/openssl.conf \
+      -keyout /usr/share/TLS/server.key \
+      -out /usr/share/TLS/server.crt
 
 FROM httpd:2.4
 
@@ -61,9 +57,9 @@ ENV ACCESSLOG=/var/log/apache2/access.log
 RUN DEBIAN_FRONTEND=noninteractive \
     apt-get update -qq \
  && apt-get install -qq -y --no-install-recommends --no-install-suggests \
-        libcurl3-gnutls \
-        libxml2 \
-        libyajl2 \
+      libcurl3-gnutls \
+      libxml2 \
+      libyajl2 \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/* \
  && mkdir -p /etc/modsecurity.d \
@@ -95,32 +91,32 @@ RUN sed -i -e 's/#LoadModule unique_id_module/LoadModule unique_id_module/g' /us
     echo "hello world" > /usr/local/apache2/htdocs/index.html
 
 RUN if [ "$SETTLS" = "True" ]; then \
-        echo "setting TLS"; \
-        sed -i \
-            -e 's/^#\(Include .*httpd-ssl.conf\)/\1/' \
-            -e 's/^#\(LoadModule .*mod_ssl.so\)/\1/' \
-            -e 's/^#\(LoadModule .*mod_socache_shmcb.so\)/\1/' \
-            conf/httpd.conf; \
-        sed -i \
-            -e 's/^ServerName www\.example\.com:443/ServerName \${SERVERNAME}/' \
-            -e 's/^CustomLog \/proc\/self\/fd\/1 \\/CustomLog		${ACCESSLOG} extended/' \
-            -e 's/"%t %h %{SSL_PROTOCOL}x %{SSL_CIPHER}x \\"%r\\" %b"//' \
-            -e 's/ErrorLog \/proc\/self\/fd\/2/ErrorLog		${ERRORLOG}/' \
-            conf/extra/httpd-ssl.conf; \
+      echo "setting TLS"; \
+      sed -i \
+        -e 's/^#\(Include .*httpd-ssl.conf\)/\1/' \
+        -e 's/^#\(LoadModule .*mod_ssl.so\)/\1/' \
+        -e 's/^#\(LoadModule .*mod_socache_shmcb.so\)/\1/' \
+        conf/httpd.conf; \
+      sed -i \
+        -e 's/^ServerName www\.example\.com:443/ServerName \${SERVERNAME}/' \
+        -e 's/^CustomLog \/proc\/self\/fd\/1 \\/CustomLog		${ACCESSLOG} extended/' \
+        -e 's/"%t %h %{SSL_PROTOCOL}x %{SSL_CIPHER}x \\"%r\\" %b"//' \
+        -e 's/ErrorLog \/proc\/self\/fd\/2/ErrorLog		${ERRORLOG}/' \
+        conf/extra/httpd-ssl.conf; \
     fi
 
 RUN if [ "$SETPROXY" = "True" ]; then \
-        echo "setting Proxy"; \
-        sed -i \
-            -e 's/^#\(LoadModule .*mod_proxy.so\)/\1/' \
-            -e 's/^#\(LoadModule .*mod_proxy_http.so\)/\1/' \
-            conf/httpd.conf; \
-        echo "<IfModule proxy_module>\nInclude conf/extra/httpd-proxy.conf\n</IfModule>" >> /usr/local/apache2/conf/httpd.conf; \
-        if [ "$SETTLS" = "True" ]; then \
-            echo "<ifModule proxy_module>\nSSLProxyEngine on\nProxyPass / \${PROXYLOCATION}\nProxyPassReverse / \${PROXYLOCATION}\n</ifModule>" > /usr/local/apache2/conf/extra/httpd-proxy.conf; \
-        else \
-            echo "<ifModule proxy_module>\nProxyPass / \${PROXYLOCATION}\nProxyPassReverse / \${PROXYLOCATION}\n</ifModule>" > /usr/local/apache2/conf/extra/httpd-proxy.conf; \
-        fi; \
+      echo "setting Proxy"; \
+      sed -i \
+        -e 's/^#\(LoadModule .*mod_proxy.so\)/\1/' \
+        -e 's/^#\(LoadModule .*mod_proxy_http.so\)/\1/' \
+        conf/httpd.conf; \
+      echo "<IfModule proxy_module>\nInclude conf/extra/httpd-proxy.conf\n</IfModule>" >> /usr/local/apache2/conf/httpd.conf; \
+      if [ "$SETTLS" = "True" ]; then \
+        echo "<ifModule proxy_module>\nSSLProxyEngine on\nProxyPass / \${PROXYLOCATION}\nProxyPassReverse / \${PROXYLOCATION}\n</ifModule>" > /usr/local/apache2/conf/extra/httpd-proxy.conf; \
+      else \
+        echo "<ifModule proxy_module>\nProxyPass / \${PROXYLOCATION}\nProxyPassReverse / \${PROXYLOCATION}\n</ifModule>" > /usr/local/apache2/conf/extra/httpd-proxy.conf; \
+      fi; \
     fi
 
 EXPOSE 80

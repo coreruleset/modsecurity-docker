@@ -3,22 +3,22 @@ FROM nginx:1 as build
 LABEL version="3.0.3"
 LABEL maintainer="Chaim Sanders <chaim.sanders@gmail.com>"
 
-RUN apt-get update && \
-    apt-get install -y \
-        automake \
-        cmake \
-        doxygen \
-        g++ \
-        git \
-        libcurl4-gnutls-dev \
-        libgeoip-dev \
-        liblua5.3-dev \
-        libpcre++-dev \
-        libtool \
-        libxml2-dev \
-        make \
-        ruby \
-        wget
+RUN apt-get update \
+ && apt-get install -y \
+      automake \
+      cmake \
+      doxygen \
+      g++ \
+      git \
+      libcurl4-gnutls-dev \
+      libgeoip-dev \
+      liblua5.3-dev \
+      libpcre++-dev \
+      libtool \
+      libxml2-dev \
+      make \
+      ruby \
+      wget
 
 RUN git clone https://github.com/LMDB/lmdb --branch LMDB_0.9.23 --depth 1 \
  && cd lmdb/libraries/liblmdb \
@@ -51,9 +51,9 @@ RUN git clone https://github.com/SpiderLabs/ModSecurity --branch v3.0.3 --depth 
 RUN mkdir -p /usr/share/TLS
 COPY openssl.conf /usr/share/TLS
 RUN openssl req -x509 -days 365 -new \
-        -config /usr/share/TLS/openssl.conf \
-        -keyout /usr/share/TLS/server.key \
-        -out /usr/share/TLS/server.crt
+      -config /usr/share/TLS/openssl.conf \
+      -keyout /usr/share/TLS/server.key \
+      -out /usr/share/TLS/server.crt
 
 FROM nginx:1
 
@@ -64,15 +64,15 @@ ARG PROXYLOCATION=www.example.com
 
 RUN apt-get update \
  && apt-get install -y \
-        gcc \
-        git \
-        libcurl4-gnutls-dev \
-        liblua5.3-dev \
-        libpcre++-dev \
-        libxml2-dev \
-        make \
-        wget \
-        zlib1g-dev
+      gcc \
+      git \
+      libcurl4-gnutls-dev \
+      liblua5.3-dev \
+      libpcre++-dev \
+      libxml2-dev \
+      make \
+      wget \
+      zlib1g-dev
 
 RUN git clone https://github.com/SpiderLabs/ModSecurity-nginx --branch v1.0.1 --depth 1
 
@@ -85,7 +85,7 @@ COPY --from=build /usr/share/TLS/server.crt /etc/nginx/conf/server.crt
 COPY ./tls.conf /etc/nginx/conf.d/tls.conf.disabled
 
 RUN export version=$(echo `/usr/sbin/nginx -v 2>&1` | cut -d '/' -f 2) && \
-    wget http://nginx.org/download/nginx-$version.tar.gz && \
+    wget --quiet http://nginx.org/download/nginx-$version.tar.gz && \
     tar -xvzf nginx-$version.tar.gz && \
     cd /nginx-$version && \
     ./configure --with-compat --add-dynamic-module=../ModSecurity-nginx && \
@@ -95,9 +95,9 @@ RUN export version=$(echo `/usr/sbin/nginx -v 2>&1` | cut -d '/' -f 2) && \
 RUN mkdir /etc/modsecurity.d && \
     cd /etc/modsecurity.d && \
     echo "include \"/etc/modsecurity.d/modsecurity.conf\"" > include.conf && \
-    wget https://raw.githubusercontent.com/SpiderLabs/ModSecurity/v3/master/modsecurity.conf-recommended && \
+    wget --quiet https://raw.githubusercontent.com/SpiderLabs/ModSecurity/v3/master/modsecurity.conf-recommended && \
     mv modsecurity.conf-recommended modsecurity.conf && \
-    wget https://raw.githubusercontent.com/SpiderLabs/ModSecurity/v3/master/unicode.mapping
+    wget --quiet https://raw.githubusercontent.com/SpiderLabs/ModSecurity/v3/master/unicode.mapping
 
 RUN sed -i '1iload_module modules/ngx_http_modsecurity_module.so;' /etc/nginx/nginx.conf && \
     sed -i -e 's/http {/http {\n    modsecurity on;\n    modsecurity_rules_file \/etc\/modsecurity.d\/include.conf;\n/g' /etc/nginx/nginx.conf
@@ -109,9 +109,9 @@ RUN echo $SERVERNAME
 RUN sed -i -E "s/server_name .*;/server_name $SERVERNAME;/g" /etc/nginx/conf.d/default.conf
 
 RUN if [ "$SETTLS" = "True" ]; then \
-        echo "setting TLS"; \
-        mv /etc/nginx/conf.d/tls.conf.disabled /etc/nginx/conf.d/tls.conf; \
-        sed -i -E 's/server_name .*;/server_name $SERVERNAME;/g' /etc/nginx/conf.d/tls.conf; \
+      echo "setting TLS"; \
+      mv /etc/nginx/conf.d/tls.conf.disabled /etc/nginx/conf.d/tls.conf; \
+      sed -i -E 's/server_name .*;/server_name $SERVERNAME;/g' /etc/nginx/conf.d/tls.conf; \
     fi
 
 RUN if [ "$SETPROXY" = "True" ]; then \
