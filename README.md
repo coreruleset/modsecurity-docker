@@ -1,4 +1,14 @@
-# Supported tags and respective `Dockerfile` links
+# ModSecurity Docker Image
+
+[![dockeri.co](http://dockeri.co/image/owasp/modsecurity)](https://hub.docker.com/r/owasp/modsecurity/)
+
+[![Build Status](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2FCRS-support%2Fmodsecurity-docker%2Fbadge%3Fref%3Dmaster&style=flat)](https://actions-badge.atrox.dev/CRS-support/modsecurity-docker/goto?ref=master
+) [![GitHub issues](https://img.shields.io/github/issues-raw/CRS-support/modsecurity-docker.svg)](https://github.com/CRS-support/modsecurity-docker/issues
+) [![GitHub PRs](https://img.shields.io/github/issues-pr-raw/CRS-support/modsecurity-docker.svg)](https://github.com/CRS-support/modsecurity-docker/pulls
+) [![License](https://img.shields.io/github/license/CRS-support/modsecurity-docker.svg)](https://github.com/CRS-support/modsecurity-docker/blob/master/LICENSE)
+
+## Supported tags and respective `Dockerfile` links
+
 * `3`, `3.0`, `3.0.3` ([master/v3-nginx/Dockerfile](https://github.com/CRS-support/modsecurity-docker/blob/master/v3-nginx/Dockerfile)) – *last stable ModSecurity v3 on Nginx 1.17 official base image*
 * `3.0.3-nginx`,  `3.0-nginx`,`3-nginx`, `latest` ([3.0/nginx/nginx/Dockerfile](https://github.com/CRS-support/modsecurity-docker/blob/v3/nginx-nginx/Dockerfile))
 * `3.0.3-apache`, `3.0-apache`, `3-apache` ([3.0/apache/httpd/Dockerfile](https://github.com/CRS-support/modsecurity-docker/blob/v3/apache-apache/Dockerfile))
@@ -8,7 +18,8 @@
 * `2.9-apache-ubuntu` ([2.9/apache/ubuntu/Dockerfile](https://github.com/CRS-support/modsecurity-docker/blob/v2/ubuntu-apache/Dockerfile))
 * `2.9-nginx-ubuntu` ([2.9/nginx/ubuntu/Dockerfile](https://github.com/CRS-support/modsecurity-docker/blob/v2/ubuntu-nginx/Dockerfile))
 
-# Quick reference
+## Quick reference
+
 * **Where to get help**
 
    [The CRS-Support Docker Repo](https://github.com/CRS-support/modsecurity-docker), [The Core Rule Set Slack Channel](https://join.slack.com/t/owasp/shared_invite/enQtNjExMTc3MTg0MzU4LTViMDg1MmJiMzMwZGUxZjgxZWQ1MTE0NTBlOTBhNjhhZDIzZTZiNmEwOTJlYjdkMzAxMGVhNDkwNDNiNjZiOWQ) (#coreruleset on owasp.slack.com), or [Stack Overflow](https://stackoverflow.com/questions/tagged/mod-security)
@@ -21,10 +32,12 @@
 
    The OWASP Core Rule Set maintainers
 
-# What is ModSecurity
+## What is ModSecurity
+
 ModSecurity is an open source, cross platform Web Application Firewall (WAF) engine for Apache, IIS and Nginx. It has a robust event-based programming language which provides protection from a range of attacks against web applications and allows for HTTP traffic monitoring, logging and real-time analysis.
 
-# How to use this image
+## How to use this image
+
 This image only contains ModSecurity built from the code provided on the [ModSecurity Github Repo](https://github.com/SpiderLabs/ModSecurity). **THE CORE RULE SET IS NOT PROVIDED IN THIS IMAGE**, but it should not be hard to extend. On the other hand, **IF YOU WANT MODSECURITY WITH THE CORE RULE SET please visit the [OWASP Core Rule Set (CRS) DockerHub Repo](https://hub.docker.com/r/owasp/modsecurity-crs/)**.
 
 1. Create a Dockerfile in your project and copy your code into container.
@@ -42,7 +55,8 @@ This image only contains ModSecurity built from the code provided on the [ModSec
 
 3. Visit http://localhost:8080 and your page.
 
-## TLS/HTTPS
+### TLS/HTTPS
+
 If you want to run your web traffic over TLS you can simply set the SETTLS argument to true when using Docker build. Note: This will use self signed certificates, to use your own certificates (recommended) COPY or mount (-v) your server.crt and server.key into /usr/local/apache2/conf/. Please remember you'll need to forward the HTTPS port
 
 ```
@@ -50,7 +64,8 @@ $docker build  --build-arg SETTLS=True -t my-modsec .
 $docker run -p 8443:443 my-modsec
 ```
 
-## Proxying
+### Proxying
+
 ModSecurity is often used as a reverse proxy. This allows one to use ModSecurity without modifying the webserver hosting the underlying application (and also protect web servers that modsecurity cannot currently embedd into). To set proxying one must set SETPROXY to True and provide the location of the Proxy via the PROXYLOCATION argument. Note: if you are going to be proxying to a HTTPS site, you'll need to set SETTLS to true also.
 
 ```
@@ -58,14 +73,16 @@ $docker build --build-arg SETPROXY=True --build-arg PROXYLOCATION=http://example
 $ docker run -p 8080:80 my-modsec
 ```
 
-## ServerName
+### ServerName
+
 It is often convenient to set your servername. to do this simply use the SERVERNAME Argument passed to docker build. By default the servername provided is localhost.
 ```
 $ docker build --build-arg SERVERNAME=myhost -t modsec .
 $ docker run -p 8080:80 my-modsec
 ```
 
-# Image Variants
+## Image Variants
+
 **Please pay attention!**
 ModSecurity works across numerous different operating systems and webservers, as a result our images are tagged a bit different than what you might be typically encounter on other DockerHub repos. If the images are built on top of the images provided by the maintainers of the webserver (NGINX, Apache, etc), then they will be notated as simply as <version>-<webserver>. However, in many cases we understand that this is not sufficient for production deploys. As a result we also provide Ubuntu images. these will be in the form <version>-<webserver>-ubuntu.
 
@@ -85,8 +102,7 @@ ModSecurity works across numerous different operating systems and webservers, as
 
    This image will use an ubuntu image provided by the Ubuntu DockerHub repo as its a base OS (https://hub.docker.com/_/ubuntu).
 
-# License
-
+## License
 
 License: Apache 2.0 license, see [LICENSE](https://github.com/CRS-support/modsecurity-docker/blob/v2/ubuntu-apache/LICENSE).
 
