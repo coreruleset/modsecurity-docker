@@ -72,23 +72,19 @@ COPY --from=build /usr/local/lib/libfuzzy.so.2.1.0                             /
 COPY --from=build /usr/local/bin/ssdeep                                        /usr/local/bin/ssdeep
 COPY --from=build /usr/share/TLS/server.key                                    /usr/local/apache2/conf/server.key
 COPY --from=build /usr/share/TLS/server.crt                                    /usr/local/apache2/conf/server.crt
-COPY httpd-logging-before-modsec.conf                                          /usr/local/apache2/conf/extra/httpd-logging-before-modsec.conf
-COPY httpd-logging-after-modsec.conf                                           /usr/local/apache2/conf/extra/httpd-logging-after-modsec.conf
 
-RUN ln -s libfuzzy.so.2.1.0 /usr/local/lib/libfuzzy.so && \
-    ln -s libfuzzy.so.2.1.0 /usr/local/lib/libfuzzy.so.2 && \
-    ldconfig
+RUN ln -s libfuzzy.so.2.1.0 /usr/local/lib/libfuzzy.so \
+ && ln -s libfuzzy.so.2.1.0 /usr/local/lib/libfuzzy.so.2 \
+ && ldconfig
 
-RUN sed -i -e 's/#LoadModule unique_id_module/LoadModule unique_id_module/g' /usr/local/apache2/conf/httpd.conf && \
-    sed -i -e 's/ServerTokens Full/ServerTokens Prod/g' /usr/local/apache2/conf/extra/httpd-default.conf && \
-    sed -i -e 's/#CustomLog "logs\/access_log" combined/Include conf\/extra\/httpd-logging-before-modsec.conf/' /usr/local/apache2/conf/httpd.conf && \
-    echo "LoadModule security2_module /usr/local/apache2/modules/mod_security2.so"            >> /usr/local/apache2/conf/httpd.conf && \
-    echo "Include conf/extra/httpd-default.conf"                                              >> /usr/local/apache2/conf/httpd.conf && \
-    echo "<IfModule security2_module>\nInclude /etc/modsecurity.d/include.conf\n</IfModule>"  >> /usr/local/apache2/conf/httpd.conf && \
-    echo "include \"/etc/modsecurity.d/modsecurity.conf\"" > /etc/modsecurity.d/include.conf && \
-    echo "Include conf/extra/httpd-logging-after-modsec.conf"                                 >> /usr/local/apache2/conf/httpd.conf && \
-    echo "ServerName \${SERVERNAME}"                                                          >> /usr/local/apache2/conf/httpd.conf && \
-    echo "hello world" > /usr/local/apache2/htdocs/index.html
+RUN sed -i -E 's|(ServerTokens) Full|\1 Prod|' /usr/local/apache2/conf/extra/httpd-default.conf \
+ && sed -i -E 's|#(Include conf/extra/httpd-default.conf)|\1|' /usr/local/apache2/conf/httpd.conf \
+ && sed -i -E 's|#(ServerName) www.example.com:80|\1 ${SERVERNAME}|' /usr/local/apache2/conf/httpd.conf \
+ && sed -i -E 's|#(LoadModule unique_id_module)|\1|' /usr/local/apache2/conf/httpd.conf \
+ && echo 'Include conf/extra/httpd-modsecurity.conf' >> /usr/local/apache2/conf/httpd.conf \
+ && echo 'LoadModule security2_module /usr/local/apache2/modules/mod_security2.so' > /usr/local/apache2/conf/extra/httpd-modsecurity.conf \
+ && echo 'Include /etc/modsecurity.d/include.conf' >> /usr/local/apache2/conf/extra/httpd-modsecurity.conf \
+ && echo 'Include /etc/modsecurity.d/modsecurity.conf' > /etc/modsecurity.d/include.conf
 
 RUN if [ "$SETTLS" = "True" ]; then \
       echo "setting TLS"; \
