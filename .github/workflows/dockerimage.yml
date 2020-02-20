@@ -1,8 +1,5 @@
 name: Build images for Docker Hub
-on:
-  push:
-    branches:
-    - master
+on: push
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -28,4 +25,5 @@ jobs:
            --tag owasp/modsecurity:$(./version.sh ${{ matrix.image }} -vvv)
 
     - name: Push ${{ matrix.image }}
+      if: github.ref == 'refs/heads/master'
       run: docker push owasp/modsecurity
