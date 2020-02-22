@@ -83,8 +83,8 @@ RUN sed -i -E 's|(ServerTokens) Full|\1 Prod|' /usr/local/apache2/conf/extra/htt
  && sed -i -E 's|#(LoadModule unique_id_module)|\1|' /usr/local/apache2/conf/httpd.conf \
  && echo 'Include conf/extra/httpd-modsecurity.conf' >> /usr/local/apache2/conf/httpd.conf \
  && echo 'LoadModule security2_module /usr/local/apache2/modules/mod_security2.so' > /usr/local/apache2/conf/extra/httpd-modsecurity.conf \
- && echo 'Include /etc/modsecurity.d/include.conf' >> /usr/local/apache2/conf/extra/httpd-modsecurity.conf \
- && echo 'Include /etc/modsecurity.d/modsecurity.conf' > /etc/modsecurity.d/include.conf
+ && echo 'Include /etc/modsecurity.d/setup.conf' >> /usr/local/apache2/conf/extra/httpd-modsecurity.conf \
+ && echo 'Include /etc/modsecurity.d/modsecurity.conf' > /etc/modsecurity.d/setup.conf
 
 RUN if [ "$SETTLS" = "True" ]; then \
       echo "setting TLS"; \
