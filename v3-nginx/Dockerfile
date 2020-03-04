@@ -1,10 +1,10 @@
-FROM nginx:1 as build
+FROM nginx:1.17.8 as build
 
-LABEL version="3.0.3"
+LABEL version="3.0.4"
 LABEL maintainer="Chaim Sanders <chaim.sanders@gmail.com>"
 
 RUN apt-get update \
- && apt-get install -y \
+ && apt-get install -y --no-install-recommends \
       automake \
       cmake \
       doxygen \
@@ -18,33 +18,32 @@ RUN apt-get update \
       libxml2-dev \
       make \
       ruby \
-      wget
+      wget && \
+      rm -rf /var/lib/apt/lists/* && \
+      apt-get clean
+
+WORKDIR /sources
 
 RUN git clone https://github.com/LMDB/lmdb --branch LMDB_0.9.23 --depth 1 \
- && cd lmdb/libraries/liblmdb \
- && make \
- && make install
+ && make -C lmdb/libraries/liblmdb install
 
 RUN git clone https://github.com/lloyd/yajl --branch 2.1.0 --depth 1 \
  && cd yajl \
  && ./configure \
- && make \
  && make install
 
 RUN wget --quiet https://github.com/ssdeep-project/ssdeep/releases/download/release-2.14.1/ssdeep-2.14.1.tar.gz \
  && tar -xvzf ssdeep-2.14.1.tar.gz \
  && cd ssdeep-2.14.1 \
  && ./configure \
- && make \
  && make install
 
-RUN git clone https://github.com/SpiderLabs/ModSecurity --branch v3.0.3 --depth 1 \
+RUN git clone https://github.com/SpiderLabs/ModSecurity --branch v3.0.4 --depth 1 \
  && cd ModSecurity \
  && ./build.sh \
  && git submodule init \
  && git submodule update \
  && ./configure \
- && make \
  && make install
 
 # Generate self-signed certificates (if needed)
@@ -55,7 +54,9 @@ RUN openssl req -x509 -days 365 -new \
       -keyout /usr/share/TLS/server.key \
       -out /usr/share/TLS/server.crt
 
-FROM nginx:1
+FROM nginx:1.17.8
+
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 ARG SERVERNAME=localhost
 ARG SETPROXY=False
@@ -63,7 +64,8 @@ ARG SETTLS=False
 ARG PROXYLOCATION=www.example.com
 
 RUN apt-get update \
- && apt-get install -y \
+ && apt-get install -y --no-install-recommends \
+      ca-certificates \
       gcc \
       git \
       libcurl4-gnutls-dev \
@@ -72,7 +74,9 @@ RUN apt-get update \
       libxml2-dev \
       make \
       wget \
-      zlib1g-dev
+      zlib1g-dev && \
+      rm -rf /var/lib/apt/lists/* && \
+      apt-get clean
 
 RUN git clone https://github.com/SpiderLabs/ModSecurity-nginx --branch v1.0.1 --depth 1
 
@@ -84,34 +88,32 @@ COPY --from=build /usr/share/TLS/server.key /etc/nginx/conf/server.key
 COPY --from=build /usr/share/TLS/server.crt /etc/nginx/conf/server.crt
 COPY ./tls.conf /etc/nginx/conf.d/tls.conf.disabled
 
-RUN export version=$(echo `/usr/sbin/nginx -v 2>&1` | cut -d '/' -f 2) && \
-    wget --quiet http://nginx.org/download/nginx-$version.tar.gz && \
-    tar -xvzf nginx-$version.tar.gz && \
-    cd /nginx-$version && \
+RUN version="$(/usr/sbin/nginx -v 2>&1 | cut -d '/' -f 2)" && \
+    wget --quiet http://nginx.org/download/nginx-"$version".tar.gz && \
+    tar -xvzf nginx-"$version".tar.gz && \
+    cd /nginx-"$version" && \
     ./configure --with-compat --add-dynamic-module=../ModSecurity-nginx && \
     make modules && \
     cp objs/ngx_http_modsecurity_module.so /etc/nginx/modules
 
 RUN mkdir /etc/modsecurity.d && \
-    cd /etc/modsecurity.d && \
-    echo "include \"/etc/modsecurity.d/modsecurity.conf\"" > setup.conf && \
-    wget --quiet https://raw.githubusercontent.com/SpiderLabs/ModSecurity/v3/master/modsecurity.conf-recommended && \
-    mv modsecurity.conf-recommended modsecurity.conf && \
-    wget --quiet https://raw.githubusercontent.com/SpiderLabs/ModSecurity/v3/master/unicode.mapping
+    echo "include /etc/modsecurity.d/modsecurity.conf" > /etc/modsecurity.d/setup.conf && \
+    wget --quiet https://raw.githubusercontent.com/SpiderLabs/ModSecurity/v3/master/modsecurity.conf-recommended \
+      -o /etc/modsecurity.d/modsecurity.conf && \
+    wget --quiet https://raw.githubusercontent.com/SpiderLabs/ModSecurity/v3/master/unicode.mapping \
+      -o /etc/modsecurity.d/unicode.mapping
 
 RUN sed -i '1iload_module modules/ngx_http_modsecurity_module.so;' /etc/nginx/nginx.conf && \
     sed -i -e 's/http {/http {\n    modsecurity on;\n    modsecurity_rules_file \/etc\/modsecurity.d\/setup.conf;\n/g' /etc/nginx/nginx.conf
 
 ENV LD_LIBRARY_PATH /lib:/usr/lib:/usr/local/lib
 
-RUN apt-get install -y vim
-RUN echo $SERVERNAME
 RUN sed -i -E "s/server_name .*;/server_name $SERVERNAME;/g" /etc/nginx/conf.d/default.conf
 
 RUN if [ "$SETTLS" = "True" ]; then \
       echo "setting TLS"; \
       mv /etc/nginx/conf.d/tls.conf.disabled /etc/nginx/conf.d/tls.conf; \
-      sed -i -E 's/server_name .*;/server_name $SERVERNAME;/g' /etc/nginx/conf.d/tls.conf; \
+      sed -i -E "s/server_name .*;/server_name $SERVERNAME;/g" /etc/nginx/conf.d/tls.conf; \
     fi
 
 RUN if [ "$SETPROXY" = "True" ]; then \
