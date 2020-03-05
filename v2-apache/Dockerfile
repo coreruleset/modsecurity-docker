@@ -37,7 +37,7 @@ RUN git clone https://github.com/SpiderLabs/ModSecurity --branch v2.9.3 --depth 
 
 # Generate self-signed certificates (if needed)
 RUN mkdir -p /usr/share/TLS
-COPY openssl.conf /usr/share/TLS
+COPY v2-apache/openssl.conf /usr/share/TLS
 RUN openssl req -x509 -days 365 -new \
       -config /usr/share/TLS/openssl.conf \
       -keyout /usr/share/TLS/server.key \
@@ -49,10 +49,24 @@ ARG SETPROXY=True
 ARG SETTLS=True
 ARG TLSPUBLICFILE=./server.crt
 ARG TLSPRIVATEFILE=./server.key
-ENV PROXYLOCATION=http://www.example.com/
-ENV SERVERNAME=localhost
-ENV ERRORLOG=/var/log/apache2/error.log
-ENV ACCESSLOG=/var/log/apache2/access.log
+ENV PROXYLOCATION=localhost:80 \
+    SERVERNAME=localhost \
+    ERRORLOG=/var/log/apache2/error.log \
+    ACCESSLOG=/var/log/apache2/access.log \
+    APACHE_TIMEOUT=60 \
+    LOGLEVEL=warn \
+    USER=daemon \
+    GROUP=daemon \
+    SERVERADMIN=root@localhost \
+    PORT=80 \
+    MODSEC_RULE_ENGINE=on \
+    MODSEC_REQ_BODY_ACCESS=on \
+    MODSEC_REQ_BODY_LIMIT=13107200 \
+    MODSEC_REQ_BODY_NOFILES_LIMIT=131072 \
+    MODSEC_RESP_BODY_ACCESS=on \
+    MODSEC_RESP_BODY_LIMIT=1048576 \
+    MODSEC_PCRE_MATCH_LIMIT=100000 \
+    MODSEC_PCRE_MATCH_LIMIT_RECURSION=100000
 
 RUN DEBIAN_FRONTEND=noninteractive \
     apt-get update -qq \
@@ -72,19 +86,19 @@ COPY --from=build /usr/local/lib/libfuzzy.so.2.1.0                             /
 COPY --from=build /usr/local/bin/ssdeep                                        /usr/local/bin/ssdeep
 COPY --from=build /usr/share/TLS/server.key                                    /usr/local/apache2/conf/server.key
 COPY --from=build /usr/share/TLS/server.crt                                    /usr/local/apache2/conf/server.crt
+COPY src/etc/modsecurity.d/*.conf /etc/modsecurity.d/
+COPY v2-apache/conf/extra/httpd-modsecurity.conf /usr/local/apache2/conf/extra/
 
 RUN ln -s libfuzzy.so.2.1.0 /usr/local/lib/libfuzzy.so \
  && ln -s libfuzzy.so.2.1.0 /usr/local/lib/libfuzzy.so.2 \
  && ldconfig
 
-RUN sed -i -E 's|(ServerTokens) Full|\1 Prod|' /usr/local/apache2/conf/extra/httpd-default.conf \
+RUN sed -i -E 's|(Listen) [0-9]+|\1 ${PORT}|' /usr/local/apache2/conf/httpd.conf \
+ && sed -i -E 's|(ServerTokens) Full|\1 Prod|' /usr/local/apache2/conf/extra/httpd-default.conf \
  && sed -i -E 's|#(Include conf/extra/httpd-default.conf)|\1|' /usr/local/apache2/conf/httpd.conf \
  && sed -i -E 's|#(ServerName) www.example.com:80|\1 ${SERVERNAME}|' /usr/local/apache2/conf/httpd.conf \
  && sed -i -E 's|#(LoadModule unique_id_module)|\1|' /usr/local/apache2/conf/httpd.conf \
- && echo 'Include conf/extra/httpd-modsecurity.conf' >> /usr/local/apache2/conf/httpd.conf \
- && echo 'LoadModule security2_module /usr/local/apache2/modules/mod_security2.so' > /usr/local/apache2/conf/extra/httpd-modsecurity.conf \
- && echo 'Include /etc/modsecurity.d/setup.conf' >> /usr/local/apache2/conf/extra/httpd-modsecurity.conf \
- && echo 'Include /etc/modsecurity.d/modsecurity.conf' > /etc/modsecurity.d/setup.conf
+ && echo 'Include conf/extra/httpd-modsecurity.conf' >> /usr/local/apache2/conf/httpd.conf
 
 RUN if [ "$SETTLS" = "True" ]; then \
       echo "setting TLS"; \
@@ -95,9 +109,9 @@ RUN if [ "$SETTLS" = "True" ]; then \
         conf/httpd.conf; \
       sed -i \
         -e 's/^ServerName www\.example\.com:443/ServerName \${SERVERNAME}/' \
-        -e 's/^CustomLog \/proc\/self\/fd\/1 \\/CustomLog		${ACCESSLOG} extended/' \
+        -e 's/^CustomLog \/proc\/self\/fd\/1 \\/CustomLog		\${ACCESSLOG} extended/' \
         -e 's/"%t %h %{SSL_PROTOCOL}x %{SSL_CIPHER}x \\"%r\\" %b"//' \
-        -e 's/ErrorLog \/proc\/self\/fd\/2/ErrorLog		${ERRORLOG}/' \
+        -e 's/ErrorLog \/proc\/self\/fd\/2/ErrorLog		\${ERRORLOG}/' \
         conf/extra/httpd-ssl.conf; \
     fi
 

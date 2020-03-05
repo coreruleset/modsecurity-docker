@@ -48,7 +48,7 @@ RUN git clone https://github.com/SpiderLabs/ModSecurity --branch v3.0.4 --depth 
 
 # Generate self-signed certificates (if needed)
 RUN mkdir -p /usr/share/TLS
-COPY openssl.conf /usr/share/TLS
+COPY v3-nginx/openssl.conf /usr/share/TLS
 RUN openssl req -x509 -days 365 -new \
       -config /usr/share/TLS/openssl.conf \
       -keyout /usr/share/TLS/server.key \
@@ -58,10 +58,24 @@ FROM nginx:1.17.9
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-ARG SERVERNAME=localhost
 ARG SETPROXY=False
 ARG SETTLS=False
-ARG PROXYLOCATION=www.example.com
+ENV SERVERNAME=localhost \
+    PROXYLOCATION=localhost:80 \
+    NGINX_KEEPALIVE_TIMEOUT=60s \
+    ERRORLOG=/var/log/nginx/error.log \
+    LOGLEVEL=warn \
+    USER=nginx \
+    PORT=80 \
+    WORKER_CONNECTIONS=1024 \
+    MODSEC_RULE_ENGINE=on \
+    MODSEC_REQ_BODY_ACCESS=on \
+    MODSEC_REQ_BODY_LIMIT=13107200 \
+    MODSEC_REQ_BODY_NOFILES_LIMIT=131072 \
+    MODSEC_RESP_BODY_ACCESS=on \
+    MODSEC_RESP_BODY_LIMIT=1048576 \
+    MODSEC_PCRE_MATCH_LIMIT=100000 \
+    MODSEC_PCRE_MATCH_LIMIT_RECURSION=100000
 
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
@@ -74,6 +88,7 @@ RUN apt-get update \
       libxml2-dev \
       make \
       wget \
+      moreutils \
       zlib1g-dev && \
       rm -rf /var/lib/apt/lists/* && \
       apt-get clean
@@ -86,7 +101,11 @@ COPY --from=build /usr/local/modsecurity/ /usr/local/modsecurity/
 COPY --from=build /usr/local/lib/ /usr/local/lib/
 COPY --from=build /usr/share/TLS/server.key /etc/nginx/conf/server.key
 COPY --from=build /usr/share/TLS/server.crt /etc/nginx/conf/server.crt
-COPY ./tls.conf /etc/nginx/conf.d/tls.conf.disabled
+COPY ./v3-nginx/tls.conf /etc/nginx/conf.d/tls.conf.disabled
+COPY src/etc/modsecurity.d/*.conf /etc/modsecurity.d/
+COPY v3-nginx/conf.d/default.conf /etc/nginx/conf.d/
+COPY v3-nginx/nginx.conf /etc/nginx/
+COPY v3-nginx/docker-entrypoint.sh /
 
 RUN version="$(/usr/sbin/nginx -v 2>&1 | cut -d '/' -f 2)" && \
     wget --quiet http://nginx.org/download/nginx-"$version".tar.gz && \
@@ -96,19 +115,12 @@ RUN version="$(/usr/sbin/nginx -v 2>&1 | cut -d '/' -f 2)" && \
     make modules && \
     cp objs/ngx_http_modsecurity_module.so /etc/nginx/modules
 
-RUN mkdir /etc/modsecurity.d && \
-    echo "include /etc/modsecurity.d/modsecurity.conf" > /etc/modsecurity.d/setup.conf && \
-    wget --quiet https://raw.githubusercontent.com/SpiderLabs/ModSecurity/v3/master/modsecurity.conf-recommended \
-      -o /etc/modsecurity.d/modsecurity.conf && \
+RUN wget --quiet https://raw.githubusercontent.com/SpiderLabs/ModSecurity/v3/master/modsecurity.conf-recommended \
+    -o /etc/modsecurity.d/modsecurity.conf && \
     wget --quiet https://raw.githubusercontent.com/SpiderLabs/ModSecurity/v3/master/unicode.mapping \
-      -o /etc/modsecurity.d/unicode.mapping
-
-RUN sed -i '1iload_module modules/ngx_http_modsecurity_module.so;' /etc/nginx/nginx.conf && \
-    sed -i -e 's/http {/http {\n    modsecurity on;\n    modsecurity_rules_file \/etc\/modsecurity.d\/setup.conf;\n/g' /etc/nginx/nginx.conf
+    -o /etc/modsecurity.d/unicode.mapping
 
 ENV LD_LIBRARY_PATH /lib:/usr/lib:/usr/local/lib
-
-RUN sed -i -E "s/server_name .*;/server_name $SERVERNAME;/g" /etc/nginx/conf.d/default.conf
 
 RUN if [ "$SETTLS" = "True" ]; then \
       echo "setting TLS"; \
@@ -118,7 +130,7 @@ RUN if [ "$SETTLS" = "True" ]; then \
 
 RUN if [ "$SETPROXY" = "True" ]; then \
       echo "setting Proxy"; \
-      sed -i -e "s/location \/ {/resolver 8.8.8.8 valid=5s;\n    set \$upstream $PROXYLOCATION;\n    location \/ {\n\
+      sed -i -e "s/location \/ {/resolver 8.8.8.8 valid=5s;\n    set \$upstream \$PROXYLOCATION;\n    location \/ {\n\
         proxy_set_header Host \$upstream;\n\
         proxy_set_header X-Forwarded-Proto \$scheme;\n\
         proxy_pass_header Authorization;\n\
@@ -133,7 +145,7 @@ RUN if [ "$SETPROXY" = "True" ]; then \
         proxy_redirect off; \
       	/g" /etc/nginx/conf.d/default.conf; \
         if [ "$SETTLS" = "True" ]; then \
-          sed -i -e "s/location \/ {/resolver 8.8.8.8 valid=5s;\n    set \$upstream $PROXYLOCATION;\n    location \/ {\n\
+          sed -i -e "s/location \/ {/resolver 8.8.8.8 valid=5s;\n    set \$upstream \$PROXYLOCATION;\n    location \/ {\n\
             proxy_set_header Host \$upstream;\n\
             proxy_set_header X-Forwarded-Proto \$scheme;\n\
             proxy_pass_header Authorization;\n\
@@ -153,4 +165,5 @@ RUN if [ "$SETPROXY" = "True" ]; then \
 EXPOSE 80
 EXPOSE 443
 
+ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["nginx", "-g", "daemon off;"]
