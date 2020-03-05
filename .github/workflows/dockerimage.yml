@@ -1,5 +1,6 @@
 name: Build images for Docker Hub
 on: push
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -8,15 +9,17 @@ jobs:
         image:
         - v2-apache
         - v3-nginx
+
     steps:
     - uses: actions/checkout@v1
       with:
         fetch-depth: 1
 
-    - name: Log in to Docker Hub
-      run: docker login
-           -u ${{ secrets.dockerhub_user }}
-           -p ${{ secrets.dockerhub_token }}
+    - uses: azure/docker-login@v1
+      if: github.ref == 'refs/heads/master'
+      with:
+        username: ${{ secrets.dockerhub_user }}
+        password: ${{ secrets.dockerhub_token }}
 
     - name: Build ${{ matrix.image }}
       run: docker build ${{ matrix.image }}
