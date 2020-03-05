@@ -66,20 +66,51 @@ $docker run -p 8443:443 my-modsec
 
 ### Proxying
 
-ModSecurity is often used as a reverse proxy. This allows one to use ModSecurity without modifying the webserver hosting the underlying application (and also protect web servers that modsecurity cannot currently embedd into). To set proxying one must set SETPROXY to True and provide the location of the Proxy via the PROXYLOCATION argument. Note: if you are going to be proxying to a HTTPS site, you'll need to set SETTLS to true also.
+ModSecurity is often used as a reverse proxy. This allows one to use ModSecurity without modifying the webserver hosting the underlying application (and also protect web servers that modsecurity cannot currently embedd into). To set proxying one must set SETPROXY to True and provide the location of the Proxy via the PROXYLOCATION environment variable. Note: if you are going to be proxying to a HTTPS site, you'll need to set SETTLS to true also.
 
 ```
-$docker build --build-arg SETPROXY=True --build-arg PROXYLOCATION=http://example.com -t my-modsec .
-$ docker run -p 8080:80 my-modsec
+$docker build --build-arg SETPROXY=True -t my-modsec .
+$ docker run -p 8080:80 -e PROXYLOCATION=http://example.com my-modsec
 ```
 
 ### ServerName
 
-It is often convenient to set your servername. to do this simply use the SERVERNAME Argument passed to docker build. By default the servername provided is localhost.
+It is often convenient to set your servername. to do this simply use the SERVERNAME environment variable passed to docker run. By default the servername provided is localhost.
 ```
-$ docker build --build-arg SERVERNAME=myhost -t modsec .
-$ docker run -p 8080:80 my-modsec
+$ docker build -t modsec .
+$ docker run -p 8080:80 -e SERVERNAME=myhost my-modsec
 ```
+
+### Apache ENV Variables
+
+* ERRORLOG - A string value indicating the location of the error log file (Default: '/var/log/apache2/error.log')
+* ACCESSLOG - A string value indicating the location of the custom log file (Default: '/var/log/apache2/access.log')
+* APACHE_TIMEOUT - ApAnache integer value indicating the number of seconds before receiving and sending time out (Default: 60)
+* LOGLEVEL - A string value controlling the number of messages logged to the error_log (Default: warn)
+* USER - A string value indicating the name (or #number) of the user to run httpd as (Default: daemon)
+* GROUP - A string value indicating the name (or #number) of the group to run httpd as (Default: daemon) |
+* SERVERADMIN - A string value indicating the address where problems with the server should be e-mailed (Default: root@localhost)
+* PORT - An integer value indicating the port where the webserver is listening to (Default: 80)
+
+### Nginx ENV Variables
+
+* NGINX_KEEPALIVE_TIMEOUT - An integer value indicating the number of seconds a keep-alive client connection will stay open on the server side (Default: 60)
+* ERRORLOG - A string value indicating the location of the error log file (Default: '/proc/self/fd/2')
+* LOGLEVEL - A string value controlling the number of messages logged to the error_log (Default: warn)
+* USER - A string value indicating the name (or #number) of the user to run httpd as (Default: nginx)
+* PORT - An integer value indicating the port where the webserver is listening to (Default: 80)
+* WORKER_CONNECTIONS - An integer indicating the maximum number of simultaneous connections that can be opened by a worker process (Default: 1024)
+
+### Modsecurity ENV Variables
+
+* MODSEC_RULE_ENGINE - A string value enabling ModSecurity itself (Default: on) 
+* MODSEC_REQ_BODY_ACCESS - A string value allowing ModSecurity to access request bodies (Default: on)
+* MODSEC_REQ_BODY_LIMIT - An integer value indicating the maximum request body size  accepted for buffering (Default: 13107200)
+* MODSEC_REQ_BODY_NOFILES_LIMIT - An integer indicating the maximum request body size ModSecurity will accept for buffering (Default: 131072)
+* MODSEC_RESP_BODY_ACCESS - A string value allowing ModSecurity to access response bodies (Default: on)
+* MODSEC_RESP_BODY_LIMIT - An integer value indicating the maximum response body size  accepted for buffering (Default: 1048576)
+* MODSEC_PCRE_MATCH_LIMIT - An integer value indicating the limit for the number of internal executions in the PCRE function (Default: 100000)
+* MODSEC_PCRE_MATCH_LIMIT_RECURSION - An integer value indicating the limit for the depth of recursion when calling PCRE function (Default: 100000)
 
 ## Image Variants
 
