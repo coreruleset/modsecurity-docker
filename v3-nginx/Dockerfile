@@ -1,4 +1,4 @@
-FROM nginx:1.17.8 as build
+FROM nginx:1.17.9 as build
 
 LABEL version="3.0.4"
 LABEL maintainer="Chaim Sanders <chaim.sanders@gmail.com>"
@@ -54,7 +54,7 @@ RUN openssl req -x509 -days 365 -new \
       -keyout /usr/share/TLS/server.key \
       -out /usr/share/TLS/server.crt
 
-FROM nginx:1.17.8
+FROM nginx:1.17.9
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
