@@ -76,8 +76,9 @@ ENV ACCESSLOG=/var/log/apache2/access.log \
     PERFLOG='/dev/stdout perflogjson env=write_perflog' \
     PORT=80 \
     PROXY_PRESERVE_HOST=on \
-    PROXY_SSL_CA_CERT_KEY=/usr/local/apache2/conf/server.key \
-    PROXY_SSL_CA_CERT=/usr/local/apache2/conf/server.crt \
+    PROXY_SSL_CERT_KEY=/usr/local/apache2/conf/server.key \
+    PROXY_SSL_CERT=/usr/local/apache2/conf/server.crt \
+    PROXY_SSL_CA_CERT=/etc/ssl/certs/ca-certificates.crt \
     PROXY_SSL_CHECK_PEER_NAME=on \
     PROXY_SSL_VERIFY=none \
     PROXY_SSL=on \
@@ -94,6 +95,7 @@ ENV ACCESSLOG=/var/log/apache2/access.log \
 RUN DEBIAN_FRONTEND=noninteractive \
     apt-get update -qq \
  && apt-get install -qq -y --no-install-recommends --no-install-suggests \
+      ca-certificates \
       libcurl3-gnutls \
       libxml2 \
       libyajl2 \
