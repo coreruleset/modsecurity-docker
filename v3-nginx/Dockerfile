@@ -58,24 +58,42 @@ FROM nginx:1.17.9
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-ARG SETPROXY=False
-ARG SETTLS=False
-ENV SERVERNAME=localhost \
-    PROXYLOCATION=localhost:80 \
-    NGINX_KEEPALIVE_TIMEOUT=60s \
+ENV ACCESSLOG=/var/log/nginx/access.log \
+    BACKEND=http://localhost:80 \
+    BACKEND_WS=ws://localhost:8080 \
+    DNS_SERVER= \
     ERRORLOG=/var/log/nginx/error.log \
     LOGLEVEL=warn \
-    USER=nginx \
-    PORT=80 \
-    WORKER_CONNECTIONS=1024 \
-    MODSEC_RULE_ENGINE=on \
+    METRICSLOG=/dev/null \
+    MODSEC_AUDIT_LOG_FORMAT=JSON \
+    MODSEC_AUDIT_LOG_TYPE=Serial \
+    MODSEC_AUDIT_LOG=/dev/stdout \
+    MODSEC_AUDIT_STORAGE=/var/log/modsecurity/audit/ \
+    MODSEC_DATA_DIR=/tmp/modsecurity/data \
+    MODSEC_DEBUG_LOG=/dev/null \
+    MODSEC_DEBUG_LOGLEVEL=0 \
+    MODSEC_PCRE_MATCH_LIMIT_RECURSION=100000 \
+    MODSEC_PCRE_MATCH_LIMIT=100000 \
     MODSEC_REQ_BODY_ACCESS=on \
     MODSEC_REQ_BODY_LIMIT=13107200 \
     MODSEC_REQ_BODY_NOFILES_LIMIT=131072 \
     MODSEC_RESP_BODY_ACCESS=on \
     MODSEC_RESP_BODY_LIMIT=1048576 \
-    MODSEC_PCRE_MATCH_LIMIT=100000 \
-    MODSEC_PCRE_MATCH_LIMIT_RECURSION=100000
+    MODSEC_RULE_ENGINE=on \
+    MODSEC_TAG=modsecurity \
+    MODSEC_TMP_DIR=/tmp/modsecurity/tmp \
+    MODSEC_UPLOAD_DIR=/tmp/modsecurity/upload \
+    KEEPALIVE_TIMEOUT=60s \
+    PORT=80 \
+    PROXY_SSL_CERT_KEY=/etc/nginx/conf/server.key \
+    PROXY_SSL_CERT=/etc/nginx/conf/server.crt \
+    PROXY_SSL_VERIFY=off \
+    PROXY_SSL=on \
+    PROXY_CONNECT_TIMEOUT=60s \
+    SSL_PORT=443 \
+    USER=nginx \
+    WORKER_CONNECTIONS=1024 \
+    SERVER_NAME=localhost
 
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
@@ -101,9 +119,8 @@ COPY --from=build /usr/local/modsecurity/ /usr/local/modsecurity/
 COPY --from=build /usr/local/lib/ /usr/local/lib/
 COPY --from=build /usr/share/TLS/server.key /etc/nginx/conf/server.key
 COPY --from=build /usr/share/TLS/server.crt /etc/nginx/conf/server.crt
-COPY ./v3-nginx/tls.conf /etc/nginx/conf.d/tls.conf.disabled
 COPY src/etc/modsecurity.d/*.conf /etc/modsecurity.d/
-COPY v3-nginx/conf.d/default.conf /etc/nginx/conf.d/
+COPY v3-nginx/conf.d/*.conf /etc/nginx/conf.d/
 COPY v3-nginx/nginx.conf /etc/nginx/
 COPY v3-nginx/docker-entrypoint.sh /
 
@@ -121,49 +138,6 @@ RUN wget --quiet https://raw.githubusercontent.com/SpiderLabs/ModSecurity/v3/mas
     -o /etc/modsecurity.d/unicode.mapping
 
 ENV LD_LIBRARY_PATH /lib:/usr/lib:/usr/local/lib
-
-RUN if [ "$SETTLS" = "True" ]; then \
-      echo "setting TLS"; \
-      mv /etc/nginx/conf.d/tls.conf.disabled /etc/nginx/conf.d/tls.conf; \
-      sed -i -E "s/server_name .*;/server_name $SERVERNAME;/g" /etc/nginx/conf.d/tls.conf; \
-    fi
-
-RUN if [ "$SETPROXY" = "True" ]; then \
-      echo "setting Proxy"; \
-      sed -i -e "s/location \/ {/resolver 8.8.8.8 valid=5s;\n    set \$upstream \$PROXYLOCATION;\n    location \/ {\n\
-        proxy_set_header Host \$upstream;\n\
-        proxy_set_header X-Forwarded-Proto \$scheme;\n\
-        proxy_pass_header Authorization;\n\
-        proxy_pass http:\/\/\$upstream;\n\
-        proxy_set_header X-Real-IP \$remote_addr;\n\
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;\n\
-        proxy_http_version 1.1;\n\
-        proxy_set_header Connection \"\";\n\
-        proxy_buffering off;\n\
-        client_max_body_size 0;\n\
-        proxy_read_timeout 36000s;\n\
-        proxy_redirect off; \
-      	/g" /etc/nginx/conf.d/default.conf; \
-        if [ "$SETTLS" = "True" ]; then \
-          sed -i -e "s/location \/ {/resolver 8.8.8.8 valid=5s;\n    set \$upstream \$PROXYLOCATION;\n    location \/ {\n\
-            proxy_set_header Host \$upstream;\n\
-            proxy_set_header X-Forwarded-Proto \$scheme;\n\
-            proxy_pass_header Authorization;\n\
-            proxy_pass https:\/\/\$upstream;\n\
-            proxy_set_header X-Real-IP \$remote_addr;\n\
-            proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;\n\
-            proxy_http_version 1.1;\n\
-            proxy_set_header Connection \"\";\n\
-            proxy_buffering off;\n\
-            client_max_body_size 0;\n\
-            proxy_read_timeout 36000s;\n\
-            proxy_redirect off; \
-          	/g" /etc/nginx/conf.d/tls.conf; \
-        fi \
-  fi
-
-EXPOSE 80
-EXPOSE 443
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["nginx", "-g", "daemon off;"]
