@@ -79,7 +79,7 @@ ENV ACCESSLOG=/var/log/apache2/access.log \
     PROXY_SSL_CERT_KEY=/usr/local/apache2/conf/server.key \
     PROXY_SSL_CERT=/usr/local/apache2/conf/server.crt \
     PROXY_SSL_CA_CERT=/etc/ssl/certs/ca-certificates.crt \
-    PROXY_SSL_CHECK_PEER_NAME=on \
+    PROXY_SSL_CHECK_PEER_NAME=off \
     PROXY_SSL_VERIFY=none \
     PROXY_SSL=on \
     PROXY_TIMEOUT=42 \
@@ -117,7 +117,7 @@ COPY v2-apache/conf/extra/*.conf /usr/local/apache2/conf/extra/
 RUN ln -s libfuzzy.so.2.1.0 /usr/local/lib/libfuzzy.so \
  && ln -s libfuzzy.so.2.1.0 /usr/local/lib/libfuzzy.so.2 \
  && ldconfig
-      
+
 RUN sed -i -E 's|(Listen) [0-9]+|\1 ${PORT}|' /usr/local/apache2/conf/httpd.conf \
  && sed -i -E 's|(ServerTokens) Full|\1 Prod|' /usr/local/apache2/conf/extra/httpd-default.conf \
  && sed -i -E 's|#(ServerName) www.example.com:80|\1 ${SERVER_NAME}|' /usr/local/apache2/conf/httpd.conf \

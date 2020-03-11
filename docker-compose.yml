@@ -5,7 +5,7 @@ services:
       context: .
       dockerfile: v2-apache/Dockerfile
     environment:
-      BACKEND: http://backend
+      BACKEND: https://httpbin.org/
       PORT: "8080"
       SSL_PORT: "4443"
     depends_on:
@@ -19,9 +19,10 @@ services:
       context: .
       dockerfile: v3-nginx/Dockerfile
     environment:
-      BACKEND: http://backend
+      BACKEND: https://httpbin.org/
       PORT: "8080"
       SSL_PORT: "4443"
+      DNS_SERVER: "8.8.8.8"
     depends_on:
     - backend
     ports:
