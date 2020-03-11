@@ -57,20 +57,20 @@ This image only contains ModSecurity built from the code provided on the [ModSec
 
 ### TLS/HTTPS
 
-If you want to run your web traffic over TLS you can simply set the SETTLS argument to true when using Docker build. Note: This will use self signed certificates, to use your own certificates (recommended) COPY or mount (-v) your server.crt and server.key into /usr/local/apache2/conf/. Please remember you'll need to forward the HTTPS port
+The TLS is configured by default on port 443. Note: The default configuration uses self signed certificates, to use your own certificates (recommended) COPY or mount (-v) your server.crt and server.key into /usr/local/apache2/conf/. Please remember you'll need to forward the HTTPS port
 
 ```
-$docker build  --build-arg SETTLS=True -t my-modsec .
-$docker run -p 8443:443 my-modsec
+$ docker build -t my-modsec .
+$ docker run -p 8443:443 my-modsec
 ```
 
 ### Proxying
 
-ModSecurity is often used as a reverse proxy. This allows one to use ModSecurity without modifying the webserver hosting the underlying application (and also protect web servers that modsecurity cannot currently embedd into). To set proxying one must set SETPROXY to True and provide the location of the Proxy via the BACKEND environment variable. Note: if you are going to be proxying to a HTTPS site, you'll need to set SETTLS to true also.
+ModSecurity is often used as a reverse proxy. This allows one to use ModSecurity without modifying the webserver hosting the underlying application (and also protect web servers that modsecurity cannot currently embedd into). The proxy is set by default to true and the location is defined by BACKEND environment variable. The SSL is enabled by default.
 
 ```
-$docker build --build-arg SETPROXY=True -t my-modsec .
-$ docker run -p 8080:80 -e BACKEND=http://example.com my-modsec
+$ docker build -t my-modsec . -f
+$ docker run -p 8080:80 -e PROXY_SSL=on -e BACKEND=http://example.com my-modsec
 ```
 
 ### ServerName
@@ -109,6 +109,27 @@ $ docker run -p 8080:80 -e SERVER_NAME=myhost my-modsec
 * TIMEOUT - ApAnache integer value indicating the number of seconds before receiving and sending time out (Default: 60)
 * USER - A string value indicating the name (or #number) of the user to run httpd as (Default: daemon)
 
+### Nginx ENV Variables
+
+* ACCESSLOG - A string value indicating the location of the access log file (Default: '/var/log/nginx/access.log')
+* BACKEND - A string indicating the partial URL for the remote server of the `proxy_pass` directive (Default: http://localhost:80)
+* BACKEND_WS - A string indicating the IP/URL of the WebSocket service (Default: ws://localhost:8080)
+* DNS_SERVER - A string indicating the name servers used to resolve names of upstream servers into addresses. For localhost backend this value should not be defined (Default: not defined)
+* ERRORLOG - A string value indicating the location of the error log file (Default: '/proc/self/fd/2')
+* LOGLEVEL - A string value controlling the number of messages logged to the error_log (Default: warn)
+* METRICSLOG - A string value indicating the location of metrics log file (Default: /dev/null)
+* KEEPALIVE_TIMEOUT - An integer value indicating the number of seconds a keep-alive client connection will stay open on the server side (Default: 60)
+* PORT - An integer value indicating the port where the webserver is listening to (Default: 80)
+* USER - A string value indicating the name (or #number) of the user to run httpd as (Default: nginx)
+* PROXY_SSL_CA_CERT_KEY - A string value indicating the path to the server PEM-encoded private key file (Default: /etc/nginx/conf/server.key)
+* PROXY_SSL_CA_CERT - A string value indicating the path to the server PEM-encoded X.509 certificate data file or token value identifier (Default: /etc/nginx/conf/server.crt)
+* PROXY_SSL_VERIFY_CLIENT - A string value indicating if the client certificates should be verified (Default: on)
+* PROXY_CONNECT_TIMEOUT - An integer value indicating a timeout for establishing a connection with a proxied server (Default: 60)
+* SSL_PORT - An integer value indicating the port where the ssl enabled webserver is listening to (Default: 443)
+* WORKER_CONNECTIONS - An integer indicating the maximum number of simultaneous connections that can be opened by a worker process (Default: 1024)
+* USER - A string value indicating the name (or #number) of the user to run httpd as (Default: nginx)
+* WORKER_CONNECTIONS - An integer indicating the maximum number of simultaneous connections that can be opened by a worker process (Default: 1024)
+
 ### Modsecurity ENV Variables
 
 * MODSEC_AUDIT_LOG - A string indicating the path to the main audit log file or the concurrent logging index file (Default: /dev/stdout)
@@ -125,7 +146,7 @@ $ docker run -p 8080:80 -e SERVER_NAME=myhost my-modsec
 * MODSEC_REQ_BODY_NOFILES_LIMIT - An integer indicating the maximum request body size ModSecurity will accept for buffering (Default: 131072)
 * MODSEC_RESP_BODY_ACCESS - A string value allowing ModSecurity to access response bodies (Default: on)
 * MODSEC_RESP_BODY_LIMIT - An integer value indicating the maximum response body size  accepted for buffering (Default: 1048576)
-* MODSEC_RULE_ENGINE - A string value enabling ModSecurity itself (Default: on) 
+* MODSEC_RULE_ENGINE - A string value enabling ModSecurity itself (Default: on)
 * MODSEC_TAG - A string indicating the default tag action, which will be inherited by the rules in the same configuration context (Default: modsecurity)
 * MODSEC_TMP_DIR - A string indicating the path where temporary files will be created (Default: /tmp/modsecurity/tmp)
 * MODSEC_UPLOAD_DIR - A string indicating the path where intercepted files will be stored (Default: /tmp/modsecurity/upload)

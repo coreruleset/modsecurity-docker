@@ -43,7 +43,7 @@ RUN git clone https://github.com/SpiderLabs/ModSecurity --branch v3.0.4 --depth 
  && ./build.sh \
  && git submodule init \
  && git submodule update \
- && ./configure \
+ && ./configure --with-yajl=/sources/yajl/build/yajl-2.1.0/ \
  && make install
 
 # Generate self-signed certificates (if needed)
@@ -87,8 +87,7 @@ ENV ACCESSLOG=/var/log/nginx/access.log \
     PORT=80 \
     PROXY_SSL_CERT_KEY=/etc/nginx/conf/server.key \
     PROXY_SSL_CERT=/etc/nginx/conf/server.crt \
-    PROXY_SSL_VERIFY=off \
-    PROXY_SSL=on \
+    PROXY_SSL_VERIFY_CLIENT=off \
     PROXY_CONNECT_TIMEOUT=60s \
     SSL_PORT=443 \
     USER=nginx \
