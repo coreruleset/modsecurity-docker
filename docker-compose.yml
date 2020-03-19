@@ -1,11 +1,12 @@
 version: '3'
+
 services:
   apache-waf:
     build:
       context: .
       dockerfile: v2-apache/Dockerfile
     environment:
-      BACKEND: https://httpbin.org/
+      BACKEND: https://httpbin.org
       PORT: "8080"
       SSL_PORT: "4443"
     depends_on:
@@ -14,12 +15,13 @@ services:
     ports:
     - "8080:8080"
     - "4443:4443"
+
   nginx-waf:
     build:
       context: .
       dockerfile: v3-nginx/Dockerfile
     environment:
-      BACKEND: https://httpbin.org/
+      BACKEND: https://httpbin.org
       PORT: "8080"
       SSL_PORT: "4443"
       DNS_SERVER: "8.8.8.8"
@@ -28,7 +30,8 @@ services:
     ports:
     - "8081:8080"
     - "4444:4443"
+
   backend:
     image: docker.io/kennethreitz/httpbin
-    ports: 
+    ports:
     - "80"
