@@ -3,11 +3,11 @@
 # Expects a semver "LABEL version" in a Dockerfile,
 # parses it into <major>.<minor>.<patch>
 #
-TARGET="$1"
+TARGET="${1%%/}"
 TYPE="$2"
 
 [ -z "$TARGET" ] && {
-    echo "Usage: $0 <directory> [-v|-vv|-vvv]"
+    echo "Usage: $0 <directory> [-v|-vv|-vvv|-vvvv]"
     exit 1
 }
 
@@ -16,6 +16,7 @@ major="${version%%.*}"
 patch="${version##*.}"
 nomaj="${version#$major.}"
 minor="${nomaj%.$patch}"
+humanized="${TARGET#*-}"
 
 case "$TYPE" in
     -v)
@@ -24,6 +25,9 @@ case "$TYPE" in
     -vv)
         echo "${major}.${minor}"
         ;;
-    *)
+    -vvv)
         echo "${major}.${minor}.${patch}"
+        ;;
+    *)
+        echo "${humanized}"
 esac

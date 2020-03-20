@@ -20,6 +20,7 @@ jobs:
            --tag owasp/modsecurity:$(./version.sh ${{ matrix.image }} -v)
            --tag owasp/modsecurity:$(./version.sh ${{ matrix.image }} -vv)
            --tag owasp/modsecurity:$(./version.sh ${{ matrix.image }} -vvv)
+           --tag owasp/modsecurity:$(./version.sh ${{ matrix.image }} -vvvv)
 
     - uses: azure/docker-login@v1
       if: github.ref == 'refs/heads/master'
