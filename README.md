@@ -9,10 +9,13 @@
 
 ## Supported tags and respective `Dockerfile` links
 
-* `3`, `3.0`, `3.0.4` ([master/v3-nginx/Dockerfile](https://github.com/CRS-support/modsecurity-docker/blob/master/v3-nginx/Dockerfile)) – *last stable ModSecurity v3 on Nginx 1.17 official base image*
+* `3`, `3.0`, `3.0.4`, `nginx` ([master/v3-nginx/Dockerfile](https://github.com/CRS-support/modsecurity-docker/blob/master/v3-nginx/Dockerfile)) – *last stable ModSecurity v3 on Nginx 1.17 official base image*
+* `2`, `2.9`, `2.9.3`, `apache` ([master/v2-apache/Dockerfile](https://github.com/CRS-support/modsecurity-docker/blob/master/v2-apache/Dockerfile)) – *last stable ModSecurity v2 on Apache 2.4 official base image*
+
+### Older tagging scheme (soon to be deprecated)
+
 * `3.0.3-nginx`,  `3.0-nginx`,`3-nginx`, `latest` ([3.0/nginx/nginx/Dockerfile](https://github.com/CRS-support/modsecurity-docker/blob/v3/nginx-nginx/Dockerfile))
 * `3.0.3-apache`, `3.0-apache`, `3-apache` ([3.0/apache/httpd/Dockerfile](https://github.com/CRS-support/modsecurity-docker/blob/v3/apache-apache/Dockerfile))
-* `2`, `2.9`, `2.9.3` ([master/v2-apache/Dockerfile](https://github.com/CRS-support/modsecurity-docker/blob/master/v2-apache/Dockerfile)) – *last stable ModSecurity v2 on Apache 2.4 official base image*
 * `2.9.3-apache`,`2.9-apache`, `2-apache` ([2.9/apache/httpd/Dockerfile](https://github.com/CRS-support/modsecurity-docker/blob/v2/apache-apache/Dockerfile))
 * `2.9.3-nginx`, `2.9-nginx`, `2-nginx` (2.9/nginx/nginx/Dockerfile)
 * `2.9-apache-ubuntu` ([2.9/apache/ubuntu/Dockerfile](https://github.com/CRS-support/modsecurity-docker/blob/v2/ubuntu-apache/Dockerfile))
@@ -150,32 +153,3 @@ $ docker run -p 8080:80 -e SERVER_NAME=myhost my-modsec
 * MODSEC_TAG - A string indicating the default tag action, which will be inherited by the rules in the same configuration context (Default: modsecurity)
 * MODSEC_TMP_DIR - A string indicating the path where temporary files will be created (Default: /tmp/modsecurity/tmp)
 * MODSEC_UPLOAD_DIR - A string indicating the path where intercepted files will be stored (Default: /tmp/modsecurity/upload)
-
-## Image Variants
-
-**Please pay attention!**
-ModSecurity works across numerous different operating systems and webservers, as a result our images are tagged a bit different than what you might be typically encounter on other DockerHub repos. If the images are built on top of the images provided by the maintainers of the webserver (NGINX, Apache, etc), then they will be notated as simply as <version>-<webserver>. However, in many cases we understand that this is not sufficient for production deploys. As a result we also provide Ubuntu images. these will be in the form <version>-<webserver>-ubuntu.
-
-* owasp/modsecurity:
-
-   This is the defacto image. If you are unsure about what your needs are, you probably want to use this one. It is designed to be used both as a throw away container (mount your rules and webapp then start the container to start your app), as well as the base to build other images off of. These will always be built on top of the images provided by the webserver developers on DockerHub. The owasp/modsecurity:latest will use 3.x which is will use the NGINX provided image (https://hub.docker.com/_/nginx) as a base.
-
-* owasp/modsecurity:-nginx{-<x>}
-
-   This image uses NGINX as its underlying webserver.
-
-* owasp/modsecurity:-apache{-<x>}
-
-   This image uses Apache as its underlying webserver.
-
-* owasp/modsecurity:-<x>-ubuntu
-
-   This image will use an ubuntu image provided by the Ubuntu DockerHub repo as its a base OS (https://hub.docker.com/_/ubuntu).
-
-## License
-
-License: Apache 2.0 license, see [LICENSE](https://github.com/CRS-support/modsecurity-docker/blob/v2/ubuntu-apache/LICENSE).
-
-As with all Docker images, these likely also contain other software which may be under other licenses (such as Bash, etc from the base distribution, along with any direct or indirect dependencies of the primary software being contained).
-
-Author: Chaim Sanders ([@csanders-git](https://github.com/csanders-git)) and contributors
