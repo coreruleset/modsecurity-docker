@@ -44,7 +44,6 @@ ModSecurity is an open source, cross platform Web Application Firewall (WAF) eng
 This image only contains ModSecurity built from the code provided on the [ModSecurity Github Repo](https://github.com/SpiderLabs/ModSecurity). **THE CORE RULE SET IS NOT PROVIDED IN THIS IMAGE**, but it should not be hard to extend. On the other hand, **IF YOU WANT MODSECURITY WITH THE CORE RULE SET please visit the [OWASP Core Rule Set (CRS) DockerHub Repo](https://hub.docker.com/r/owasp/modsecurity-crs/)**.
 
 1. Create a Dockerfile in your project and copy your code into container.
-
    ```
    FROM modsecurity:2-apache
    COPY ./public-html/ .
@@ -60,7 +59,7 @@ This image only contains ModSecurity built from the code provided on the [ModSec
 
 ### TLS/HTTPS
 
-The TLS is configured by default on port 443. Note: The default configuration uses self signed certificates, to use your own certificates (recommended) COPY or mount (-v) your server.crt and server.key into /usr/local/apache2/conf/. Please remember you'll need to forward the HTTPS port
+The TLS is configured by default on port 443. Note: The default configuration uses self signed certificates, to use your own certificates (recommended) COPY or mount (-v) your server.crt and server.key into `/usr/local/apache2/conf/`. Please remember you'll need to forward the HTTPS port.
 
 ```
 $ docker build -t my-modsec .
@@ -78,7 +77,7 @@ $ docker run -p 8080:80 -e PROXY_SSL=on -e BACKEND=http://example.com my-modsec
 
 ### ServerName
 
-It is often convenient to set your servername. to do this simply use the SERVER_NAME environment variable passed to docker run. By default the servername provided is localhost.
+It is often convenient to set your servername. To do this simply use the `SERVER_NAME` environment variable passed to docker run. By default the servername provided is `localhost`.
 ```
 $ docker build -t modsec .
 $ docker run -p 8080:80 -e SERVER_NAME=myhost my-modsec
@@ -86,70 +85,68 @@ $ docker run -p 8080:80 -e SERVER_NAME=myhost my-modsec
 
 ### Apache ENV Variables
 
-* ACCESSLOG - A string value indicating the location of the custom log file (Default: '/var/log/apache2/access.log')
-* BACKEND - A string indicating the partial URL for the remote server of the `ProxyPass` directive (Default: http://localhost:80)
-* BACKEND_WS - A string indicating the IP/URL of the WebSocket service (Default: ws://localhost:8080)
-* ERRORLOG - A string value indicating the location of the error log file (Default: '/var/log/apache2/error.log')
-* GROUP - A string value indicating the name (or #number) of the group to run httpd as (Default: daemon)
-* HTTPD_MAX_REQUEST_WORKERS - AN integer indicating the maximum number of connections that will be processed simultaneously (Default: 250)
-* LOGLEVEL - A string value controlling the number of messages logged to the error_log (Default: warn)
-* METRICS_ALLOW_FROM - A string indicating a range of IP adresses that can access the apache metrics (Default: '127.0.0.0/255.0.0.0 ::1/128')
-* METRICS_DENY_FROM -  A string indicating a range of IP adresses that cannot access the apache metrics (Default: All)
-* METRICSLOG - A string indicating the path of the metrics log (Default: '/dev/null combined')
-* PERFLOG - A string indicating the path of the performance log (Default: '/dev/stdout perflogjson env=write_perflog')
-* PORT - An integer value indicating the port where the webserver is listening to (Default: 80)
-* PROXY_PRESERVE_HOST - A string indicating the use of incoming Host HTTP request header for proxy request (Default: on)
-* PROXY_SSL_CA_CERT_KEY - A string indicating the path to the server PEM-encoded private key file (Default: /usr/local/apache2/conf/server.key)
-* PROXY_SSL_CA_CERT - A string indicating the path to the server PEM-encoded X.509 certificate data file or token identifier (Default: /usr/local/apache2/conf/server.crt)
-* PROXY_SSL_CHECK_PEER_NAME - A string indicating if the host name checking for remote server certificates is to be enabled (Default: on)
-* PROXY_SSL_VERIFY - A string value indicating the type of remote server Certificate verification (Default: none)
-* PROXY_SSL - A string indicating SSL Proxy Engine Operation Switch (Default: off)
-* PROXY_TIMEOUT - An intiger indicating the network timeout for proxied requests (Default: 42)
-* REMOTEIP_INT_PROXY - A string indicating the client intranet IP addresses trusted to present the RemoteIPHeader value (Default: '10.1.0.0/16')
-* SERVER_ADMIN - A string value indicating the address where problems with the server should be e-mailed (Default: root@localhost)
-* REQ_HEADER_FORWARDED_PROTO - A string indicating the transfer protocol of the initial request (Default: 'https')
-* SSL_ENGINE - A string indicating the SSL Engine Operation Switch (Default: off)
-* TIMEOUT - ApAnache integer value indicating the number of seconds before receiving and sending time out (Default: 60)
-* USER - A string value indicating the name (or #number) of the user to run httpd as (Default: daemon)
+* ACCESSLOG - A string value indicating the location of the custom log file (Default: `/var/log/apache2/access.log`)
+* BACKEND - A string indicating the partial URL for the remote server of the `ProxyPass` directive (Default: `http://localhost:80`)
+* BACKEND_WS - A string indicating the IP/URL of the WebSocket service (Default: `ws://localhost:8080`)
+* ERRORLOG - A string value indicating the location of the error log file (Default: `/var/log/apache2/error.log`)
+* GROUP - A string value indicating the name (or #number) of the group to run httpd as (Default: `daemon`)
+* HTTPD_MAX_REQUEST_WORKERS - AN integer indicating the maximum number of connections that will be processed simultaneously (Default: `250`)
+* LOGLEVEL - A string value controlling the number of messages logged to the error_log (Default: `warn`)
+* METRICS_ALLOW_FROM - A string indicating a range of IP adresses that can access the apache metrics (Default: `127.0.0.0/255.0.0.0 ::1/128`)
+* METRICS_DENY_FROM -  A string indicating a range of IP adresses that cannot access the apache metrics (Default: `All`)
+* METRICSLOG - A string indicating the path of the metrics log (Default: `/dev/null combined`)
+* PERFLOG - A string indicating the path of the performance log (Default: `/dev/stdout perflogjson env=write_perflog`)
+* PORT - An integer value indicating the port where the webserver is listening to (Default: `80`)
+* PROXY_PRESERVE_HOST - A string indicating the use of incoming Host HTTP request header for proxy request (Default: `on`)
+* PROXY_SSL_CA_CERT_KEY - A string indicating the path to the server PEM-encoded private key file (Default: `/usr/local/apache2/conf/server.key`)
+* PROXY_SSL_CA_CERT - A string indicating the path to the server PEM-encoded X.509 certificate data file or token identifier (Default: `/usr/local/apache2/conf/server.crt`)
+* PROXY_SSL_CHECK_PEER_NAME - A string indicating if the host name checking for remote server certificates is to be enabled (Default: `on`)
+* PROXY_SSL_VERIFY - A string value indicating the type of remote server Certificate verification (Default: `none`)
+* PROXY_SSL - A string indicating SSL Proxy Engine Operation Switch (Default: `off`)
+* PROXY_TIMEOUT - An intiger indicating the network timeout for proxied requests (Default: `42`)
+* REMOTEIP_INT_PROXY - A string indicating the client intranet IP addresses trusted to present the RemoteIPHeader value (Default: `10.1.0.0/16`)
+* SERVER_ADMIN - A string value indicating the address where problems with the server should be e-mailed (Default: `root@localhost`)
+* REQ_HEADER_FORWARDED_PROTO - A string indicating the transfer protocol of the initial request (Default: `https`)
+* SSL_ENGINE - A string indicating the SSL Engine Operation Switch (Default: `off`)
+* TIMEOUT - ApAnache integer value indicating the number of seconds before receiving and sending time out (Default: `60`)
+* USER - A string value indicating the name (or #number) of the user to run httpd as (Default: `daemon`)
 
 ### Nginx ENV Variables
 
-* ACCESSLOG - A string value indicating the location of the access log file (Default: '/var/log/nginx/access.log')
-* BACKEND - A string indicating the partial URL for the remote server of the `proxy_pass` directive (Default: http://localhost:80)
-* BACKEND_WS - A string indicating the IP/URL of the WebSocket service (Default: ws://localhost:8080)
-* DNS_SERVER - A string indicating the name servers used to resolve names of upstream servers into addresses. For localhost backend this value should not be defined (Default: not defined)
-* ERRORLOG - A string value indicating the location of the error log file (Default: '/proc/self/fd/2')
-* LOGLEVEL - A string value controlling the number of messages logged to the error_log (Default: warn)
-* METRICSLOG - A string value indicating the location of metrics log file (Default: /dev/null)
-* KEEPALIVE_TIMEOUT - An integer value indicating the number of seconds a keep-alive client connection will stay open on the server side (Default: 60)
-* PORT - An integer value indicating the port where the webserver is listening to (Default: 80)
-* USER - A string value indicating the name (or #number) of the user to run httpd as (Default: nginx)
-* PROXY_SSL_CA_CERT_KEY - A string value indicating the path to the server PEM-encoded private key file (Default: /etc/nginx/conf/server.key)
-* PROXY_SSL_CA_CERT - A string value indicating the path to the server PEM-encoded X.509 certificate data file or token value identifier (Default: /etc/nginx/conf/server.crt)
-* PROXY_SSL_VERIFY_CLIENT - A string value indicating if the client certificates should be verified (Default: on)
-* PROXY_CONNECT_TIMEOUT - An integer value indicating a timeout for establishing a connection with a proxied server (Default: 60)
-* SSL_PORT - An integer value indicating the port where the ssl enabled webserver is listening to (Default: 443)
-* WORKER_CONNECTIONS - An integer indicating the maximum number of simultaneous connections that can be opened by a worker process (Default: 1024)
-* USER - A string value indicating the name (or #number) of the user to run httpd as (Default: nginx)
-* WORKER_CONNECTIONS - An integer indicating the maximum number of simultaneous connections that can be opened by a worker process (Default: 1024)
+* ACCESSLOG - A string value indicating the location of the access log file (Default: `/var/log/nginx/access.log`)
+* BACKEND - A string indicating the partial URL for the remote server of the `proxy_pass` directive (Default: `http://localhost:80`)
+* BACKEND_WS - *unused*
+* DNS_SERVER - A string indicating the name servers used to resolve names of upstream servers into addresses. For localhost backend this value should not be defined (Default: *not defined*)
+* ERRORLOG - A string value indicating the location of the error log file (Default: `/proc/self/fd/2`)
+* LOGLEVEL - A string value controlling the number of messages logged to the error_log (Default: `warn`)
+* METRICSLOG - A string value indicating the location of metrics log file (Default: `/dev/null`)
+* KEEPALIVE_TIMEOUT - An integer value indicating the number of seconds a keep-alive client connection will stay open on the server side (Default: `60`)
+* PORT - An integer value indicating the port where the webserver is listening to (Default: `80`)
+* PROXY_SSL_CA_CERT_KEY - A string value indicating the path to the server PEM-encoded private key file (Default: `/etc/nginx/conf/server.key`)
+* PROXY_SSL_CA_CERT - A string value indicating the path to the server PEM-encoded X.509 certificate data file or token value identifier (Default: `/etc/nginx/conf/server.crt`)
+* PROXY_SSL_VERIFY_CLIENT - A string value indicating if the client certificates should be verified (Default: `on`)
+* PROXY_CONNECT_TIMEOUT - An integer value indicating a timeout for establishing a connection with a proxied server (Default: `60`)
+* SSL_PORT - An integer value indicating the port where the ssl enabled webserver is listening to (Default: `443`)
+* USER - A string value indicating the name (or #number) of the user to run httpd as (Default: `nginx`)
+* WORKER_CONNECTIONS - An integer indicating the maximum number of simultaneous connections that can be opened by a worker process (Default: `1024`)
 
-### Modsecurity ENV Variables
+### ModSecurity ENV Variables
 
-* MODSEC_AUDIT_LOG - A string indicating the path to the main audit log file or the concurrent logging index file (Default: /dev/stdout)
-* MODSEC_AUDIT_LOG_FORMAT - A string indicating the output format of the AuditLogs (Default: JSON)
-* MODSEC_AUDIT_LOG_TYPE - A string indicating the type of audit logging mechanism to be used (Default: Serial)
-* MODSEC_AUDIT_STORAGE - A string indicating the directory where concurrent audit log entries are to be stored (Default: /var/log/modsecurity/audit/)
-* MODSEC_DATA_DIR - A string indicating the path where persistent data (e.g., IP address data, session data, and so on) is to be stored (Default: /tmp/modsecurity/data)
-* MODSEC_DEBUG_LOG - A string indicating the path to the ModSecurity debug log file (Default: /dev/null)
-* MODSEC_DEBUG_LOGLEVEL - An integer indicating the verboseness of the debug log data (Default: 0)
-* MODSEC_PCRE_MATCH_LIMIT - An integer value indicating the limit for the number of internal executions in the PCRE function (Default: 100000)
-* MODSEC_PCRE_MATCH_LIMIT_RECURSION - An integer value indicating the limit for the depth of recursion when calling PCRE function (Default: 100000)
-* MODSEC_REQ_BODY_ACCESS - A string value allowing ModSecurity to access request bodies (Default: on)
-* MODSEC_REQ_BODY_LIMIT - An integer value indicating the maximum request body size  accepted for buffering (Default: 13107200)
-* MODSEC_REQ_BODY_NOFILES_LIMIT - An integer indicating the maximum request body size ModSecurity will accept for buffering (Default: 131072)
-* MODSEC_RESP_BODY_ACCESS - A string value allowing ModSecurity to access response bodies (Default: on)
-* MODSEC_RESP_BODY_LIMIT - An integer value indicating the maximum response body size  accepted for buffering (Default: 1048576)
-* MODSEC_RULE_ENGINE - A string value enabling ModSecurity itself (Default: on)
-* MODSEC_TAG - A string indicating the default tag action, which will be inherited by the rules in the same configuration context (Default: modsecurity)
-* MODSEC_TMP_DIR - A string indicating the path where temporary files will be created (Default: /tmp/modsecurity/tmp)
-* MODSEC_UPLOAD_DIR - A string indicating the path where intercepted files will be stored (Default: /tmp/modsecurity/upload)
+* MODSEC_AUDIT_LOG - A string indicating the path to the main audit log file or the concurrent logging index file (Default: `/dev/stdout`)
+* MODSEC_AUDIT_LOG_FORMAT - A string indicating the output format of the AuditLogs (Default: `JSON`)
+* MODSEC_AUDIT_LOG_TYPE - A string indicating the type of audit logging mechanism to be used (Default: `Serial`)
+* MODSEC_AUDIT_STORAGE - A string indicating the directory where concurrent audit log entries are to be stored (Default: `/var/log/modsecurity/audit/`)
+* MODSEC_DATA_DIR - A string indicating the path where persistent data (e.g., IP address data, session data, and so on) is to be stored (Default: `/tmp/modsecurity/data`)
+* MODSEC_DEBUG_LOG - A string indicating the path to the ModSecurity debug log file (Default: `/dev/null`)
+* MODSEC_DEBUG_LOGLEVEL - An integer indicating the verboseness of the debug log data (Default: `0`)
+* MODSEC_PCRE_MATCH_LIMIT - An integer value indicating the limit for the number of internal executions in the PCRE function (Default: `100000`)
+* MODSEC_PCRE_MATCH_LIMIT_RECURSION - An integer value indicating the limit for the depth of recursion when calling PCRE function (Default: `100000`)
+* MODSEC_REQ_BODY_ACCESS - A string value allowing ModSecurity to access request bodies (Default: `on`)
+* MODSEC_REQ_BODY_LIMIT - An integer value indicating the maximum request body size  accepted for buffering (Default: `13107200`)
+* MODSEC_REQ_BODY_NOFILES_LIMIT - An integer indicating the maximum request body size ModSecurity will accept for buffering (Default: `131072`)
+* MODSEC_RESP_BODY_ACCESS - A string value allowing ModSecurity to access response bodies (Default: `on`)
+* MODSEC_RESP_BODY_LIMIT - An integer value indicating the maximum response body size  accepted for buffering (Default: `1048576`)
+* MODSEC_RULE_ENGINE - A string value enabling ModSecurity itself (Default: `on`)
+* MODSEC_TAG - A string indicating the default tag action, which will be inherited by the rules in the same configuration context (Default: `modsecurity`)
+* MODSEC_TMP_DIR - A string indicating the path where temporary files will be created (Default: `/tmp/modsecurity/tmp`)
+* MODSEC_UPLOAD_DIR - A string indicating the path where intercepted files will be stored (Default: `/tmp/modsecurity/upload`)
