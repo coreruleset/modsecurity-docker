@@ -49,8 +49,6 @@ ENV ACCESSLOG=/var/log/apache2/access.log \
     BACKEND=http://localhost:80 \
     BACKEND_WS=ws://localhost:8080 \
     ERRORLOG=/var/log/apache2/error.log \
-    GROUP=daemon \
-    HTTPD_MAX_REQUEST_WORKERS=250 \
     LOGLEVEL=warn \
     METRICS_ALLOW_FROM='127.0.0.0/255.0.0.0 ::1/128' \
     METRICS_DENY_FROM='All' \
@@ -76,13 +74,13 @@ ENV ACCESSLOG=/var/log/apache2/access.log \
     PERFLOG='/dev/stdout perflogjson env=write_perflog' \
     PORT=80 \
     PROXY_PRESERVE_HOST=on \
+    PROXY_SSL_CA_CERT=/etc/ssl/certs/ca-certificates.crt \
     PROXY_SSL_CERT_KEY=/usr/local/apache2/conf/server.key \
     PROXY_SSL_CERT=/usr/local/apache2/conf/server.crt \
-    PROXY_SSL_CA_CERT=/etc/ssl/certs/ca-certificates.crt \
     PROXY_SSL_CHECK_PEER_NAME=off \
     PROXY_SSL_VERIFY=none \
     PROXY_SSL=on \
-    PROXY_TIMEOUT=42 \
+    PROXY_TIMEOUT=60 \
     REMOTEIP_INT_PROXY='10.1.0.0/16' \
     REQ_HEADER_FORWARDED_PROTO='https' \
     SERVER_ADMIN=root@localhost \
@@ -90,7 +88,7 @@ ENV ACCESSLOG=/var/log/apache2/access.log \
     SSL_ENGINE=on \
     SSL_PORT=443 \
     TIMEOUT=60 \
-    USER=daemon
+    WORKER_CONNECTIONS=400
 
 RUN DEBIAN_FRONTEND=noninteractive \
     apt-get update -qq \
@@ -101,7 +99,7 @@ RUN DEBIAN_FRONTEND=noninteractive \
       libyajl2 \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/* \
- && mkdir -p /etc/modsecurity.d \
+ && mkdir -p /etc/modsecurity.d/ \
  && mkdir -p /var/log/apache2/
 
 COPY --from=build /usr/local/apache2/modules/mod_security2.so                  /usr/local/apache2/modules/mod_security2.so
@@ -133,9 +131,10 @@ RUN sed -i -E 's|(Listen) [0-9]+|\1 ${PORT}|' /usr/local/apache2/conf/httpd.conf
  && sed -i -E 's|#(Include conf/extra/httpd-ssl.conf)|\1|' /usr/local/apache2/conf/httpd.conf \
  && sed -i -E 's|#(Include conf/extra/httpd-vhosts.conf)|\1|' /usr/local/apache2/conf/httpd.conf \
  && echo 'Include conf/extra/httpd-locations.conf' >> /usr/local/apache2/conf/httpd.conf \
- && echo 'Include conf/extra/httpd-modsecurity.conf' >> /usr/local/apache2/conf/httpd.conf
+ && echo 'Include conf/extra/httpd-modsecurity.conf' >> /usr/local/apache2/conf/httpd.conf \
+ && sed -i -E 's|(MaxRequestWorkers[ ]*)[0-9]*|\1${WORKER_CONNECTIONS}|' /usr/local/apache2/conf/extra/httpd-mpm.conf
 
-RUN chgrp -R 0 /var/log/ /usr/local/apache2/ && \
-    chmod -R g=u /var/log/ /usr/local/apache2/
+RUN chgrp -R 0 /var/log/ /usr/local/apache2/ \
+ && chmod -R g=u /var/log/ /usr/local/apache2/
 
 CMD ["/usr/local/apache2/bin/apachectl", "-D", "FOREGROUND"]
