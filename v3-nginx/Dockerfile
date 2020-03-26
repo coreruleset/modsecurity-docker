@@ -18,9 +18,9 @@ RUN apt-get update \
       libxml2-dev \
       make \
       ruby \
-      wget && \
-      rm -rf /var/lib/apt/lists/* && \
-      apt-get clean
+      wget \
+ && apt-get clean \
+ && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /sources
 
@@ -60,10 +60,11 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 ENV ACCESSLOG=/var/log/nginx/access.log \
     BACKEND=http://localhost:80 \
-    BACKEND_WS=ws://localhost:8080 \
     DNS_SERVER= \
     ERRORLOG=/var/log/nginx/error.log \
     LOGLEVEL=warn \
+    METRICS_ALLOW_FROM='127.0.0.0/24' \
+    METRICS_DENY_FROM='all' \
     METRICSLOG=/dev/null \
     MODSEC_AUDIT_LOG_FORMAT=JSON \
     MODSEC_AUDIT_LOG_TYPE=Serial \
@@ -83,16 +84,16 @@ ENV ACCESSLOG=/var/log/nginx/access.log \
     MODSEC_TAG=modsecurity \
     MODSEC_TMP_DIR=/tmp/modsecurity/tmp \
     MODSEC_UPLOAD_DIR=/tmp/modsecurity/upload \
-    KEEPALIVE_TIMEOUT=60s \
     PORT=80 \
+    PROXY_TIMEOUT=60s \
     PROXY_SSL_CERT_KEY=/etc/nginx/conf/server.key \
     PROXY_SSL_CERT=/etc/nginx/conf/server.crt \
-    PROXY_SSL_VERIFY_CLIENT=off \
-    PROXY_CONNECT_TIMEOUT=60s \
+    PROXY_SSL_VERIFY=off \
+    SERVER_NAME=localhost \
     SSL_PORT=443 \
-    USER=nginx \
+    TIMEOUT=60s \
     WORKER_CONNECTIONS=1024 \
-    SERVER_NAME=localhost
+    LD_LIBRARY_PATH=/lib:/usr/lib:/usr/local/lib
 
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
@@ -108,11 +109,9 @@ RUN apt-get update \
       moreutils \
       zlib1g-dev && \
       rm -rf /var/lib/apt/lists/* && \
-      apt-get clean
-
-RUN git clone https://github.com/SpiderLabs/ModSecurity-nginx --branch v1.0.1 --depth 1
-
-RUN mkdir /etc/nginx/ssl/
+      apt-get clean \
+ && git clone https://github.com/SpiderLabs/ModSecurity-nginx --branch v1.0.1 --depth 1 \
+ && mkdir /etc/nginx/ssl/
 
 COPY --from=build /usr/local/modsecurity/ /usr/local/modsecurity/
 COPY --from=build /usr/local/lib/ /usr/local/lib/
@@ -123,20 +122,20 @@ COPY v3-nginx/conf.d/*.conf /etc/nginx/conf.d/
 COPY v3-nginx/nginx.conf /etc/nginx/
 COPY v3-nginx/docker-entrypoint.sh /
 
-RUN version="$(/usr/sbin/nginx -v 2>&1 | cut -d '/' -f 2)" && \
-    wget --quiet http://nginx.org/download/nginx-"$version".tar.gz && \
-    tar -xvzf nginx-"$version".tar.gz && \
-    cd /nginx-"$version" && \
-    ./configure --with-compat --add-dynamic-module=../ModSecurity-nginx && \
-    make modules && \
-    cp objs/ngx_http_modsecurity_module.so /etc/nginx/modules
+RUN version="$(/usr/sbin/nginx -v 2>&1 | cut -d '/' -f 2)" \
+ && wget --quiet http://nginx.org/download/nginx-"$version".tar.gz \
+ && tar -xvzf nginx-"$version".tar.gz \
+ && cd /nginx-"$version" \
+ && ./configure --with-compat --add-dynamic-module=../ModSecurity-nginx \
+ && make modules \
+ && cp objs/ngx_http_modsecurity_module.so /etc/nginx/modules/ \
+ && wget --quiet https://raw.githubusercontent.com/SpiderLabs/ModSecurity/v3/master/modsecurity.conf-recommended \
+    -O /etc/modsecurity.d/modsecurity.conf \
+ && wget --quiet https://raw.githubusercontent.com/SpiderLabs/ModSecurity/v3/master/unicode.mapping \
+    -O /etc/modsecurity.d/unicode.mapping
 
-RUN wget --quiet https://raw.githubusercontent.com/SpiderLabs/ModSecurity/v3/master/modsecurity.conf-recommended \
-    -o /etc/modsecurity.d/modsecurity.conf && \
-    wget --quiet https://raw.githubusercontent.com/SpiderLabs/ModSecurity/v3/master/unicode.mapping \
-    -o /etc/modsecurity.d/unicode.mapping
-
-ENV LD_LIBRARY_PATH /lib:/usr/lib:/usr/local/lib
+RUN chgrp -R 0 /var/cache/nginx/ /var/log/ /var/run/ /usr/share/nginx/ /etc/nginx/ /etc/modsecurity.d/ \
+ && chmod -R g=u /var/cache/nginx/ /var/log/ /var/run/ /usr/share/nginx/ /etc/nginx/ /etc/modsecurity.d/
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["nginx", "-g", "daemon off;"]
