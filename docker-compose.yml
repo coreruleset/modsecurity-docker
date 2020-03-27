@@ -9,6 +9,7 @@ services:
       BACKEND: http://backend  # https://httpbin.org
       PORT: "8080"
       SSL_PORT: "4443"
+      METRICS_ALLOW_FROM: All
     ports:
     - "8080:8080"
     - "4443:4443"
@@ -25,6 +26,7 @@ services:
       PORT: "8080"
       SSL_PORT: "4443"
       # DNS_SERVER: "8.8.8.8"
+      METRICS_ALLOW_FROM: all
     ports:
     - "8081:8080"
     - "4444:4443"
