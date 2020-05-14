@@ -89,6 +89,7 @@ $ docker run -p 8080:80 -e SERVER_NAME=myhost my-modsec
 * BACKEND - A string indicating the partial URL for the remote server of the `ProxyPass` directive (Default: `http://localhost:80`)
 * BACKEND_WS - A string indicating the IP/URL of the WebSocket service (Default: `ws://localhost:8080`)
 * ERRORLOG - A string value indicating the location of the error log file (Default: `/var/log/apache2/error.log`)
+* H2_PROTOCOLS - A string value indicating the protocols supported by the HTTP2 module (Default: `h2 http/1.1`)
 * LOGLEVEL - A string value controlling the number of messages logged to the error_log (Default: `warn`)
 * METRICS_ALLOW_FROM - A string indicating a range of IP adresses that can access the metrics (Default: `127.0.0.0/255.0.0.0 ::1/128`)
 * METRICS_DENY_FROM - A string indicating a range of IP adresses that cannot access the metrics (Default: `All`)
