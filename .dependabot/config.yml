@@ -1,0 +1,8 @@
+version: 1
+update_configs:
+  # Keep Dockerfile up to date, batching pull requests weekly
+  - package_manager: "docker"
+    directory: "v2-apache/"
+  # Keep Dockerfile up to date, batching pull requests weekly
+  - package_manager: "docker"
+    directory: "v3-nginx/"
