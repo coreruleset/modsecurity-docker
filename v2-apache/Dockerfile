@@ -17,7 +17,8 @@ RUN apt-get update \
       lua5.2-dev \
       make \
       pkgconf \
-      wget
+      wget \
+      apache2-dev
 
 RUN wget --quiet https://github.com/ssdeep-project/ssdeep/releases/download/release-2.14.1/ssdeep-2.14.1.tar.gz \
  && tar -xvzf ssdeep-2.14.1.tar.gz \
