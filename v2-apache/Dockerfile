@@ -5,6 +5,7 @@ LABEL maintainer="Chaim Sanders <chaim.sanders@gmail.com>"
 
 RUN apt-get update \
  && apt-get install -y --no-install-recommends --no-install-suggests \
+      apache2-dev \
       automake \
       ca-certificates \
       g++ \
