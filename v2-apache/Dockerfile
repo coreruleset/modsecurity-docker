@@ -3,12 +3,15 @@ FROM httpd:2.4 as build
 LABEL version="2.9.3"
 LABEL maintainer="Chaim Sanders <chaim.sanders@gmail.com>"
 
-RUN apt-get update \
- && apt-get install -y --no-install-recommends --no-install-suggests \
+RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections \
+    && apt-get update -qq \
+    && apt-get install -y -qq --no-install-recommends --no-install-suggests \
       automake \
       ca-certificates \
       g++ \
       git \
+      libapr1-dev \
+      libaprutil1-dev \
       libcurl4-gnutls-dev \
       libpcre++-dev \
       libtool \
@@ -91,9 +94,9 @@ ENV ACCESSLOG=/var/log/apache2/access.log \
     TIMEOUT=60 \
     WORKER_CONNECTIONS=400
 
-RUN DEBIAN_FRONTEND=noninteractive \
-    apt-get update -qq \
- && apt-get install -qq -y --no-install-recommends --no-install-suggests \
+RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections \
+   && apt-get update -qq \
+   && apt-get install -qq -y --no-install-recommends --no-install-suggests \
       ca-certificates \
       libcurl3-gnutls \
       libxml2 \
@@ -139,4 +142,4 @@ RUN sed -i -E 's|(Listen) [0-9]+|\1 ${PORT}|' /usr/local/apache2/conf/httpd.conf
 RUN chgrp -R 0 /var/log/ /usr/local/apache2/ \
  && chmod -R g=u /var/log/ /usr/local/apache2/
 
-CMD ["/usr/local/apache2/bin/apachectl", "-D", "FOREGROUND"]
+# Use httpd-foreground from upstream
