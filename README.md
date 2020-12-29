@@ -2,34 +2,34 @@
 
 [![dockeri.co](http://dockeri.co/image/owasp/modsecurity)](https://hub.docker.com/r/owasp/modsecurity/)
 
-[![Build Status](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2FCRS-support%2Fmodsecurity-docker%2Fbadge%3Fref%3Dmaster&style=flat)](https://actions-badge.atrox.dev/CRS-support/modsecurity-docker/goto?ref=master
-) [![GitHub issues](https://img.shields.io/github/issues-raw/CRS-support/modsecurity-docker.svg)](https://github.com/CRS-support/modsecurity-docker/issues
-) [![GitHub PRs](https://img.shields.io/github/issues-pr-raw/CRS-support/modsecurity-docker.svg)](https://github.com/CRS-support/modsecurity-docker/pulls
-) [![License](https://img.shields.io/github/license/CRS-support/modsecurity-docker.svg)](https://github.com/CRS-support/modsecurity-docker/blob/master/LICENSE)
+[![Build Status](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Fcoreruleset%2Fmodsecurity-docker%2Fbadge%3Fref%3Dmaster&style=flat)](https://actions-badge.atrox.dev/coreruleset/modsecurity-docker/goto?ref=master
+) [![GitHub issues](https://img.shields.io/github/issues-raw/coreruleset/modsecurity-docker.svg)](https://github.com/coreruleset/modsecurity-docker/issues
+) [![GitHub PRs](https://img.shields.io/github/issues-pr-raw/coreruleset/modsecurity-docker.svg)](https://github.com/coreruleset/modsecurity-docker/pulls
+) [![License](https://img.shields.io/github/license/coreruleset/modsecurity-docker.svg)](https://github.com/coreruleset/modsecurity-docker/blob/master/LICENSE)
 
 ## Supported tags and respective `Dockerfile` links
 
-* `3`, `3.0`, `3.0.4`, `nginx` ([master/v3-nginx/Dockerfile](https://github.com/CRS-support/modsecurity-docker/blob/master/v3-nginx/Dockerfile)) – *last stable ModSecurity v3 on Nginx 1.17 official base image*
-* `2`, `2.9`, `2.9.3`, `apache` ([master/v2-apache/Dockerfile](https://github.com/CRS-support/modsecurity-docker/blob/master/v2-apache/Dockerfile)) – *last stable ModSecurity v2 on Apache 2.4 official base image*
+* `3`, `3.0`, `3.0.4`, `nginx` ([master/v3-nginx/Dockerfile](https://github.com/coreruleset/modsecurity-docker/blob/master/v3-nginx/Dockerfile)) – *last stable ModSecurity v3 on Nginx 1.17 official base image*
+* `2`, `2.9`, `2.9.3`, `apache` ([master/v2-apache/Dockerfile](https://github.com/coreruleset/modsecurity-docker/blob/master/v2-apache/Dockerfile)) – *last stable ModSecurity v2 on Apache 2.4 official base image*
 
 ### Older tagging scheme (soon to be deprecated)
 
-* `3.0.3-nginx`,  `3.0-nginx`,`3-nginx`, `latest` ([3.0/nginx/nginx/Dockerfile](https://github.com/CRS-support/modsecurity-docker/blob/v3/nginx-nginx/Dockerfile))
-* `3.0.3-apache`, `3.0-apache`, `3-apache` ([3.0/apache/httpd/Dockerfile](https://github.com/CRS-support/modsecurity-docker/blob/v3/apache-apache/Dockerfile))
-* `2.9.3-apache`,`2.9-apache`, `2-apache` ([2.9/apache/httpd/Dockerfile](https://github.com/CRS-support/modsecurity-docker/blob/v2/apache-apache/Dockerfile))
+* `3.0.3-nginx`,  `3.0-nginx`,`3-nginx`, `latest` ([3.0/nginx/nginx/Dockerfile](https://github.com/coreruleset/modsecurity-docker/blob/v3/nginx-nginx/Dockerfile))
+* `3.0.3-apache`, `3.0-apache`, `3-apache` ([3.0/apache/httpd/Dockerfile](https://github.com/coreruleset/modsecurity-docker/blob/v3/apache-apache/Dockerfile))
+* `2.9.3-apache`,`2.9-apache`, `2-apache` ([2.9/apache/httpd/Dockerfile](https://github.com/coreruleset/modsecurity-docker/blob/v2/apache-apache/Dockerfile))
 * `2.9.3-nginx`, `2.9-nginx`, `2-nginx` (2.9/nginx/nginx/Dockerfile)
-* `2.9-apache-ubuntu` ([2.9/apache/ubuntu/Dockerfile](https://github.com/CRS-support/modsecurity-docker/blob/v2/ubuntu-apache/Dockerfile))
-* `2.9-nginx-ubuntu` ([2.9/nginx/ubuntu/Dockerfile](https://github.com/CRS-support/modsecurity-docker/blob/v2/ubuntu-nginx/Dockerfile))
+* `2.9-apache-ubuntu` ([2.9/apache/ubuntu/Dockerfile](https://github.com/coreruleset/modsecurity-docker/blob/v2/ubuntu-apache/Dockerfile))
+* `2.9-nginx-ubuntu` ([2.9/nginx/ubuntu/Dockerfile](https://github.com/coreruleset/modsecurity-docker/blob/v2/ubuntu-nginx/Dockerfile))
 
 ## Quick reference
 
 * **Where to get help**
 
-   [The CRS-Support Docker Repo](https://github.com/CRS-support/modsecurity-docker), [The Core Rule Set Slack Channel](https://join.slack.com/t/owasp/shared_invite/enQtNjExMTc3MTg0MzU4LTViMDg1MmJiMzMwZGUxZjgxZWQ1MTE0NTBlOTBhNjhhZDIzZTZiNmEwOTJlYjdkMzAxMGVhNDkwNDNiNjZiOWQ) (#coreruleset on owasp.slack.com), or [Stack Overflow](https://stackoverflow.com/questions/tagged/mod-security)
+   [The CRS-Support Docker Repo](https://github.com/coreruleset/modsecurity-docker), [The Core Rule Set Slack Channel](https://join.slack.com/t/owasp/shared_invite/enQtNjExMTc3MTg0MzU4LTViMDg1MmJiMzMwZGUxZjgxZWQ1MTE0NTBlOTBhNjhhZDIzZTZiNmEwOTJlYjdkMzAxMGVhNDkwNDNiNjZiOWQ) (#coreruleset on owasp.slack.com), or [Stack Overflow](https://stackoverflow.com/questions/tagged/mod-security)
 
 * **Where to file issues**
 
-    [The CRS-Support Docker Repo](https://github.com/CRS-support/modsecurity-docker)
+    [The Core Rule Set  Docker Repo](https://github.com/coreruleset/modsecurity-docker)
 
 * **Maintained By**
 
