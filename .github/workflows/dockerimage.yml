@@ -1,5 +1,8 @@
 name: Build images for Docker Hub
-on: push
+on: 
+  push:
+  schedule:
+  - cron: '0 12 * * MON'  # Run every Monday
 
 jobs:
   build:
