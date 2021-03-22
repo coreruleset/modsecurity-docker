@@ -33,4 +33,4 @@ jobs:
 
     - name: Push ${{ matrix.image }}
       if: github.ref == 'refs/heads/master'
-      run: docker push owasp/modsecurity
+      run: docker push --all-tags owasp/modsecurity
