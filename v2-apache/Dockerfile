@@ -71,6 +71,7 @@ ENV ACCESSLOG=/var/log/apache2/access.log \
     MODSEC_REQ_BODY_NOFILES_LIMIT=131072 \
     MODSEC_RESP_BODY_ACCESS=on \
     MODSEC_RESP_BODY_LIMIT=1048576 \
+    MODSEC_RESP_BODY_MIMETYPE="text/plain text/html text/xml" \
     MODSEC_RULE_ENGINE=on \
     MODSEC_TAG=modsecurity \
     MODSEC_TMP_DIR=/tmp/modsecurity/tmp \
