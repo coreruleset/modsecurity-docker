@@ -145,6 +145,7 @@ $ docker run -p 8080:80 -e SERVER_NAME=myhost my-modsec
 * MODSEC_REQ_BODY_NOFILES_LIMIT - An integer indicating the maximum request body size ModSecurity will accept for buffering (Default: `131072`)
 * MODSEC_RESP_BODY_ACCESS - A string value allowing ModSecurity to access response bodies (Default: `on`)
 * MODSEC_RESP_BODY_LIMIT - An integer value indicating the maximum response body size  accepted for buffering (Default: `1048576`)
+* MODSEC_RESP_BODY_MIMETYPE - A string with the list of mime types that will be analyzed in the response (Default: `"text/plain text/html text/xml"`). You might consider adding `application/json` documented [here](https://github.com/SpiderLabs/ModSecurity/wiki/Reference-Manual-\(v2.x\)#secresponsebodymimetype).
 * MODSEC_RULE_ENGINE - A string value enabling ModSecurity itself (Default: `on`)
 * MODSEC_TAG - A string indicating the default tag action, which will be inherited by the rules in the same configuration context (Default: `modsecurity`)
 * MODSEC_TMP_DIR - A string indicating the path where temporary files will be created (Default: `/tmp/modsecurity/tmp`)
