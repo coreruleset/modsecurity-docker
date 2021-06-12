@@ -23,7 +23,9 @@ jobs:
       run: docker build . -f ${{ matrix.image }}/Dockerfile${{ matrix.variant }} --tag test
 
     - name: Run ${{ matrix.image }}${{ matrix.variant }}
-      run: docker run -d --name ${{ matrix.image }}${{ matrix.variant }} test
+      run: |
+        docker run -d --name ${{ matrix.image }}${{ matrix.variant }} test
+        docker logs ${{ matrix.image }}${{ matrix.variant }}
 
     - name: Verify ${{ matrix.image }}${{ matrix.variant }}
       run: |
