@@ -1,6 +1,7 @@
 FROM httpd:2.4 as build
 
-LABEL version="2.9.3"
+ARG MODSEC_VERSION="2.9.4"
+
 LABEL maintainer="Chaim Sanders <chaim.sanders@gmail.com>"
 
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections \
@@ -9,7 +10,6 @@ RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selectio
       automake \
       ca-certificates \
       g++ \
-      git \
       libapr1-dev \
       libaprutil1-dev \
       libcurl4-gnutls-dev \
@@ -30,8 +30,9 @@ RUN wget --quiet https://github.com/ssdeep-project/ssdeep/releases/download/rele
  && make install \
  && make clean
 
-RUN git clone https://github.com/SpiderLabs/ModSecurity --branch v2.9.3 --depth 1 \
- && cd ModSecurity \
+RUN wget --quiet https://github.com/SpiderLabs/ModSecurity/archive/refs/tags/v${MODSEC_VERSION}.tar.gz \
+ && tar -zxvf v${MODSEC_VERSION}.tar.gz \
+ && cd ModSecurity-${MODSEC_VERSION} \
  && ./autogen.sh \
  && ./configure \
  && make \
@@ -47,6 +48,8 @@ RUN openssl req -x509 -days 365 -new \
       -out /usr/share/TLS/server.crt
 
 FROM httpd:2.4
+
+ARG MODSEC_VERSION="2.9.4"
 
 ENV ACCESSLOG=/var/log/apache2/access.log \
     BACKEND=http://localhost:80 \
@@ -108,8 +111,8 @@ RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selectio
  && mkdir -p /var/log/apache2/
 
 COPY --from=build /usr/local/apache2/modules/mod_security2.so                  /usr/local/apache2/modules/mod_security2.so
-COPY --from=build /usr/local/apache2/ModSecurity/modsecurity.conf-recommended  /etc/modsecurity.d/modsecurity.conf
-COPY --from=build /usr/local/apache2/ModSecurity/unicode.mapping               /etc/modsecurity.d/unicode.mapping
+COPY --from=build /usr/local/apache2/ModSecurity-${MODSEC_VERSION}/modsecurity.conf-recommended  /etc/modsecurity.d/modsecurity.conf
+COPY --from=build /usr/local/apache2/ModSecurity-${MODSEC_VERSION}/unicode.mapping               /etc/modsecurity.d/unicode.mapping
 COPY --from=build /usr/local/lib/libfuzzy.so.2.1.0                             /usr/local/lib/libfuzzy.so.2.1.0
 COPY --from=build /usr/local/bin/ssdeep                                        /usr/local/bin/ssdeep
 COPY --from=build /usr/share/TLS/server.key                                    /usr/local/apache2/conf/server.key
