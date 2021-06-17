@@ -83,7 +83,6 @@ ENV ACCESSLOG=/var/log/nginx/access.log \
     MODSEC_RESP_BODY_MIMETYPE="text/plain text/html text/xml" \
     MODSEC_RULE_ENGINE=on \
     MODSEC_TAG=modsecurity \
-    MODSEC_TMP_DIR=/tmp/modsecurity/tmp \
     MODSEC_UPLOAD_DIR=/tmp/modsecurity/upload \
     PORT=80 \
     PROXY_TIMEOUT=60s \
