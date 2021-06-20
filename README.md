@@ -9,31 +9,29 @@
 
 ## Supported tags and respective `Dockerfile` links
 
-* `3`, `3.0`, `3.0.4`, `nginx` ([master/v3-nginx/Dockerfile](https://github.com/coreruleset/modsecurity-docker/blob/master/v3-nginx/Dockerfile)) – *last stable ModSecurity v3 on Nginx 1.17 official base image*
-* `2`, `2.9`, `2.9.3`, `apache` ([master/v2-apache/Dockerfile](https://github.com/coreruleset/modsecurity-docker/blob/master/v2-apache/Dockerfile)) – *last stable ModSecurity v2 on Apache 2.4 official base image*
+* `3`, `3.0`, `3.0.4`, `nginx` ([master/v3-nginx/Dockerfile](https://github.com/coreruleset/modsecurity-docker/blob/master/v3-nginx/Dockerfile)) – *last stable ModSecurity v3 on Nginx 1.20 official stable base image*
+* `2`, `2.9`, `2.9.3`, `apache` ([master/v2-apache/Dockerfile](https://github.com/coreruleset/modsecurity-docker/blob/master/v2-apache/Dockerfile)) – *last stable ModSecurity v2 on Apache 2.4 official stable base image*
 
-### Older tagging scheme (soon to be deprecated)
+## Supported variants
 
-* `3.0.3-nginx`,  `3.0-nginx`,`3-nginx`, `latest` ([3.0/nginx/nginx/Dockerfile](https://github.com/coreruleset/modsecurity-docker/blob/v3/nginx-nginx/Dockerfile))
-* `3.0.3-apache`, `3.0-apache`, `3-apache` ([3.0/apache/httpd/Dockerfile](https://github.com/coreruleset/modsecurity-docker/blob/v3/apache-apache/Dockerfile))
-* `2.9.3-apache`,`2.9-apache`, `2-apache` ([2.9/apache/httpd/Dockerfile](https://github.com/coreruleset/modsecurity-docker/blob/v2/apache-apache/Dockerfile))
-* `2.9.3-nginx`, `2.9-nginx`, `2-nginx` (2.9/nginx/nginx/Dockerfile)
-* `2.9-apache-ubuntu` ([2.9/apache/ubuntu/Dockerfile](https://github.com/coreruleset/modsecurity-docker/blob/v2/ubuntu-apache/Dockerfile))
-* `2.9-nginx-ubuntu` ([2.9/nginx/ubuntu/Dockerfile](https://github.com/coreruleset/modsecurity-docker/blob/v2/ubuntu-nginx/Dockerfile))
+We have support for [alpine linux](https://www.alpinelinux.org/) variants of the base images. Just add `-alpine` and you will get it. Examples:
+
+* `3-alpine`, `3.0-alpine`, `3.0.4-alpine`, `nginx-alpine` ([master/v3-nginx/Dockerfile-alpine](https://github.com/coreruleset/modsecurity-docker/blob/master/v3-nginx/Dockerfile-alpine) – *last stable ModSecurity v3 on Nginx 1.20 Alpine official stable base image*
+* `2-alpine`, `2.9-alpine`, `2.9.3-alpine`, `apache-alpine` ([master/v2-apache/Dockerfile-alpine](https://github.com/coreruleset/modsecurity-docker/blob/master/v2-apache/Dockerfile-alpine)) – *last stable ModSecurity v2 on Apache 2.4 Alpine official stable base image*
 
 ## Quick reference
 
 * **Where to get help**
 
-   [The CRS-Support Docker Repo](https://github.com/coreruleset/modsecurity-docker), [The Core Rule Set Slack Channel](https://join.slack.com/t/owasp/shared_invite/enQtNjExMTc3MTg0MzU4LTViMDg1MmJiMzMwZGUxZjgxZWQ1MTE0NTBlOTBhNjhhZDIzZTZiNmEwOTJlYjdkMzAxMGVhNDkwNDNiNjZiOWQ) (#coreruleset on owasp.slack.com), or [Stack Overflow](https://stackoverflow.com/questions/tagged/mod-security)
+[The CRS-Support Docker Repo](https://github.com/coreruleset/modsecurity-docker), [The Core Rule Set Slack Channel](https://join.slack.com/t/owasp/shared_invite/enQtNjExMTc3MTg0MzU4LTViMDg1MmJiMzMwZGUxZjgxZWQ1MTE0NTBlOTBhNjhhZDIzZTZiNmEwOTJlYjdkMzAxMGVhNDkwNDNiNjZiOWQ) (#coreruleset on owasp.slack.com), or [Stack Overflow](https://stackoverflow.com/questions/tagged/mod-security)
 
 * **Where to file issues**
 
-    [The Core Rule Set  Docker Repo](https://github.com/coreruleset/modsecurity-docker)
+[The Core Rule Set  Docker Repo](https://github.com/coreruleset/modsecurity-docker)
 
 * **Maintained By**
 
-   The OWASP Core Rule Set maintainers
+The OWASP Core Rule Set maintainers
 
 ## What is ModSecurity
 
@@ -45,7 +43,7 @@ This image only contains ModSecurity built from the code provided on the [ModSec
 
 1. Create a Dockerfile in your project and copy your code into container.
    ```
-   FROM modsecurity:2-apache
+   FROM owasp/modsecurity:apache
    COPY ./public-html/ .
    ```
 
