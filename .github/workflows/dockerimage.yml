@@ -10,20 +10,23 @@ jobs:
     strategy:
       matrix:
         image:
-        - v2-apache
-        - v3-nginx
+          - v2-apache
+          - v3-nginx
+        variant:
+          - ""
+          - "-alpine"
 
     steps:
     - uses: actions/checkout@v1
       with:
         fetch-depth: 1
 
-    - name: Build ${{ matrix.image }}
-      run: docker build . -f ${{ matrix.image }}/Dockerfile
-           --tag owasp/modsecurity:$(./version.sh ${{ matrix.image }} -v)
-           --tag owasp/modsecurity:$(./version.sh ${{ matrix.image }} -vv)
-           --tag owasp/modsecurity:$(./version.sh ${{ matrix.image }} -vvv)
-           --tag owasp/modsecurity:$(./version.sh ${{ matrix.image }} -vvvv)
+    - name: Build ${{ matrix.image }}${{ matrix.variant }}
+      run: docker build . -f ${{ matrix.image }}/Dockerfile${{ matrix.variant }}
+           --tag owasp/modsecurity:$(./version.sh ${{ matrix.image }} -v ${{ matrix.variant }})
+           --tag owasp/modsecurity:$(./version.sh ${{ matrix.image }} -vv ${{ matrix.variant }})
+           --tag owasp/modsecurity:$(./version.sh ${{ matrix.image }} -vvv ${{ matrix.variant }})
+           --tag owasp/modsecurity:$(./version.sh ${{ matrix.image }} -vvvv ${{ matrix.variant }})
 
     - uses: azure/docker-login@v1
       if: github.ref == 'refs/heads/master'
@@ -31,6 +34,6 @@ jobs:
         username: ${{ secrets.dockerhub_user }}
         password: ${{ secrets.dockerhub_token }}
 
-    - name: Push ${{ matrix.image }}
+    - name: Push ${{ matrix.image }}${{ matrix.variant }}
       if: github.ref == 'refs/heads/master'
       run: docker push --all-tags owasp/modsecurity

@@ -1,39 +1,53 @@
-FROM httpd:2.4 as build
+FROM httpd:2.4-alpine as build
 
 ARG MODSEC_VERSION
 ENV MODSEC_VERSION="${MODSEC_VERSION:-2.9.3}"
 
-RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections \
-    && apt-get update -qq \
-    && apt-get install -y -qq --no-install-recommends --no-install-suggests \
+# see https://httpd.apache.org/docs/2.4/install.html#requirements
+RUN set -eux; \
+    apk add --no-cache --virtual .build-deps \
     automake \
+    autoconf \
+    apr-dev \
+    apr-util-dev \
     ca-certificates \
+    coreutils \
+    curl-dev \
+    dpkg-dev dpkg \
+    geoip-dev \
+    gcc \
     g++ \
-    git \
-    libapr1-dev \
-    libaprutil1-dev \
-    libcurl4-gnutls-dev \
-    libpcre++-dev \
+    gnupg \
+    libc-dev \
+    libmaxminddb-dev \
+    libstdc++ \
+    linux-headers \
     libtool \
+    lmdb-dev \
     libxml2-dev \
-    libyajl-dev \
-    lua5.2-dev \
+    yajl-dev \
+    lua-dev \
     make \
-    pkgconf \
-    wget
+    openssl \
+    openssl-dev \
+    pcre-dev \
+    zlib-dev
 
+
+# This one is in edge still for Alpine, so just compile
 RUN wget --quiet https://github.com/ssdeep-project/ssdeep/releases/download/release-2.14.1/ssdeep-2.14.1.tar.gz \
-    && tar -xzf ssdeep-2.14.1.tar.gz \
+    && tar -xvzf ssdeep-2.14.1.tar.gz \
     && cd ssdeep-2.14.1 \
     && ./configure \
     && make \
     && make install \
     && make clean
 
-RUN git clone https://github.com/SpiderLabs/ModSecurity --branch v${MODSEC_VERSION} --depth 1 \
-    && cd ModSecurity \
+RUN wget --quiet https://github.com/SpiderLabs/ModSecurity/archive/refs/tags/v${MODSEC_VERSION}.tar.gz \
+    && tar -zxvf v${MODSEC_VERSION}.tar.gz \
+    && cd ModSecurity-${MODSEC_VERSION} \
     && ./autogen.sh \
-    && ./configure \
+    && ./configure --with-yajl --with-ssdeep --with-lmdb \
     && make \
     && make install \
     && make clean
@@ -46,7 +60,7 @@ RUN openssl req -x509 -days 365 -new \
     -keyout /usr/share/TLS/server.key \
     -out /usr/share/TLS/server.crt
 
-FROM httpd:2.4
+FROM httpd:2.4-alpine
 
 ARG MODSEC_VERSION
 ENV MODSEC_VERSION="${MODSEC_VERSION:-2.9.3}"
@@ -100,21 +114,17 @@ ENV ACCESSLOG=/var/log/apache2/access.log \
     TIMEOUT=60 \
     WORKER_CONNECTIONS=400
 
-RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections \
-    && apt-get update -qq \
-    && apt-get install -qq -y --no-install-recommends --no-install-suggests \
+RUN set -eux; \
+    apk add --no-cache \
     ca-certificates \
-    libcurl3-gnutls \
     libxml2 \
-    libyajl2 \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* \
-    && mkdir -p /etc/modsecurity.d/ \
-    && mkdir -p /var/log/apache2/
+    moreutils \
+    tzdata \
+    yajl
 
 COPY --from=build /usr/local/apache2/modules/mod_security2.so                  /usr/local/apache2/modules/mod_security2.so
-COPY --from=build /usr/local/apache2/ModSecurity/modsecurity.conf-recommended  /etc/modsecurity.d/modsecurity.conf
-COPY --from=build /usr/local/apache2/ModSecurity/unicode.mapping               /etc/modsecurity.d/unicode.mapping
+COPY --from=build /usr/local/apache2/ModSecurity-${MODSEC_VERSION}/modsecurity.conf-recommended  /etc/modsecurity.d/modsecurity.conf
+COPY --from=build /usr/local/apache2/ModSecurity-${MODSEC_VERSION}/unicode.mapping               /etc/modsecurity.d/unicode.mapping
 COPY --from=build /usr/local/lib/libfuzzy.so.2.1.0                             /usr/local/lib/libfuzzy.so.2.1.0
 COPY --from=build /usr/local/bin/ssdeep                                        /usr/local/bin/ssdeep
 COPY --from=build /usr/share/TLS/server.key                                    /usr/local/apache2/conf/server.key
@@ -122,11 +132,8 @@ COPY --from=build /usr/share/TLS/server.crt                                    /
 COPY src/etc/modsecurity.d/*.conf /etc/modsecurity.d/
 COPY v2-apache/conf/extra/*.conf /usr/local/apache2/conf/extra/
 
-RUN ln -s libfuzzy.so.2.1.0 /usr/local/lib/libfuzzy.so \
-    && ln -s libfuzzy.so.2.1.0 /usr/local/lib/libfuzzy.so.2 \
-    && ldconfig
-
-RUN sed -i -E 's|(Listen) [0-9]+|\1 ${PORT}|' /usr/local/apache2/conf/httpd.conf \
+RUN ln -s /usr/local/lib/libfuzzy.so.2.1.0 /usr/local/lib/libfuzzy.so.2 \
+    && sed -i -E 's|(Listen) [0-9]+|\1 ${PORT}|' /usr/local/apache2/conf/httpd.conf \
     && sed -i -E 's|(ServerTokens) Full|\1 Prod|' /usr/local/apache2/conf/extra/httpd-default.conf \
     && sed -i -E 's|#(ServerName) www.example.com:80|\1 ${SERVER_NAME}|' /usr/local/apache2/conf/httpd.conf \
     && sed -i -E 's|#(LoadModule unique_id_module)|\1|' /usr/local/apache2/conf/httpd.conf \
@@ -145,7 +152,9 @@ RUN sed -i -E 's|(Listen) [0-9]+|\1 ${PORT}|' /usr/local/apache2/conf/httpd.conf
     && echo 'Include conf/extra/httpd-modsecurity.conf' >> /usr/local/apache2/conf/httpd.conf \
     && sed -i -E 's|(MaxRequestWorkers[ ]*)[0-9]*|\1${WORKER_CONNECTIONS}|' /usr/local/apache2/conf/extra/httpd-mpm.conf
 
-RUN chgrp -R 0 /var/log/ /usr/local/apache2/ \
+RUN mkdir -p /var/log/apache2 \
+    && chown www-data /var/log/apache2 \
+    && chgrp -R 0 /var/log/ /usr/local/apache2/ \
     && chmod -R g=u /var/log/ /usr/local/apache2/
 
 # Use httpd-foreground from upstream

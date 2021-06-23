@@ -17,10 +17,43 @@ services:
     depends_on:
     - backend
 
+  apache-waf-alpine:
+    build:
+      context: .
+      dockerfile: v2-apache/Dockerfile-alpine
+    environment:
+      BACKEND: http://backend  # https://httpbin.org
+      PORT: "8080"
+      SSL_PORT: "4443"
+      METRICS_ALLOW_FROM: All
+    ports:
+    - "8080:8080"
+    - "4443:4443"
+    user: "10001"
+    depends_on:
+    - backend
+
   nginx-waf:
     build:
       context: .
       dockerfile: v3-nginx/Dockerfile
+    environment:
+      BACKEND: http://backend  # https://httpbin.org
+      PORT: "8080"
+      SSL_PORT: "4443"
+      # DNS_SERVER: "8.8.8.8"
+      METRICS_ALLOW_FROM: all
+    ports:
+    - "8081:8080"
+    - "4444:4443"
+    user: "10001"
+    depends_on:
+    - backend
+
+  nginx-waf-alpine:
+    build:
+      context: .
+      dockerfile: v3-nginx/Dockerfile-alpine
     environment:
       BACKEND: http://backend  # https://httpbin.org
       PORT: "8080"

@@ -9,19 +9,22 @@ jobs:
     strategy:
       matrix:
         image:
-        - v2-apache
-        - v3-nginx
+          - v2-apache
+          - v3-nginx
+        variant:
+          - ""
+          - "-alpine"
     steps:
     - uses: actions/checkout@v1
       with:
         fetch-depth: 1
 
-    - name: Build ${{ matrix.image }}
-      run: docker build . -f ${{ matrix.image }}/Dockerfile --tag test
+    - name: Build ${{ matrix.image }}${{ matrix.variant }}
+      run: docker build . -f ${{ matrix.image }}/Dockerfile${{ matrix.variant }} --tag test
 
-    - name: Run ${{ matrix.image }}
-      run: docker run -d --name ${{ matrix.image }} test
+    - name: Run ${{ matrix.image }}${{ matrix.variant }}
+      run: docker run -d --name ${{ matrix.image }}${{ matrix.variant }} test
 
-    - name: Verify ${{ matrix.image }}
+    - name: Verify ${{ matrix.image }}${{ matrix.variant }}
       run: |
-        [ $(docker inspect ${{ matrix.image }} --format='{{.State.Running}}') = 'true' ]
+        [ $(docker inspect ${{ matrix.image }}${{ matrix.variant }} --format='{{.State.Running}}') = 'true' ]
