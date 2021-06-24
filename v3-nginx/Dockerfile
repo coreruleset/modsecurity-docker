@@ -2,8 +2,7 @@ ARG NGINX_VERSION="1.20.1"
 
 FROM nginx:${NGINX_VERSION} as build
 
-ARG MODSEC_VERSION
-ENV MODSEC_VERSION="${MODSEC_VERSION:-3.0.4}"
+ARG MODSEC_VERSION=3.0.4
 
 RUN apt-get update \
      && apt-get install -y --no-install-recommends \
@@ -73,8 +72,7 @@ RUN openssl req -x509 -days 365 -new \
 
 FROM nginx:${NGINX_VERSION}
 
-ARG MODSEC_VERSION
-ENV MODSEC_VERSION="${MODSEC_VERSION:-3.0.4}"
+ARG MODSEC_VERSION=3.0.4
 
 LABEL maintainer="Felipe Zipitria <felipe.zipitria@owasp.org>"
 

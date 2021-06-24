@@ -1,7 +1,6 @@
 FROM httpd:2.4 as build
 
-ARG MODSEC_VERSION
-ENV MODSEC_VERSION="${MODSEC_VERSION:-2.9.3}"
+ARG MODSEC_VERSION=2.9.3
 
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections \
     && apt-get update -qq \
@@ -48,8 +47,7 @@ RUN openssl req -x509 -days 365 -new \
 
 FROM httpd:2.4
 
-ARG MODSEC_VERSION
-ENV MODSEC_VERSION="${MODSEC_VERSION:-2.9.3}"
+ARG MODSEC_VERSION=2.9.3
 
 LABEL maintainer="Felipe Zipitria <felipe.zipitria@owasp.org>"
 
