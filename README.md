@@ -129,13 +129,17 @@ $ docker run -p 8080:80 -e SERVER_NAME=myhost my-modsec
 
 ### ModSecurity ENV Variables
 
+* MODSEC_AUDIT_ENGINE - A string used to configure the audit engine, which logs complete transactions (Default: `RelevantOnly`)
 * MODSEC_AUDIT_LOG - A string indicating the path to the main audit log file or the concurrent logging index file (Default: `/dev/stdout`)
 * MODSEC_AUDIT_LOG_FORMAT - A string indicating the output format of the AuditLogs (Default: `JSON`)
 * MODSEC_AUDIT_LOG_TYPE - A string indicating the type of audit logging mechanism to be used (Default: `Serial`)
+* MODSEC_AUDIT_LOG_PARTS - A string that defines which parts of each transaction are going to be recorded in the audit log (Default: `'ABIJDEFHZ'`)
 * MODSEC_AUDIT_STORAGE - A string indicating the directory where concurrent audit log entries are to be stored (Default: `/var/log/modsecurity/audit/`)
 * MODSEC_DATA_DIR - A string indicating the path where persistent data (e.g., IP address data, session data, and so on) is to be stored (Default: `/tmp/modsecurity/data`)
 * MODSEC_DEBUG_LOG - A string indicating the path to the ModSecurity debug log file (Default: `/dev/null`)
 * MODSEC_DEBUG_LOGLEVEL - An integer indicating the verboseness of the debug log data (Default: `0`)
+* MODSEC_DEFAULT_PHASE1_ACTION - A string with the contents for the default action in phase 1 (Default: `'phase:1,pass,log,tag:\'\${MODSEC_TAG}\''`).
+* MODSEC_DEFAULT_PHASE2_ACTION - A string with the contents for the default action in phase 2 (Default: `'phase:2,pass,log,tag:\'\${MODSEC_TAG}\''`).
 * MODSEC_PCRE_MATCH_LIMIT - An integer value indicating the limit for the number of internal executions in the PCRE function (Default: `100000`)
 * MODSEC_PCRE_MATCH_LIMIT_RECURSION - An integer value indicating the limit for the depth of recursion when calling PCRE function (Default: `100000`)
 * MODSEC_REQ_BODY_ACCESS - A string value allowing ModSecurity to access request bodies (Default: `on`)
@@ -143,8 +147,9 @@ $ docker run -p 8080:80 -e SERVER_NAME=myhost my-modsec
 * MODSEC_REQ_BODY_NOFILES_LIMIT - An integer indicating the maximum request body size ModSecurity will accept for buffering (Default: `131072`)
 * MODSEC_RESP_BODY_ACCESS - A string value allowing ModSecurity to access response bodies (Default: `on`)
 * MODSEC_RESP_BODY_LIMIT - An integer value indicating the maximum response body size  accepted for buffering (Default: `1048576`)
-* MODSEC_RESP_BODY_MIMETYPE - A string with the list of mime types that will be analyzed in the response (Default: `"text/plain text/html text/xml"`). You might consider adding `application/json` documented [here](https://github.com/SpiderLabs/ModSecurity/wiki/Reference-Manual-\(v2.x\)#secresponsebodymimetype).
+* MODSEC_RESP_BODY_MIMETYPE - A string with the list of mime types that will be analyzed in the response (Default: `'text/plain text/html text/xml'`). You might consider adding `application/json` documented [here](https://github.com/SpiderLabs/ModSecurity/wiki/Reference-Manual-\(v2.x\)#secresponsebodymimetype).
 * MODSEC_RULE_ENGINE - A string value enabling ModSecurity itself (Default: `on`)
 * MODSEC_TAG - A string indicating the default tag action, which will be inherited by the rules in the same configuration context (Default: `modsecurity`)
 * MODSEC_TMP_DIR - A string indicating the path where temporary files will be created (Default: `/tmp/modsecurity/tmp`)
+* MODSEC_TMP_SAVE_UPLOADED_FILES - A string indicating if temporary uploaded files are saved (Default: `on`)
 * MODSEC_UPLOAD_DIR - A string indicating the path where intercepted files will be stored (Default: `/tmp/modsecurity/upload`)
