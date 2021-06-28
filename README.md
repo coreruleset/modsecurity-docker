@@ -138,8 +138,6 @@ $ docker run -p 8080:80 -e SERVER_NAME=myhost my-modsec
 * MODSEC_DATA_DIR - A string indicating the path where persistent data (e.g., IP address data, session data, and so on) is to be stored (Default: `/tmp/modsecurity/data`)
 * MODSEC_DEBUG_LOG - A string indicating the path to the ModSecurity debug log file (Default: `/dev/null`)
 * MODSEC_DEBUG_LOGLEVEL - An integer indicating the verboseness of the debug log data (Default: `0`)
-* MODSEC_DEFAULT_PHASE1_ACTION - A string with the contents for the default action in phase 1 (Default: `'phase:1,pass,log,tag:\'\${MODSEC_TAG}\''`).
-* MODSEC_DEFAULT_PHASE2_ACTION - A string with the contents for the default action in phase 2 (Default: `'phase:2,pass,log,tag:\'\${MODSEC_TAG}\''`).
 * MODSEC_PCRE_MATCH_LIMIT - An integer value indicating the limit for the number of internal executions in the PCRE function (Default: `100000`)
 * MODSEC_PCRE_MATCH_LIMIT_RECURSION - An integer value indicating the limit for the depth of recursion when calling PCRE function (Default: `100000`)
 * MODSEC_REQ_BODY_ACCESS - A string value allowing ModSecurity to access request bodies (Default: `on`)
