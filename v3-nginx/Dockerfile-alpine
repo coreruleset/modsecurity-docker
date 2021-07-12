@@ -2,7 +2,7 @@ ARG NGINX_VERSION="1.20.1"
 
 FROM nginx:${NGINX_VERSION}-alpine as build
 
-ARG MODSEC_VERSION=3.0.4
+ARG MODSEC_VERSION=3.0.5
 
 RUN set -eux; \
     apk add --no-cache --virtual .build-deps \
@@ -69,7 +69,7 @@ RUN openssl req -x509 -days 365 -new \
 
 FROM nginx:${NGINX_VERSION}-alpine
 
-ARG MODSEC_VERSION=3.0.4
+ARG MODSEC_VERSION=3.0.5
 
 LABEL maintainer="Felipe Zipitria <felipe.zipitria@owasp.org>"
 
