@@ -19,6 +19,23 @@ We have support for [alpine linux](https://www.alpinelinux.org/) variants of the
 * `3-alpine`, `3.0-alpine`, `3.0.5-alpine`, `nginx-alpine` ([master/v3-nginx/Dockerfile-alpine](https://github.com/coreruleset/modsecurity-docker/blob/master/v3-nginx/Dockerfile-alpine) – *last stable ModSecurity v3 on Nginx 1.20 Alpine official stable base image*
 * `2-alpine`, `2.9-alpine`, `2.9.4-alpine`, `apache-alpine` ([master/v2-apache/Dockerfile-alpine](https://github.com/coreruleset/modsecurity-docker/blob/master/v2-apache/Dockerfile-alpine)) – *last stable ModSecurity v2 on Apache 2.4 Alpine official stable base image*
 
+## Supported architectures
+
+We added the [docker buildx](https://github.com/docker/buildx) support to our docker builds so additional architectures are supported now. As we create our containers based on the official apache and nginx ones, we can only support the architectures they support.
+
+There is a new file `docker-bake.hcl` used for this purpose. To build for new platforms, just use this example:
+
+```bash
+$ docker buildx use $(docker buildx create --platform linux/amd64,linux/arm64,linux/arm/v8)
+$ docker buildx bake -f docker-bake.hcl
+```
+
+We are building now for these architectures:
+  - linux/amd64
+  - linux/i386
+  - linux/arm64
+  - linux/arm/v7
+
 ## Quick reference
 
 * **Where to get help**
