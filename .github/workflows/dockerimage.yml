@@ -17,11 +17,6 @@ jobs:
         variant:
           - ""
           - "-alpine"
-        platform:
-          - linux/amd64
-          - linux/i386
-          - linux/arm64
-          - linux/arm/v7
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -44,11 +39,9 @@ jobs:
           username: ${{ secrets.dockerhub_user }}
           password: ${{ secrets.dockerhub_token }}
 
-      - name: Build and push ${{ matrix.image }}${{ matrix.variant }} - ${{ matrix.platform }}
+      - name: Build and push ${{ matrix.image }}${{ matrix.variant }}
         uses: docker/bake-action@v1.5.0
         with:
           targets: ${{ matrix.image }}${{ matrix.variant }}
           files: docker-bake.hcl
-          set: |
-            ${{ matrix.image }}${{ matrix.variant }}.platform=${{ matrix.platform }}
           push: true
