@@ -14,6 +14,10 @@ jobs:
         variant:
           - ""
           - "-alpine"
+        # Verification can only be done using one platform.
+        # This is a limitation on buildx
+        platform:
+          - linux/amd64
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -36,12 +40,22 @@ jobs:
         with:
           images: owasp/modsecurity
 
-      - name: Build ${{ matrix.image }}${{ matrix.variant }}
+      - name: Build ${{ matrix.image }}${{ matrix.variant }} - ${{ matrix.platform }}
         uses: docker/bake-action@v1.5.0
         with:
           files: docker-bake.hcl
           targets: ${{ matrix.image }}${{ matrix.variant }}
           set: |
-            "${{ matrix.image }}${{ matrix.variant }}.tags=${{ matrix.image }}${{ matrix.variant }}/test"
+            "${{ matrix.image }}${{ matrix.variant }}.tags=${{ matrix.image }}${{ matrix.variant }}-test"
+            "${{ matrix.image }}${{ matrix.variant }}.platform=${{ matrix.platform }}"
+          load: true
           push: false
 
+      - name: Run ${{ matrix.image }}${{ matrix.variant }}
+        run: |
+          docker run -d --name ${{ matrix.image }}${{ matrix.variant }}-test ${{ matrix.image }}${{ matrix.variant }}-test
+          docker logs ${{ matrix.image }}${{ matrix.variant }}-test
+
+      - name: Verify ${{ matrix.image }}${{ matrix.variant }}
+        run: |
+          [ $(docker inspect ${{ matrix.image }}${{ matrix.variant }}-test --format='{{.State.Running}}') = 'true' ]
