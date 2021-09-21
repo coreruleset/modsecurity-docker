@@ -40,7 +40,7 @@ target "apache" {
         "owasp/modsecurity:${minor(apache_modsec_version)}",
         "owasp/modsecurity:${patch(apache_modsec_version)}"
     ]
-    platforms = ["linux/amd64", "linux/arm64/v8", "linux/arm/v7"]
+    platforms = ["linux/amd64", "linux/arm64/v8", "linux/arm/v7", "linux/i386"]
     args = {
         MODSEC_VERSION = "${apache_modsec_version}"
     }
@@ -55,7 +55,7 @@ target "apache-alpine" {
         "owasp/modsecurity:${minor(apache_modsec_version)}-alpine",
         "owasp/modsecurity:${patch(apache_modsec_version)}-alpine"
     ]
-    platforms = ["linux/amd64", "linux/arm64/v8", "linux/arm/v7"]
+    platforms = ["linux/amd64", "linux/arm64/v8", "linux/arm/v7", "linux/i386"]
     args = {
         MODSEC_VERSION = "${apache_modsec_version}"
     }
@@ -70,7 +70,7 @@ target "nginx" {
         "owasp/modsecurity:${minor(nginx_modsec_version)}",
         "owasp/modsecurity:${patch(nginx_modsec_version)}"
     ]
-    platforms = ["linux/amd64", "linux/arm64/v8", "linux/arm/v7"]
+    platforms = ["linux/amd64", "linux/arm64/v8", "linux/arm/v7", "linux/i386"]
     args = {
         MODSEC_VERSION = "${nginx_modsec_version}"
     }
@@ -85,7 +85,7 @@ target "nginx-alpine" {
         "owasp/modsecurity:${minor(nginx_modsec_version)}-alpine",
         "owasp/modsecurity:${patch(nginx_modsec_version)}-alpine"
     ]
-    platforms = ["linux/amd64", "linux/arm64/v8", "linux/arm/v7"]
+    platforms = ["linux/amd64", "linux/arm64/v8", "linux/arm/v7", "linux/i386"]
     args = {
         MODSEC_VERSION = "${nginx_modsec_version}"
     }
