@@ -111,6 +111,7 @@ RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selectio
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
     && mkdir -p /etc/modsecurity.d/ \
+    && mkdir -p /tmp/modsecurity/{data,upload,tmp} \
     && mkdir -p /var/log/apache2/
 
 COPY --from=build /usr/local/apache2/modules/mod_security2.so                  /usr/local/apache2/modules/mod_security2.so

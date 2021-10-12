@@ -129,7 +129,9 @@ RUN apt-get update \
      moreutils \
      && rm -rf /var/lib/apt/lists/* \
      && apt-get clean \
-     && mkdir /etc/nginx/ssl
+     && mkdir /etc/nginx/ssl \
+     && mkdir -p /tmp/modsecurity/{data,upload,tmp} \
+     && chown -R www-data /tmp/modsecurity
 
 COPY --from=build /usr/local/modsecurity/ /usr/local/modsecurity/
 COPY --from=build /usr/local/lib/ /usr/local/lib/
