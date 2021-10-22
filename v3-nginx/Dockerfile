@@ -130,7 +130,7 @@ RUN apt-get update \
      && rm -rf /var/lib/apt/lists/* \
      && apt-get clean \
      && mkdir /etc/nginx/ssl \
-     && bash -c 'mkdir -p /tmp/modsecurity/{data,upload,tmp}' \
+     && mkdir -p /tmp/modsecurity/{data,upload,tmp} \
      && chown -R www-data /tmp/modsecurity
 
 COPY --from=build /usr/local/modsecurity/ /usr/local/modsecurity/
