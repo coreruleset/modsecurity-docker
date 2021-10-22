@@ -126,7 +126,7 @@ RUN apk add --no-cache \
     tzdata \
     yajl && \
     mkdir /etc/nginx/ssl/ && \
-    mkdir -p /tmp/modsecurity/{data,upload,tmp} && \
+    bash -c 'mkdir -p /tmp/modsecurity/{data,upload,tmp}' && \
     chown -R nginx:nginx /usr/share/nginx /tmp/modsecurity
 
 COPY --from=build /usr/local/modsecurity/ /usr/local/modsecurity/
