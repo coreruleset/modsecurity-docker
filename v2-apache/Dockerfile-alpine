@@ -156,7 +156,9 @@ RUN ln -s /usr/local/lib/libfuzzy.so.2.1.0 /usr/local/lib/libfuzzy.so.2 \
     && sed -i -E 's|(MaxRequestWorkers[ ]*)[0-9]*|\1${WORKER_CONNECTIONS}|' /usr/local/apache2/conf/extra/httpd-mpm.conf
 
 RUN mkdir -p /var/log/apache2 \
-    && sh -c 'mkdir -p /tmp/modsecurity/{data,upload,tmp}' \
+    && mkdir -p /tmp/modsecurity/data \
+    && mkdir -p /tmp/modsecurity/upload \
+    && mkdir -p /tmp/modsecurity/tmp \
     && chown -R www-data /var/log/apache2 /tmp/modsecurity \
     && chgrp -R 0 /var/log/ /usr/local/apache2/ \
     && chmod -R g=u /var/log/ /usr/local/apache2/
