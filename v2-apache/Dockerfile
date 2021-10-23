@@ -111,7 +111,9 @@ RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selectio
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
     && mkdir -p /etc/modsecurity.d/ \
-    && bash -c 'mkdir -p /tmp/modsecurity/{data,upload,tmp}' \
+    && mkdir -p /tmp/modsecurity/data \
+    && mkdir -p /tmp/modsecurity/upload \
+    && mkdir -p /tmp/modsecurity/tmp \
     && chown -R www-data /tmp/modsecurity \
     && mkdir -p /var/log/apache2/
 
