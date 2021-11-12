@@ -114,7 +114,7 @@ RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selectio
     && mkdir -p /tmp/modsecurity/data \
     && mkdir -p /tmp/modsecurity/upload \
     && mkdir -p /tmp/modsecurity/tmp \
-    && chown -R www-data /tmp/modsecurity \
+    && chown -R $(awk '/^User/ { print $2;}' /usr/local/apache2/conf/httpd.conf) /tmp/modsecurity \
     && mkdir -p /var/log/apache2/
 
 COPY --from=build /usr/local/apache2/modules/mod_security2.so                  /usr/local/apache2/modules/mod_security2.so
