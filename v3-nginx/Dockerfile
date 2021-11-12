@@ -131,7 +131,7 @@ RUN apt-get update \
      && apt-get clean \
      && mkdir /etc/nginx/ssl \
      && mkdir -p /tmp/modsecurity/{data,upload,tmp} \
-     && chown -R www-data /tmp/modsecurity
+     && chown -R nginx:nginx /tmp/modsecurity
 
 COPY --from=build /usr/local/modsecurity/ /usr/local/modsecurity/
 COPY --from=build /usr/local/lib/ /usr/local/lib/
