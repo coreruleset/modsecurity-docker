@@ -159,7 +159,7 @@ RUN mkdir -p /var/log/apache2 \
     && mkdir -p /tmp/modsecurity/data \
     && mkdir -p /tmp/modsecurity/upload \
     && mkdir -p /tmp/modsecurity/tmp \
-    && chown -R www-data /var/log/apache2 /tmp/modsecurity \
+    && chown -R $(awk '/^User/ { print $2;}' /usr/local/apache2/conf/httpd.conf) /tmp/modsecurity /var/log/apache2 \
     && chgrp -R 0 /var/log/ /usr/local/apache2/ \
     && chmod -R g=u /var/log/ /usr/local/apache2/
 
