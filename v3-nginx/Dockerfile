@@ -2,7 +2,10 @@ ARG NGINX_VERSION="1.20.1"
 
 FROM nginx:${NGINX_VERSION} as build
 
-ARG MODSEC_VERSION=3.0.5
+ARG MODSEC_VERSION=3.0.5 \
+    YAJL_VERSION=2.1.0 \
+    FUZZY_VERSION=2.1.0 \
+    SSDEEP_VERSION=2.14.1
 
 RUN apt-get update \
      && apt-get install -y --no-install-recommends \
@@ -27,26 +30,30 @@ RUN apt-get update \
 WORKDIR /sources
 
 RUN git clone https://github.com/LMDB/lmdb --branch LMDB_0.9.23 --depth 1 \
-     && make -C lmdb/libraries/liblmdb install
+     && make -C lmdb/libraries/liblmdb install \
+     && strip /usr/local/lib/liblmdb*.so*
 
-RUN git clone https://github.com/lloyd/yajl --branch 2.1.0 --depth 1 \
+RUN git clone https://github.com/lloyd/yajl --branch ${YAJL_VERSION} --depth 1 \
      && cd yajl \
      && ./configure \
-     && make install
+     && make install \
+     && strip /usr/local/lib/libyajl*.so*
 
-RUN wget --quiet https://github.com/ssdeep-project/ssdeep/releases/download/release-2.14.1/ssdeep-2.14.1.tar.gz \
-     && tar -xvzf ssdeep-2.14.1.tar.gz \
-     && cd ssdeep-2.14.1 \
+RUN wget --quiet https://github.com/ssdeep-project/ssdeep/releases/download/release-${SSDEEP_VERSION}/ssdeep-${SSDEEP_VERSION}.tar.gz \
+     && tar -xvzf ssdeep-${SSDEEP_VERSION}.tar.gz \
+     && cd ssdeep-${SSDEEP_VERSION} \
      && ./configure \
-     && make install
+     && make install \
+     && strip /usr/local/lib/libfuzzy*.so*
 
 RUN git clone https://github.com/SpiderLabs/ModSecurity --branch v${MODSEC_VERSION} --depth 1 \
      && cd ModSecurity \
      && ./build.sh \
      && git submodule init \
      && git submodule update \
-     && ./configure --with-yajl=/sources/yajl/build/yajl-2.1.0/ \
-     && make install
+     && ./configure --with-yajl=/sources/yajl/build/yajl-${YAJL_VERSION}/ \
+     && make install \
+     && strip /usr/local/modsecurity/lib/lib*.so*
 
 # We use master
 RUN git clone -b master --depth 1 https://github.com/SpiderLabs/ModSecurity-nginx.git \
@@ -55,6 +62,7 @@ RUN git clone -b master --depth 1 https://github.com/SpiderLabs/ModSecurity-ngin
      && cd ./nginx-${NGINX_VERSION} \
      && ./configure --with-compat --add-dynamic-module=../ModSecurity-nginx \
      && make modules \
+     && strip objs/ngx_http_modsecurity_module.so \
      && cp objs/ngx_http_modsecurity_module.so /etc/nginx/modules/ \
      && mkdir /etc/modsecurity.d \
      && wget --quiet https://raw.githubusercontent.com/SpiderLabs/ModSecurity/v3/master/modsecurity.conf-recommended \
@@ -72,7 +80,10 @@ RUN openssl req -x509 -days 365 -new \
 
 FROM nginx:${NGINX_VERSION}
 
-ARG MODSEC_VERSION=3.0.5
+ARG MODSEC_VERSION=3.0.5 \
+    YAJL_VERSION=2.1.0 \
+    FUZZY_VERSION=2.1.0 \
+    SSDEEP_VERSION=2.14.1
 
 LABEL maintainer="Felipe Zipitria <felipe.zipitria@owasp.org>"
 
@@ -131,10 +142,13 @@ RUN apt-get update \
      && apt-get clean \
      && mkdir /etc/nginx/ssl \
      && mkdir -p /tmp/modsecurity/{data,upload,tmp} \
+     && mkdir -p /usr/local/modsecurity \
      && chown -R nginx:nginx /tmp/modsecurity
 
-COPY --from=build /usr/local/modsecurity/ /usr/local/modsecurity/
-COPY --from=build /usr/local/lib/ /usr/local/lib/
+COPY --from=build /usr/local/modsecurity/lib/libmodsecurity.so.${MODSEC_VERSION} /usr/local/modsecurity/lib/
+COPY --from=build /usr/local/lib/libfuzzy.so.${FUZZY_VERSION} /usr/local/lib/
+COPY --from=build /usr/local/lib/libyajl.so.${YAJL_VERSION} /usr/local/lib/
+COPY --from=build /usr/local/lib/liblmdb.so /usr/local/lib/
 COPY --from=build /usr/share/TLS/server.key /etc/nginx/conf/server.key
 COPY --from=build /usr/share/TLS/server.crt /etc/nginx/conf/server.crt
 COPY --from=build /etc/nginx/modules/ngx_http_modsecurity_module.so /etc/nginx/modules/ngx_http_modsecurity_module.so
@@ -145,8 +159,16 @@ COPY v3-nginx/conf.d/*.conf /etc/nginx/conf.d/
 COPY v3-nginx/nginx.conf /etc/nginx/
 COPY v3-nginx/docker-entrypoint.sh /
 
-RUN chgrp -R 0 /var/cache/nginx/ /var/log/ /var/run/ /usr/share/nginx/ /etc/nginx/ /etc/modsecurity.d/ \
-     && chmod -R g=u /var/cache/nginx/ /var/log/ /var/run/ /usr/share/nginx/ /etc/nginx/ /etc/modsecurity.d/
+RUN set -eux; \
+    ln -s /usr/local/modsecurity/lib/libmodsecurity.so.${MODSEC_VERSION} /usr/local/modsecurity/lib/libmodsecurity.so.3.0; \
+    ln -s /usr/local/modsecurity/lib/libmodsecurity.so.${MODSEC_VERSION} /usr/local/modsecurity/lib/libmodsecurity.so.3; \
+    ln -s /usr/local/modsecurity/lib/libmodsecurity.so.${MODSEC_VERSION} /usr/local/modsecurity/lib/libmodsecurity.so; \
+    ln -s /usr/local/lib/libfuzzy.so.${FUZZY_VERSION} /usr/local/lib/libfuzzy.so; \
+    ln -s /usr/local/lib/libfuzzy.so.${FUZZY_VERSION} /usr/local/lib/libfuzzy.so.2; \
+    ln -s /usr/local/lib/libyajl.so.${YAJL_VERSION} /usr/local/lib/libyajl.so; \
+    ln -s /usr/local/lib/libyajl.so.${YAJL_VERSION} /usr/local/lib/libyajl.so.2; \
+    chgrp -R 0 /var/cache/nginx/ /var/log/ /var/run/ /usr/share/nginx/ /etc/nginx/ /etc/modsecurity.d/; \
+    chmod -R g=u /var/cache/nginx/ /var/log/ /var/run/ /usr/share/nginx/ /etc/nginx/ /etc/modsecurity.d/
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["nginx", "-g", "daemon off;"]
