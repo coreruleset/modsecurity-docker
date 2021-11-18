@@ -38,17 +38,11 @@ We are building now for these architectures:
 
 ## Quick reference
 
-* **Where to get help**
+* **Where to get help**: the [CRS-Support Docker Repo](https://github.com/coreruleset/modsecurity-docker), the [Core Rule Set Slack Channel](https://join.slack.com/t/owasp/shared_invite/enQtNjExMTc3MTg0MzU4LTViMDg1MmJiMzMwZGUxZjgxZWQ1MTE0NTBlOTBhNjhhZDIzZTZiNmEwOTJlYjdkMzAxMGVhNDkwNDNiNjZiOWQ) (#coreruleset on owasp.slack.com), or [Stack Overflow](https://stackoverflow.com/questions/tagged/mod-security)
 
-[The CRS-Support Docker Repo](https://github.com/coreruleset/modsecurity-docker), [The Core Rule Set Slack Channel](https://join.slack.com/t/owasp/shared_invite/enQtNjExMTc3MTg0MzU4LTViMDg1MmJiMzMwZGUxZjgxZWQ1MTE0NTBlOTBhNjhhZDIzZTZiNmEwOTJlYjdkMzAxMGVhNDkwNDNiNjZiOWQ) (#coreruleset on owasp.slack.com), or [Stack Overflow](https://stackoverflow.com/questions/tagged/mod-security)
+* **Where to file issues**: the [Core Rule Set Docker Repo](https://github.com/coreruleset/modsecurity-docker)
 
-* **Where to file issues**
-
-[The Core Rule Set  Docker Repo](https://github.com/coreruleset/modsecurity-docker)
-
-* **Maintained By**
-
-The OWASP Core Rule Set maintainers
+* **Maintained By**: The Core Rule Set Project maintainers
 
 ## What is ModSecurity
 
@@ -100,71 +94,79 @@ $ docker run -p 8080:80 -e SERVER_NAME=myhost my-modsec
 
 ### Apache ENV Variables
 
-* ACCESSLOG - A string value indicating the location of the custom log file (Default: `/var/log/apache2/access.log`)
-* BACKEND - A string indicating the partial URL for the remote server of the `ProxyPass` directive (Default: `http://localhost:80`)
-* BACKEND_WS - A string indicating the IP/URL of the WebSocket service (Default: `ws://localhost:8080`)
-* ERRORLOG - A string value indicating the location of the error log file (Default: `/var/log/apache2/error.log`)
-* H2_PROTOCOLS - A string value indicating the protocols supported by the HTTP2 module (Default: `h2 http/1.1`)
-* LOGLEVEL - A string value controlling the number of messages logged to the error_log (Default: `warn`)
-* METRICS_ALLOW_FROM - A string indicating a range of IP adresses that can access the metrics (Default: `127.0.0.0/255.0.0.0 ::1/128`)
-* METRICS_DENY_FROM - A string indicating a range of IP adresses that cannot access the metrics (Default: `All`)
-* METRICSLOG - A string indicating the path of the metrics log (Default: `/dev/null combined`)
-* PERFLOG - A string indicating the path of the performance log (Default: `/dev/stdout perflogjson env=write_perflog`)
-* PORT - An integer value indicating the port where the webserver is listening to (Default: `80`)
-* PROXY_PRESERVE_HOST - A string indicating the use of incoming Host HTTP request header for proxy request (Default: `on`)
-* PROXY_SSL_CERT_KEY - A string indicating the path to the server PEM-encoded private key file (Default: `/usr/local/apache2/conf/server.key`)
-* PROXY_SSL_CERT - A string indicating the path to the server PEM-encoded X.509 certificate data file or token identifier (Default: `/usr/local/apache2/conf/server.crt`)
-* PROXY_SSL_CHECK_PEER_NAME - A string indicating if the host name checking for remote server certificates is to be enabled (Default: `on`)
-* PROXY_SSL_VERIFY - A string value indicating the type of remote server Certificate verification (Default: `none`)
-* PROXY_SSL - A string indicating SSL Proxy Engine Operation Switch (Default: `off`)
-* PROXY_TIMEOUT - Number of seconds for proxied requests to time out (Default: `60`)
-* REMOTEIP_INT_PROXY - A string indicating the client intranet IP addresses trusted to present the RemoteIPHeader value (Default: `10.1.0.0/16`)
-* SERVER_ADMIN - A string value indicating the address where problems with the server should be e-mailed (Default: `root@localhost`)
-* REQ_HEADER_FORWARDED_PROTO - A string indicating the transfer protocol of the initial request (Default: `https`)
-* SSL_ENGINE - A string indicating the SSL Engine Operation Switch (Default: `off`)
-* TIMEOUT - Number of seconds before receiving and sending timeout (Default: `60`)
-* WORKER_CONNECTIONS - Maximum number of MPM request worker processes (Default: `400`)
+| Name     | Description|
+| -------- | ------------------------------------------------------------------- |
+| ACCESSLOG | A string value indicating the location of the custom log file (Default: `/var/ log/apache2/access.log`) |
+| BACKEND | A string indicating the partial URL for the remote server of the `ProxyPass` directive (Default: `http://localhost:80`) |
+| BACKEND_WS | A string indicating the IP/URL of the WebSocket service (Default: `ws://localhost:8080`) |
+| ERRORLOG  | A string value indicating the location of the error log file (Default: `/var/log/apache2/error.log`) | 
+| H2_PROTOCOLS  | A string value indicating the protocols supported by the HTTP2 module (Default: `h2 http/1.1`) | 
+| LOGLEVEL  | A string value controlling the number of messages logged to the error_log (Default: `warn`) | 
+| METRICS_ALLOW_FROM  | A string indicating a range of IP adresses that can access the metrics (Default: `127.0.0.0/255.0.0.0 ::1/128`) | 
+| METRICS_DENY_FROM  | A string indicating a range of IP adresses that cannot access the metrics (Default: `All`) | 
+| METRICSLOG  | A string indicating the path of the metrics log (Default: `/dev/null combined`) | 
+| PERFLOG  | A string indicating the path of the performance log (Default: `/dev/stdout  perflogjson env=write_perflog`) |
+| PORT  | An integer value indicating the port where the webserver is listening to (Default: `80`) | 
+| PROXY_PRESERVE_HOST  | A string indicating the use of incoming Host HTTP request header for proxy request (Default: `on`) | 
+| PROXY_SSL_CERT_KEY  | A string indicating the path to the server PEM-encoded private key file (Default: `/usr/local/apache2/conf/server.key`) | 
+| PROXY_SSL_CERT  | A string indicating the path to the server PEM-encoded X.509 certificate data file or token identifier (Default: `/usr/local/apache2/conf/server.crt`) | 
+| PROXY_SSL_CHECK_PEER_NAME  | A string indicating if the host name checking for remote server certificates is to be enabled (Default: `on`) | 
+| PROXY_SSL_VERIFY  | A string value indicating the type of remote server Certificate verification (Default: `none`) | 
+| PROXY_SSL  | A string indicating SSL Proxy Engine Operation Switch (Default: `off`) | 
+| PROXY_TIMEOUT  | Number of seconds for proxied requests to time out (Default: `60`) | 
+| REMOTEIP_INT_PROXY  | A string indicating the client intranet IP addresses trusted to present the RemoteIPHeader value (Default: `10.1.0.0/16`) | 
+| SERVER_ADMIN  | A string value indicating the address where problems with the server should be e-mailed (Default: `root@localhost`) | 
+| REQ_HEADER_FORWARDED_PROTO  | A string indicating the transfer protocol of the initial request (Default: `https`) | 
+| SSL_ENGINE  | A string indicating the SSL Engine Operation Switch (Default: `off`) | 
+| TIMEOUT  | Number of seconds before receiving and sending timeout (Default: `60`) | 
+| WORKER_CONNECTIONS  | Maximum number of MPM request worker processes (Default: `400`) | 
 
 ### Nginx ENV Variables
 
-* ACCESSLOG - A string value indicating the location of the access log file (Default: `/var/log/nginx/access.log`)
-* BACKEND - A string indicating the partial URL for the remote server of the `proxy_pass` directive (Default: `http://localhost:80`)
-* DNS_SERVER - A string indicating the name servers used to resolve names of upstream servers into addresses. For localhost backend this value should not be defined (Default: *not defined*)
-* ERRORLOG - A string value indicating the location of the error log file (Default: `/proc/self/fd/2`)
-* LOGLEVEL - A string value controlling the number of messages logged to the error_log (Default: `warn`)
-* METRICS_ALLOW_FROM - A string indicating a single range of IP adresses that can access the metrics (Default: `127.0.0.0/24`)
-* METRICS_DENY_FROM - A string indicating a range of IP adresses that cannot access the metrics (Default: `all`)
-* METRICSLOG - A string value indicating the location of metrics log file (Default: `/dev/null`)
-* PORT - An integer value indicating the port where the webserver is listening to (Default: `80`)
-* PROXY_SSL_CERT_KEY - A string value indicating the path to the server PEM-encoded private key file (Default: `/etc/nginx/conf/server.key`)
-* PROXY_SSL_CERT - A string value indicating the path to the server PEM-encoded X.509 certificate data file or token value identifier (Default: `/etc/nginx/conf/server.crt`)
-* PROXY_SSL_VERIFY - A string value indicating if the client certificates should be verified (Default: `on`)
-* PROXY_TIMEOUT - Number of seconds for proxied requests to time out connections (Default: `60s`)
-* SSL_PORT - Port number where the SSL enabled webserver is listening (Default: `443`)
-* TIMEOUT - Number of seconds for a keep-alive client connection to stay open on the server side (Default: `60s`)
-* WORKER_CONNECTIONS - Maximum number of simultaneous connections that can be opened by a worker process (Default: `1024`)
+| Name     | Description|
+| -------- | ------------------------------------------------------------------- |
+| ACCESSLOG  | A string value indicating the location of the access log file (Default: `/var/log/nginx/access.log`) | 
+| BACKEND  | A string indicating the partial URL for the remote server of the `proxy_pass` directive (Default: `http://localhost:80`) | 
+| DNS_SERVER  | A string indicating the name servers used to resolve names of upstream servers into addresses. For localhost backend this value should not be defined (Default: *not defined*) | 
+| ERRORLOG  | A string value indicating the location of the error log file (Default: `/proc/self/fd/2`) | 
+| LOGLEVEL  | A string value controlling the number of messages logged to the error_log (Default: `warn`) | 
+| METRICS_ALLOW_FROM  | A string indicating a single range of IP adresses that can access the metrics (Default: `127.0.0.0/24`) | 
+| METRICS_DENY_FROM  | A string indicating a range of IP adresses that cannot access the metrics (Default: `all`) | 
+| METRICSLOG  | A string value indicating the location of metrics log file (Default: `/dev/null`) | 
+| PORT  | An integer value indicating the port where the webserver is listening to (Default: `80`) | 
+| PROXY_SSL_CERT_KEY  | A string value indicating the path to the server PEM-encoded private key file (Default: `/etc/nginx/conf/server.key`) | 
+| PROXY_SSL_CERT  | A string value indicating the path to the server PEM-encoded X.509 certificate data file or token value identifier (Default: `/etc/nginx/conf/server.crt`) | 
+| PROXY_SSL_VERIFY  | A string value indicating if the client certificates should be verified (Default: `on`) | 
+| PROXY_TIMEOUT  | Number of seconds for proxied requests to time out connections (Default: `60s`) | 
+| SSL_PORT  | Port number where the SSL enabled webserver is listening (Default: `443`) | 
+| TIMEOUT  | Number of seconds for a keep-alive client connection to stay open on the server side (Default: `60s`) | 
+| WORKER_CONNECTIONS  | Maximum number of simultaneous connections that can be opened by a worker process (Default: `1024`) | 
 
 ### ModSecurity ENV Variables
 
-* MODSEC_AUDIT_ENGINE - A string used to configure the audit engine, which logs complete transactions (Default: `RelevantOnly`)
-* MODSEC_AUDIT_LOG - A string indicating the path to the main audit log file or the concurrent logging index file (Default: `/dev/stdout`)
-* MODSEC_AUDIT_LOG_FORMAT - A string indicating the output format of the AuditLogs (Default: `JSON`)
-* MODSEC_AUDIT_LOG_TYPE - A string indicating the type of audit logging mechanism to be used (Default: `Serial`)
-* MODSEC_AUDIT_LOG_PARTS - A string that defines which parts of each transaction are going to be recorded in the audit log (Default: `'ABIJDEFHZ'`)
-* MODSEC_AUDIT_STORAGE - A string indicating the directory where concurrent audit log entries are to be stored (Default: `/var/log/modsecurity/audit/`)
-* MODSEC_DATA_DIR - A string indicating the path where persistent data (e.g., IP address data, session data, and so on) is to be stored (Default: `/tmp/modsecurity/data`)
-* MODSEC_DEBUG_LOG - A string indicating the path to the ModSecurity debug log file (Default: `/dev/null`)
-* MODSEC_DEBUG_LOGLEVEL - An integer indicating the verboseness of the debug log data (Default: `0`)
-* MODSEC_PCRE_MATCH_LIMIT - An integer value indicating the limit for the number of internal executions in the PCRE function (Default: `100000`)
-* MODSEC_PCRE_MATCH_LIMIT_RECURSION - An integer value indicating the limit for the depth of recursion when calling PCRE function (Default: `100000`)
-* MODSEC_REQ_BODY_ACCESS - A string value allowing ModSecurity to access request bodies (Default: `on`)
-* MODSEC_REQ_BODY_LIMIT - An integer value indicating the maximum request body size  accepted for buffering (Default: `13107200`)
-* MODSEC_REQ_BODY_NOFILES_LIMIT - An integer indicating the maximum request body size ModSecurity will accept for buffering (Default: `131072`)
-* MODSEC_RESP_BODY_ACCESS - A string value allowing ModSecurity to access response bodies (Default: `on`)
-* MODSEC_RESP_BODY_LIMIT - An integer value indicating the maximum response body size  accepted for buffering (Default: `1048576`)
-* MODSEC_RESP_BODY_MIMETYPE - A string with the list of mime types that will be analyzed in the response (Default: `'text/plain text/html text/xml'`). You might consider adding `application/json` documented [here](https://github.com/SpiderLabs/ModSecurity/wiki/Reference-Manual-\(v2.x\)#secresponsebodymimetype).
-* MODSEC_RULE_ENGINE - A string value enabling ModSecurity itself (Default: `on`)
-* MODSEC_TAG - A string indicating the default tag action, which will be inherited by the rules in the same configuration context (Default: `modsecurity`)
-* MODSEC_TMP_DIR - A string indicating the path where temporary files will be created (Default: `/tmp/modsecurity/tmp`)
-* MODSEC_TMP_SAVE_UPLOADED_FILES - A string indicating if temporary uploaded files are saved (Default: `on`)
-* MODSEC_UPLOAD_DIR - A string indicating the path where intercepted files will be stored (Default: `/tmp/modsecurity/upload`)
+All these variables impact in configuration directives in the modsecurity engine running inside the container. The [reference manual](https://github.com/SpiderLabs/ModSecurity/wiki/Reference-Manual-(v2.x)) has the extended documentation, and for your reference we list the specific directive we change when you modify the ENV variables for the container.
+
+| Name     | Description|
+| -------- | ------------------------------------------------------------------- |
+| MODSEC_AUDIT_ENGINE  | A string used to configure the audit engine, which logs complete transactions (Default: `RelevantOnly`). Accepted values: `On`, `Off`, `RelevantOnly`. See [SecAuditEngine](https://github.com/SpiderLabs/ModSecurity/wiki/Reference-Manual-%28v2.x%29#SecAuditEngine) for additional information. | 
+| MODSEC_AUDIT_LOG  | A string indicating the path to the main audit log file or the concurrent logging index file (Default: `/dev/stdout`) | 
+| MODSEC_AUDIT_LOG_FORMAT  | A string indicating the output format of the AuditLogs (Default: `JSON`). Accepted values: `JSON`, `Native`. See [SecAuditLogFormat](https://github.com/SpiderLabs/ModSecurity/wiki/Reference-Manual-%28v2.x%29#SecAuditLogFormat) for additional information. | 
+| MODSEC_AUDIT_LOG_TYPE  | A string indicating the type of audit logging mechanism to be used (Default: `Serial`). Accepted values: `Serial`, `Concurrent` (`HTTPS` works only on Nginx - v3). See [SecAuditLogType](https://github.com/SpiderLabs/ModSecurity/wiki/Reference-Manual-%28v2.x%29#secauditlogtype) for additional information. | 
+| MODSEC_AUDIT_LOG_PARTS  | A string that defines which parts of each transaction are going to be recorded in the audit log (Default: `'ABIJDEFHZ'`). See [SecAuditLogParts](https://github.com/SpiderLabs/ModSecurity/wiki/Reference-Manual-(v2.x)#secauditlogparts) for the accepted values. | 
+| MODSEC_AUDIT_STORAGE  | A string indicating the directory where concurrent audit log entries are to be stored (Default: `/var/log/modsecurity/audit/`) | 
+| MODSEC_DATA_DIR  | A string indicating the path where persistent data (e.g., IP address data, session data, and so on) is to be stored (Default: `/tmp/modsecurity/data`) | 
+| MODSEC_DEBUG_LOG  | A string indicating the path to the ModSecurity debug log file (Default: `/dev/null`) | 
+| MODSEC_DEBUG_LOGLEVEL  | An integer indicating the verboseness of the debug log data (Default: `0`). Accepted values: `0` - `9`. See [SecDebugLogLevel](https://github.com/SpiderLabs/ModSecurity/wiki/Reference-Manual-(v2.x)#secdebugloglevel). | 
+| MODSEC_PCRE_MATCH_LIMIT  | An integer value indicating the limit for the number of internal executions in the PCRE function (Default: `100000`) (Only valid for Apache - v2). See [SecPcreMatchLimit](https://github.com/SpiderLabs/ModSecurity/wiki/Reference-Manual-(v2.x)#SecPcreMatchLimit) | 
+| MODSEC_PCRE_MATCH_LIMIT_RECURSION  | An integer value indicating the limit for the depth of recursion when calling PCRE function (Default: `100000`) | 
+| MODSEC_REQ_BODY_ACCESS  | A string value allowing ModSecurity to access request bodies (Default: `On`). Allowed values: `On`, `Off`. See [SecRequestBodyAccess](https://github.com/SpiderLabs/ModSecurity/wiki/Reference-Manual-(v2.x)#secrequestbodyaccess) for more information. | 
+| MODSEC_REQ_BODY_LIMIT  | An integer value indicating the maximum request body size  accepted for buffering (Default: `13107200`). See [SecRequestBodyLimit](https://github.com/SpiderLabs/ModSecurity/wiki/Reference-Manual-(v2.x)#secrequestbodylimit) for additional information. | 
+| MODSEC_REQ_BODY_NOFILES_LIMIT  | An integer indicating the maximum request body size ModSecurity will accept for buffering (Default: `131072`). See [SecRequestBodyNoFilesLimit](https://github.com/SpiderLabs/ModSecurity/wiki/Reference-Manual-(v2.x)#secrequestbodynofileslimit) for more information. | 
+| MODSEC_RESP_BODY_ACCESS  | A string value allowing ModSecurity to access response bodies (Default: `On`). Allowed values: `On`, `Off`. See [SecResponseBodyAccess](https://github.com/SpiderLabs/ModSecurity/wiki/Reference-Manual-%28v2.x%29#secresponsebodyaccess) for more information. | 
+| MODSEC_RESP_BODY_LIMIT  | An integer value indicating the maximum response body size accepted for buffering (Default: `1048576`) | 
+| MODSEC_RESP_BODY_MIMETYPE  | A string with the list of mime types that will be analyzed in the response (Default: `'text/plain text/html text/xml'`). You might consider adding `application/json` documented [here](https://github.com/SpiderLabs/ModSecurity/wiki/Reference-Manual-\(v2.x\)#secresponsebodymimetype). | 
+| MODSEC_RULE_ENGINE  | A string value enabling ModSecurity itself (Default: `On`). Accepted values: `On`, `Off`, `DetectionOnly`. See [SecRuleEngine](https://github.com/SpiderLabs/ModSecurity/wiki/Reference-Manual-%28v2.x%29#secruleengine) for additional information. | 
+| MODSEC_TAG  | A string indicating the default tag action, which will be inherited by the rules in the same configuration context (Default: `modsecurity`) | 
+| MODSEC_TMP_DIR  | A string indicating the path where temporary files will be created (Default: `/tmp/modsecurity/tmp`) | 
+| MODSEC_TMP_SAVE_UPLOADED_FILES  | A string indicating if temporary uploaded files are saved (Default: `On`) (only relevant in Apache - ModSecurity v2) | 
+| MODSEC_UPLOAD_DIR  | A string indicating the path where intercepted files will be stored (Default: `/tmp/modsecurity/upload`) | 
