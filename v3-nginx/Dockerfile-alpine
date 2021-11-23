@@ -1,4 +1,4 @@
-ARG NGINX_VERSION="1.20.1"
+ARG NGINX_VERSION="1.20.2"
 
 FROM nginx:${NGINX_VERSION}-alpine as build
 
@@ -8,58 +8,61 @@ ARG MODSEC_VERSION=3.0.5 \
 
 RUN set -eux; \
     apk add --no-cache --virtual .build-deps \
-    autoconf \
-    automake \
-    ca-certificates \
-    coreutils \        
-    curl-dev \
-    g++ \
-    gcc \
-    geoip-dev \
-    git \
-    libc-dev \
-    libmaxminddb-dev \
-    libstdc++ \
-    libtool \
-    libxml2-dev \
-    linux-headers \
-    lmdb-dev \
-    make \
-    openssl \
-    openssl-dev \
-    pcre-dev \
-    yajl-dev \
-    zlib-dev
+        autoconf \
+        automake \
+        ca-certificates \
+        coreutils \        
+        curl-dev \
+        g++ \
+        gcc \
+        geoip-dev \
+        git \
+        libc-dev \
+        libmaxminddb-dev \
+        libstdc++ \
+        libtool \
+        libxml2-dev \
+        linux-headers \
+        lmdb-dev \
+        make \
+        openssl \
+        openssl-dev \
+        pcre-dev \
+        yajl-dev \
+        zlib-dev
 
 WORKDIR /sources
 
-RUN wget --quiet https://github.com/ssdeep-project/ssdeep/releases/download/release-${SSDEEP_VERSION}/ssdeep-${SSDEEP_VERSION}.tar.gz \
-    && tar -xvzf ssdeep-${SSDEEP_VERSION}.tar.gz \
-    && cd ssdeep-${SSDEEP_VERSION} \
-    && ./configure \
-    && make install
+RUN set -eux; \
+    wget --quiet https://github.com/ssdeep-project/ssdeep/releases/download/release-${SSDEEP_VERSION}/ssdeep-${SSDEEP_VERSION}.tar.gz; \
+    tar -xvzf ssdeep-${SSDEEP_VERSION}.tar.gz; \
+    cd ssdeep-${SSDEEP_VERSION}; \
+    ./configure; \
+    make install
 
-RUN git clone https://github.com/SpiderLabs/ModSecurity --branch v"$MODSEC_VERSION" --depth 1 \
-    && cd ModSecurity \
-    && ./build.sh \
-    && git submodule init \
-    && git submodule update \
-    && ./configure --with-yajl --with-ssdeep --with-lmdb \
-    && make install
+RUN set -eux; \
+    git clone https://github.com/SpiderLabs/ModSecurity --branch v"$MODSEC_VERSION" --depth 1; \
+    cd ModSecurity; \
+    ./build.sh;\
+    git submodule init; \
+    git submodule update; \
+    ./configure --with-yajl --with-ssdeep --with-lmdb; \
+    make install
 
 # We use master
-RUN git clone -b master --depth 1 https://github.com/SpiderLabs/ModSecurity-nginx.git \
-    && wget --quiet http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz \
-    && tar -xzf nginx-${NGINX_VERSION}.tar.gz \
-    && cd ./nginx-${NGINX_VERSION} \
-    && ./configure --with-compat --add-dynamic-module=../ModSecurity-nginx \
-    && make modules \
-    && cp objs/ngx_http_modsecurity_module.so /etc/nginx/modules/ \
-    && mkdir /etc/modsecurity.d \
-    && wget --quiet https://raw.githubusercontent.com/SpiderLabs/ModSecurity/v3/master/modsecurity.conf-recommended \
-    -O /etc/modsecurity.d/modsecurity.conf \
-    && wget --quiet https://raw.githubusercontent.com/SpiderLabs/ModSecurity/v3/master/unicode.mapping \
-    -O /etc/modsecurity.d/unicode.mapping
+RUN set -eux; \
+    git clone -b master --depth 1 https://github.com/SpiderLabs/ModSecurity-nginx.git; \
+    wget --quiet http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz; \
+    tar -xzf nginx-${NGINX_VERSION}.tar.gz; \
+    cd ./nginx-${NGINX_VERSION}; \
+    ./configure --with-compat --add-dynamic-module=../ModSecurity-nginx; \
+    make modules; \
+    cp objs/ngx_http_modsecurity_module.so /etc/nginx/modules/; \
+    mkdir /etc/modsecurity.d; \
+    wget --quiet https://raw.githubusercontent.com/SpiderLabs/ModSecurity/v3/master/modsecurity.conf-recommended \
+        -O /etc/modsecurity.d/modsecurity.conf; \
+    wget --quiet https://raw.githubusercontent.com/SpiderLabs/ModSecurity/v3/master/unicode.mapping \
+        -O /etc/modsecurity.d/unicode.mapping
 
 # Generate self-signed certificates (if needed)
 RUN mkdir -p /usr/share/TLS
@@ -120,19 +123,20 @@ ENV ACCESSLOG=/var/log/nginx/access.log \
     WORKER_CONNECTIONS=1024 \
     LD_LIBRARY_PATH=/lib:/usr/lib:/usr/local/lib
 
-RUN apk add --no-cache \
-    curl-dev \
-    libmaxminddb-dev \
-    libstdc++ \
-    libxml2-dev \
-    lmdb-dev \
-    moreutils \
-    tzdata \
-    yajl && \
-    mkdir /etc/nginx/ssl/ && \
-    mkdir -p /tmp/modsecurity/data && \
-    mkdir -p /tmp/modsecurity/upload && \
-    mkdir -p /tmp/modsecurity/tmp && \
+RUN set -eux; \
+    apk add --no-cache \
+        curl-dev \
+        libmaxminddb-dev \
+        libstdc++ \
+        libxml2-dev \
+        lmdb-dev \
+        moreutils \
+        tzdata \
+        yajl; \
+    mkdir /etc/nginx/ssl/; \
+    mkdir -p /tmp/modsecurity/data; \
+    mkdir -p /tmp/modsecurity/upload; \
+    mkdir -p /tmp/modsecurity/tmp; \
     chown -R nginx:nginx /usr/share/nginx /tmp/modsecurity
 
 COPY --from=build /usr/local/modsecurity/lib/libmodsecurity.so.${MODSEC_VERSION} /usr/local/modsecurity/lib/

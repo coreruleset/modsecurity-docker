@@ -1,6 +1,10 @@
-FROM httpd:2.4-alpine as build
+ARG APACHE_VERSION=2.4
 
-ARG MODSEC_VERSION=2.9.4
+FROM httpd:${APACHE_VERSION}-alpine as build
+
+ARG MODSEC_VERSION=2.9.5 \
+    SSDEEP_VERSION=2.14.1 \
+    FUZZY_VERSION=2.1.0
 
 # see https://httpd.apache.org/docs/2.4/install.html#requirements
 RUN set -eux; \
@@ -34,22 +38,24 @@ RUN set -eux; \
 
 
 # This one is in edge still for Alpine, so just compile
-RUN wget --quiet https://github.com/ssdeep-project/ssdeep/releases/download/release-2.14.1/ssdeep-2.14.1.tar.gz \
-    && tar -xvzf ssdeep-2.14.1.tar.gz \
-    && cd ssdeep-2.14.1 \
-    && ./configure \
-    && make \
-    && make install \
-    && make clean
+RUN set -eux; \
+    wget --quiet https://github.com/ssdeep-project/ssdeep/releases/download/release-${SSDEEP_VERSION}/ssdeep-${SSDEEP_VERSION}.tar.gz; \
+    tar -xvzf ssdeep-${SSDEEP_VERSION}.tar.gz; \
+    cd ssdeep-${SSDEEP_VERSION}; \
+    ./configure; \
+    make; \
+    make install; \
+    make clean
 
-RUN wget --quiet https://github.com/SpiderLabs/ModSecurity/archive/refs/tags/v${MODSEC_VERSION}.tar.gz \
-    && tar -zxvf v${MODSEC_VERSION}.tar.gz \
-    && cd ModSecurity-${MODSEC_VERSION} \
-    && ./autogen.sh \
-    && ./configure --with-yajl --with-ssdeep --with-lmdb \
-    && make \
-    && make install \
-    && make clean
+RUN set -eux; \
+    wget --quiet https://github.com/SpiderLabs/ModSecurity/archive/refs/tags/v${MODSEC_VERSION}.tar.gz; \
+    tar -zxvf v${MODSEC_VERSION}.tar.gz; \
+    cd ModSecurity-${MODSEC_VERSION}; \
+    ./autogen.sh; \
+    ./configure --with-yajl --with-ssdeep --with-lmdb; \
+    make; \
+    make install; \
+    make clean
 
 # Generate self-signed certificates (if needed)
 RUN mkdir -p /usr/share/TLS
@@ -59,9 +65,11 @@ RUN openssl req -x509 -days 365 -new \
     -keyout /usr/share/TLS/server.key \
     -out /usr/share/TLS/server.crt
 
-FROM httpd:2.4-alpine
+FROM httpd:${APACHE_VERSION}-alpine
 
-ARG MODSEC_VERSION=2.9.4
+ARG MODSEC_VERSION=2.9.5 \
+    SSDEEP_VERSION=2.14.1 \
+    FUZZY_VERSION=2.1.0
 
 LABEL maintainer="Felipe Zipitria <felipe.zipitria@owasp.org>"
 
@@ -128,39 +136,41 @@ RUN set -eux; \
 COPY --from=build /usr/local/apache2/modules/mod_security2.so                  /usr/local/apache2/modules/mod_security2.so
 COPY --from=build /usr/local/apache2/ModSecurity-${MODSEC_VERSION}/modsecurity.conf-recommended  /etc/modsecurity.d/modsecurity.conf
 COPY --from=build /usr/local/apache2/ModSecurity-${MODSEC_VERSION}/unicode.mapping               /etc/modsecurity.d/unicode.mapping
-COPY --from=build /usr/local/lib/libfuzzy.so.2.1.0                             /usr/local/lib/libfuzzy.so.2.1.0
+COPY --from=build /usr/local/lib/libfuzzy.so.${FUZZY_VERSION}                             /usr/local/lib/libfuzzy.so.${FUZZY_VERSION}
 COPY --from=build /usr/local/bin/ssdeep                                        /usr/local/bin/ssdeep
 COPY --from=build /usr/share/TLS/server.key                                    /usr/local/apache2/conf/server.key
 COPY --from=build /usr/share/TLS/server.crt                                    /usr/local/apache2/conf/server.crt
 COPY src/etc/modsecurity.d/*.conf /etc/modsecurity.d/
 COPY v2-apache/conf/extra/*.conf /usr/local/apache2/conf/extra/
 
-RUN ln -s /usr/local/lib/libfuzzy.so.2.1.0 /usr/local/lib/libfuzzy.so.2 \
-    && sed -i -E 's|(Listen) [0-9]+|\1 ${PORT}|' /usr/local/apache2/conf/httpd.conf \
-    && sed -i -E 's|(ServerTokens) Full|\1 Prod|' /usr/local/apache2/conf/extra/httpd-default.conf \
-    && sed -i -E 's|#(ServerName) www.example.com:80|\1 ${SERVER_NAME}|' /usr/local/apache2/conf/httpd.conf \
-    && sed -i -E 's|#(LoadModule unique_id_module)|\1|' /usr/local/apache2/conf/httpd.conf \
-    && sed -i -E 's|#(LoadModule rewrite_module modules/mod_rewrite.so)|\1|' /usr/local/apache2/conf/httpd.conf \
-    && sed -i -E 's|#(LoadModule proxy_module modules/mod_proxy.so)|\1|' /usr/local/apache2/conf/httpd.conf \
-    && sed -i -E 's|#(LoadModule proxy_http_module modules/mod_proxy_http.so)|\1|' /usr/local/apache2/conf/httpd.conf \
-    && sed -i -E 's|#(LoadModule remoteip_module modules/mod_remoteip.so)|\1|' /usr/local/apache2/conf/httpd.conf \
-    && sed -i -E 's|#(LoadModule socache_shmcb_module modules/mod_socache_shmcb.so)|\1|' /usr/local/apache2/conf/httpd.conf \
-    && sed -i -E 's|#(LoadModule ssl_module modules/mod_ssl.so)|\1|' /usr/local/apache2/conf/httpd.conf \
-    && sed -i -E 's|#(LoadModule http2_module modules/mod_http2.so)|\1|' /usr/local/apache2/conf/httpd.conf \
-    && sed -i -E 's|#(Include conf/extra/httpd-default.conf)|\1|' /usr/local/apache2/conf/httpd.conf \
-    && sed -i -E 's|#(Include conf/extra/httpd-proxy.conf)|\1|' /usr/local/apache2/conf/httpd.conf \
-    && sed -i -E 's|#(Include conf/extra/httpd-ssl.conf)|\1|' /usr/local/apache2/conf/httpd.conf \
-    && sed -i -E 's|#(Include conf/extra/httpd-vhosts.conf)|\1|' /usr/local/apache2/conf/httpd.conf \
-    && echo 'Include conf/extra/httpd-locations.conf' >> /usr/local/apache2/conf/httpd.conf \
-    && echo 'Include conf/extra/httpd-modsecurity.conf' >> /usr/local/apache2/conf/httpd.conf \
-    && sed -i -E 's|(MaxRequestWorkers[ ]*)[0-9]*|\1${WORKER_CONNECTIONS}|' /usr/local/apache2/conf/extra/httpd-mpm.conf
+RUN set -eux; \
+    ln -s /usr/local/lib/libfuzzy.so.${FUZZY_VERSION} /usr/local/lib/libfuzzy.so.2; \
+    sed -i -E 's|(Listen) [0-9]+|\1 ${PORT}|' /usr/local/apache2/conf/httpd.conf; \
+    sed -i -E 's|(ServerTokens) Full|\1 Prod|' /usr/local/apache2/conf/extra/httpd-default.conf; \
+    sed -i -E 's|#(ServerName) www.example.com:80|\1 ${SERVER_NAME}|' /usr/local/apache2/conf/httpd.conf; \
+    sed -i -E 's|#(LoadModule unique_id_module)|\1|' /usr/local/apache2/conf/httpd.conf; \
+    sed -i -E 's|#(LoadModule rewrite_module modules/mod_rewrite.so)|\1|' /usr/local/apache2/conf/httpd.conf; \
+    sed -i -E 's|#(LoadModule proxy_module modules/mod_proxy.so)|\1|' /usr/local/apache2/conf/httpd.conf; \
+    sed -i -E 's|#(LoadModule proxy_http_module modules/mod_proxy_http.so)|\1|' /usr/local/apache2/conf/httpd.conf; \
+    sed -i -E 's|#(LoadModule remoteip_module modules/mod_remoteip.so)|\1|' /usr/local/apache2/conf/httpd.conf; \
+    sed -i -E 's|#(LoadModule socache_shmcb_module modules/mod_socache_shmcb.so)|\1|' /usr/local/apache2/conf/httpd.conf; \
+    sed -i -E 's|#(LoadModule ssl_module modules/mod_ssl.so)|\1|' /usr/local/apache2/conf/httpd.conf; \
+    sed -i -E 's|#(LoadModule http2_module modules/mod_http2.so)|\1|' /usr/local/apache2/conf/httpd.conf; \
+    sed -i -E 's|#(Include conf/extra/httpd-default.conf)|\1|' /usr/local/apache2/conf/httpd.conf; \
+    sed -i -E 's|#(Include conf/extra/httpd-proxy.conf)|\1|' /usr/local/apache2/conf/httpd.conf; \
+    sed -i -E 's|#(Include conf/extra/httpd-ssl.conf)|\1|' /usr/local/apache2/conf/httpd.conf; \
+    sed -i -E 's|#(Include conf/extra/httpd-vhosts.conf)|\1|' /usr/local/apache2/conf/httpd.conf; \
+    echo 'Include conf/extra/httpd-locations.conf' >> /usr/local/apache2/conf/httpd.conf; \
+    echo 'Include conf/extra/httpd-modsecurity.conf' >> /usr/local/apache2/conf/httpd.conf; \
+    sed -i -E 's|(MaxRequestWorkers[ ]*)[0-9]*|\1${WORKER_CONNECTIONS}|' /usr/local/apache2/conf/extra/httpd-mpm.conf
 
-RUN mkdir -p /var/log/apache2 \
-    && mkdir -p /tmp/modsecurity/data \
-    && mkdir -p /tmp/modsecurity/upload \
-    && mkdir -p /tmp/modsecurity/tmp \
-    && chown -R $(awk '/^User/ { print $2;}' /usr/local/apache2/conf/httpd.conf) /tmp/modsecurity /var/log/apache2 \
-    && chgrp -R 0 /var/log/ /usr/local/apache2/ \
-    && chmod -R g=u /var/log/ /usr/local/apache2/
+RUN set -eux; \
+    mkdir -p /var/log/apache2; \
+    mkdir -p /tmp/modsecurity/data; \
+    mkdir -p /tmp/modsecurity/upload; \
+    mkdir -p /tmp/modsecurity/tmp; \
+    chown -R $(awk '/^User/ { print $2;}' /usr/local/apache2/conf/httpd.conf) /tmp/modsecurity /var/log/apache2; \
+    chgrp -R 0 /var/log/ /usr/local/apache2/; \
+    chmod -R g=u /var/log/ /usr/local/apache2/
 
 # Use httpd-foreground from upstream

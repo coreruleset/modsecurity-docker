@@ -1,74 +1,81 @@
-ARG NGINX_VERSION="1.20.1"
+ARG NGINX_VERSION="1.20.2"
 
 FROM nginx:${NGINX_VERSION} as build
 
-ARG MODSEC_VERSION=3.0.5 \
+ARG MODSEC_VERSION=3.0.6 \
     YAJL_VERSION=2.1.0 \
     FUZZY_VERSION=2.1.0 \
+    LMDB_VERSION=0.9.23 \
     SSDEEP_VERSION=2.14.1
 
-RUN apt-get update \
-     && apt-get install -y --no-install-recommends \
-     automake \
-     cmake \
-     doxygen \
-     g++ \
-     git \
-     libcurl4-gnutls-dev \
-     libgeoip-dev \
-     liblua5.3-dev \
-     libpcre++-dev \
-     libtool \
-     libxml2-dev \
-     make \
-     ruby \
-     wget \
-     zlib1g-dev \
-     && apt-get clean \
-     && rm -rf /var/lib/apt/lists/*
+RUN set -eux; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends \
+        automake \
+        cmake \
+        doxygen \
+        g++ \
+        git \
+        libcurl4-gnutls-dev \
+        libgeoip-dev \
+        liblua5.3-dev \
+        libpcre++-dev \
+        libtool \
+        libxml2-dev \
+        make \
+        ruby \
+        wget \
+        zlib1g-dev; \
+     apt-get clean; \
+     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /sources
 
-RUN git clone https://github.com/LMDB/lmdb --branch LMDB_0.9.23 --depth 1 \
-     && make -C lmdb/libraries/liblmdb install \
-     && strip /usr/local/lib/liblmdb*.so*
+RUN set -eux; \
+    git clone https://github.com/LMDB/lmdb --branch LMDB_${LMDB_VERSION} --depth 1; \
+    make -C lmdb/libraries/liblmdb install; \
+    strip /usr/local/lib/liblmdb*.so*
 
-RUN git clone https://github.com/lloyd/yajl --branch ${YAJL_VERSION} --depth 1 \
-     && cd yajl \
-     && ./configure \
-     && make install \
-     && strip /usr/local/lib/libyajl*.so*
+RUN set -eux; \
+    git clone https://github.com/lloyd/yajl --branch ${YAJL_VERSION} --depth 1; \
+    cd yajl; \
+    ./configure; \
+    make install; \
+    strip /usr/local/lib/libyajl*.so*
 
-RUN wget --quiet https://github.com/ssdeep-project/ssdeep/releases/download/release-${SSDEEP_VERSION}/ssdeep-${SSDEEP_VERSION}.tar.gz \
-     && tar -xvzf ssdeep-${SSDEEP_VERSION}.tar.gz \
-     && cd ssdeep-${SSDEEP_VERSION} \
-     && ./configure \
-     && make install \
-     && strip /usr/local/lib/libfuzzy*.so*
+RUN set -eux; \
+    wget --quiet https://github.com/ssdeep-project/ssdeep/releases/download/release-${SSDEEP_VERSION}/ssdeep-${SSDEEP_VERSION}.tar.gz; \
+    tar -xvzf ssdeep-${SSDEEP_VERSION}.tar.gz; \
+    cd ssdeep-${SSDEEP_VERSION}; \
+    ./configure; \
+    make install; \
+    strip /usr/local/lib/libfuzzy*.so*
 
-RUN git clone https://github.com/SpiderLabs/ModSecurity --branch v${MODSEC_VERSION} --depth 1 \
-     && cd ModSecurity \
-     && ./build.sh \
-     && git submodule init \
-     && git submodule update \
-     && ./configure --with-yajl=/sources/yajl/build/yajl-${YAJL_VERSION}/ \
-     && make install \
-     && strip /usr/local/modsecurity/lib/lib*.so*
+RUN set -eux; \
+    git clone https://github.com/SpiderLabs/ModSecurity --branch v${MODSEC_VERSION} --depth 1; \
+    cd ModSecurity; \
+    ./build.sh; \
+    git submodule init; \
+    git submodule update; \
+    ./configure --with-yajl=/sources/yajl/build/yajl-${YAJL_VERSION}/; \
+    make install; \
+    strip /usr/local/modsecurity/lib/lib*.so*
 
 # We use master
-RUN git clone -b master --depth 1 https://github.com/SpiderLabs/ModSecurity-nginx.git \
-     && wget --quiet http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz \
-     && tar -xzf nginx-${NGINX_VERSION}.tar.gz \
-     && cd ./nginx-${NGINX_VERSION} \
-     && ./configure --with-compat --add-dynamic-module=../ModSecurity-nginx \
-     && make modules \
-     && strip objs/ngx_http_modsecurity_module.so \
-     && cp objs/ngx_http_modsecurity_module.so /etc/nginx/modules/ \
-     && mkdir /etc/modsecurity.d \
-     && wget --quiet https://raw.githubusercontent.com/SpiderLabs/ModSecurity/v3/master/modsecurity.conf-recommended \
-     -O /etc/modsecurity.d/modsecurity.conf \
-     && wget --quiet https://raw.githubusercontent.com/SpiderLabs/ModSecurity/v3/master/unicode.mapping \
-     -O /etc/modsecurity.d/unicode.mapping
+RUN set -eux; \
+    git clone -b master --depth 1 https://github.com/SpiderLabs/ModSecurity-nginx.git; \
+    wget --quiet http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz; \
+    tar -xzf nginx-${NGINX_VERSION}.tar.gz; \
+    cd ./nginx-${NGINX_VERSION}; \
+    ./configure --with-compat --add-dynamic-module=../ModSecurity-nginx; \
+    make modules; \
+    strip objs/ngx_http_modsecurity_module.so; \
+    cp objs/ngx_http_modsecurity_module.so /etc/nginx/modules/; \
+    mkdir /etc/modsecurity.d; \
+    wget --quiet https://raw.githubusercontent.com/SpiderLabs/ModSecurity/v3/master/modsecurity.conf-recommended \
+         -O /etc/modsecurity.d/modsecurity.conf; \
+    wget --quiet https://raw.githubusercontent.com/SpiderLabs/ModSecurity/v3/master/unicode.mapping \
+         -O /etc/modsecurity.d/unicode.mapping
 
 # Generate self-signed certificates (if needed)
 RUN mkdir -p /usr/share/TLS
@@ -80,15 +87,13 @@ RUN openssl req -x509 -days 365 -new \
 
 FROM nginx:${NGINX_VERSION}
 
-ARG MODSEC_VERSION=3.0.5 \
+ARG MODSEC_VERSION=3.0.6 \
     YAJL_VERSION=2.1.0 \
     FUZZY_VERSION=2.1.0 \
+    LMDB_VERSION=0.9.23 \
     SSDEEP_VERSION=2.14.1
 
 LABEL maintainer="Felipe Zipitria <felipe.zipitria@owasp.org>"
-
-
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 ENV ACCESSLOG=/var/log/nginx/access.log \
      BACKEND=http://localhost:80 \
@@ -131,19 +136,22 @@ ENV ACCESSLOG=/var/log/nginx/access.log \
      WORKER_CONNECTIONS=1024 \
      LD_LIBRARY_PATH=/lib:/usr/lib:/usr/local/lib
 
-RUN apt-get update \
-     && apt-get install -y --no-install-recommends \
-     ca-certificates \
-     libcurl4-gnutls-dev \
-     liblua5.3 \
-     libxml2 \
-     moreutils \
-     && rm -rf /var/lib/apt/lists/* \
-     && apt-get clean \
-     && mkdir /etc/nginx/ssl \
-     && mkdir -p /tmp/modsecurity/{data,upload,tmp} \
-     && mkdir -p /usr/local/modsecurity \
-     && chown -R nginx:nginx /tmp/modsecurity
+RUN set -eux; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends \
+        ca-certificates \
+        libcurl4-gnutls-dev \
+        liblua5.3 \
+        libxml2 \
+        moreutils; \
+    rm -rf /var/lib/apt/lists/*; \
+    apt-get clean; \
+    mkdir /etc/nginx/ssl; \
+    mkdir -p /tmp/modsecurity/data; \
+    mkdir -p /tmp/modsecurity/upload; \
+    mkdir -p /tmp/modsecurity/tmp; \
+    mkdir -p /usr/local/modsecurity; \
+    chown -R nginx:nginx /tmp/modsecurity
 
 COPY --from=build /usr/local/modsecurity/lib/libmodsecurity.so.${MODSEC_VERSION} /usr/local/modsecurity/lib/
 COPY --from=build /usr/local/lib/libfuzzy.so.${FUZZY_VERSION} /usr/local/lib/
@@ -172,3 +180,4 @@ RUN set -eux; \
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["nginx", "-g", "daemon off;"]
+
