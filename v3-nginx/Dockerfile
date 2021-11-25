@@ -57,7 +57,7 @@ RUN set -eux; \
     ./build.sh; \
     git submodule init; \
     git submodule update; \
-    ./configure --with-yajl=/sources/yajl/build/yajl-${YAJL_VERSION}/; \
+    ./configure --with-yajl=/sources/yajl/build/yajl-${YAJL_VERSION}/ --with-geoip; \
     make install; \
     strip /usr/local/modsecurity/lib/lib*.so*
 
