@@ -9,15 +9,15 @@
 
 ## Supported tags and respective `Dockerfile` links
 
-* `3`, `3.0`, `3.0.5`, `nginx` ([master/v3-nginx/Dockerfile](https://github.com/coreruleset/modsecurity-docker/blob/master/v3-nginx/Dockerfile)) – *last stable ModSecurity v3 on Nginx 1.20 official stable base image*
-* `2`, `2.9`, `2.9.4`, `apache` ([master/v2-apache/Dockerfile](https://github.com/coreruleset/modsecurity-docker/blob/master/v2-apache/Dockerfile)) – *last stable ModSecurity v2 on Apache 2.4 official stable base image*
+* `3`, `3.0`, `3.0.6`, `nginx` ([master/v3-nginx/Dockerfile](https://github.com/coreruleset/modsecurity-docker/blob/master/v3-nginx/Dockerfile)) – *last stable ModSecurity v3 on Nginx 1.20 official stable base image*
+* `2`, `2.9`, `2.9.5`, `apache` ([master/v2-apache/Dockerfile](https://github.com/coreruleset/modsecurity-docker/blob/master/v2-apache/Dockerfile)) – *last stable ModSecurity v2 on Apache 2.4 official stable base image*
 
 ## Supported variants
 
 We have support for [alpine linux](https://www.alpinelinux.org/) variants of the base images. Just add `-alpine` and you will get it. Examples:
 
-* `3-alpine`, `3.0-alpine`, `3.0.5-alpine`, `nginx-alpine` ([master/v3-nginx/Dockerfile-alpine](https://github.com/coreruleset/modsecurity-docker/blob/master/v3-nginx/Dockerfile-alpine) – *last stable ModSecurity v3 on Nginx 1.20 Alpine official stable base image*
-* `2-alpine`, `2.9-alpine`, `2.9.4-alpine`, `apache-alpine` ([master/v2-apache/Dockerfile-alpine](https://github.com/coreruleset/modsecurity-docker/blob/master/v2-apache/Dockerfile-alpine)) – *last stable ModSecurity v2 on Apache 2.4 Alpine official stable base image*
+* `3-alpine`, `3.0-alpine`, `3.0.6-alpine`, `nginx-alpine` ([master/v3-nginx/Dockerfile-alpine](https://github.com/coreruleset/modsecurity-docker/blob/master/v3-nginx/Dockerfile-alpine) – *last stable ModSecurity v3 on Nginx 1.20 Alpine official stable base image*
+* `2-alpine`, `2.9-alpine`, `2.9.5-alpine`, `apache-alpine` ([master/v2-apache/Dockerfile-alpine](https://github.com/coreruleset/modsecurity-docker/blob/master/v2-apache/Dockerfile-alpine)) – *last stable ModSecurity v2 on Apache 2.4 Alpine official stable base image*
 
 ## Supported architectures
 
@@ -161,6 +161,7 @@ All these variables impact in configuration directives in the modsecurity engine
 | MODSEC_PCRE_MATCH_LIMIT_RECURSION  | An integer value indicating the limit for the depth of recursion when calling PCRE function (Default: `100000`) | 
 | MODSEC_REQ_BODY_ACCESS  | A string value allowing ModSecurity to access request bodies (Default: `On`). Allowed values: `On`, `Off`. See [SecRequestBodyAccess](https://github.com/SpiderLabs/ModSecurity/wiki/Reference-Manual-(v2.x)#secrequestbodyaccess) for more information. | 
 | MODSEC_REQ_BODY_LIMIT  | An integer value indicating the maximum request body size  accepted for buffering (Default: `13107200`). See [SecRequestBodyLimit](https://github.com/SpiderLabs/ModSecurity/wiki/Reference-Manual-(v2.x)#secrequestbodylimit) for additional information. | 
+| MODSEC_REQ_BODY_JSON_DEPTH_LIMIT | An integer value indicating the maximun JSON request depth (Default: `512`). See [SecRequestBodyJsonDepthLimit](https://github.com/SpiderLabs/ModSecurity/wiki/Reference-Manual-%28v2.x%29#SecRequestBodyJsonDepthLimit) for additional information. | 
 | MODSEC_REQ_BODY_NOFILES_LIMIT  | An integer indicating the maximum request body size ModSecurity will accept for buffering (Default: `131072`). See [SecRequestBodyNoFilesLimit](https://github.com/SpiderLabs/ModSecurity/wiki/Reference-Manual-(v2.x)#secrequestbodynofileslimit) for more information. | 
 | MODSEC_RESP_BODY_ACCESS  | A string value allowing ModSecurity to access response bodies (Default: `On`). Allowed values: `On`, `Off`. See [SecResponseBodyAccess](https://github.com/SpiderLabs/ModSecurity/wiki/Reference-Manual-%28v2.x%29#secresponsebodyaccess) for more information. | 
 | MODSEC_RESP_BODY_LIMIT  | An integer value indicating the maximum response body size accepted for buffering (Default: `1048576`) | 
