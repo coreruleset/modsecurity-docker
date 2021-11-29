@@ -24,7 +24,7 @@ RUN set -eux; \
         libxml2-dev \
         make \
         ruby \
-        wget \
+        pkg-config \
         zlib1g-dev; \
      apt-get clean; \
      rm -rf /var/lib/apt/lists/*
@@ -44,7 +44,7 @@ RUN set -eux; \
     strip /usr/local/lib/libyajl*.so*
 
 RUN set -eux; \
-    wget --quiet https://github.com/ssdeep-project/ssdeep/releases/download/release-${SSDEEP_VERSION}/ssdeep-${SSDEEP_VERSION}.tar.gz; \
+    curl -sSL https://github.com/ssdeep-project/ssdeep/releases/download/release-${SSDEEP_VERSION}/ssdeep-${SSDEEP_VERSION}.tar.gz -o ssdeep-${SSDEEP_VERSION}.tar.gz; \
     tar -xvzf ssdeep-${SSDEEP_VERSION}.tar.gz; \
     cd ssdeep-${SSDEEP_VERSION}; \
     ./configure; \
@@ -57,14 +57,14 @@ RUN set -eux; \
     ./build.sh; \
     git submodule init; \
     git submodule update; \
-    ./configure --with-yajl=/sources/yajl/build/yajl-${YAJL_VERSION}/; \
+    ./configure --with-yajl=/sources/yajl/build/yajl-${YAJL_VERSION}/ --with-geoip; \
     make install; \
     strip /usr/local/modsecurity/lib/lib*.so*
 
 # We use master
 RUN set -eux; \
     git clone -b master --depth 1 https://github.com/SpiderLabs/ModSecurity-nginx.git; \
-    wget --quiet http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz; \
+    curl -sSL https://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz -o nginx-${NGINX_VERSION}.tar.gz; \
     tar -xzf nginx-${NGINX_VERSION}.tar.gz; \
     cd ./nginx-${NGINX_VERSION}; \
     ./configure --with-compat --add-dynamic-module=../ModSecurity-nginx; \
@@ -72,10 +72,10 @@ RUN set -eux; \
     strip objs/ngx_http_modsecurity_module.so; \
     cp objs/ngx_http_modsecurity_module.so /etc/nginx/modules/; \
     mkdir /etc/modsecurity.d; \
-    wget --quiet https://raw.githubusercontent.com/SpiderLabs/ModSecurity/v3/master/modsecurity.conf-recommended \
-         -O /etc/modsecurity.d/modsecurity.conf; \
-    wget --quiet https://raw.githubusercontent.com/SpiderLabs/ModSecurity/v3/master/unicode.mapping \
-         -O /etc/modsecurity.d/unicode.mapping
+    curl -sSL https://raw.githubusercontent.com/SpiderLabs/ModSecurity/v3/master/modsecurity.conf-recommended \
+         -o /etc/modsecurity.d/modsecurity.conf; \
+    curl -sSL https://raw.githubusercontent.com/SpiderLabs/ModSecurity/v3/master/unicode.mapping \
+         -o /etc/modsecurity.d/unicode.mapping
 
 # Generate self-signed certificates (if needed)
 RUN mkdir -p /usr/share/TLS
