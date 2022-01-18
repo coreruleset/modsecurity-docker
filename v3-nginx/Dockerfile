@@ -5,7 +5,7 @@ FROM nginx:${NGINX_VERSION} as build
 ARG MODSEC_VERSION=3.0.6 \
     YAJL_VERSION=2.1.0 \
     FUZZY_VERSION=2.1.0 \
-    LMDB_VERSION=0.9.23 \
+    LMDB_VERSION=0.9.29 \
     SSDEEP_VERSION=2.14.1
 
 RUN set -eux; \
@@ -90,7 +90,7 @@ FROM nginx:${NGINX_VERSION}
 ARG MODSEC_VERSION=3.0.6 \
     YAJL_VERSION=2.1.0 \
     FUZZY_VERSION=2.1.0 \
-    LMDB_VERSION=0.9.23 \
+    LMDB_VERSION=0.9.29 \
     SSDEEP_VERSION=2.14.1
 
 LABEL maintainer="Felipe Zipitria <felipe.zipitria@owasp.org>"
