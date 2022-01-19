@@ -136,7 +136,7 @@ $ docker run -p 8080:80 -e SERVER_NAME=myhost my-modsec
 | PORT  | An integer value indicating the port where the webserver is listening to (Default: `80`) | 
 | PROXY_SSL_CERT_KEY  | A string value indicating the path to the server PEM-encoded private key file (Default: `/etc/nginx/conf/server.key`) | 
 | PROXY_SSL_CERT  | A string value indicating the path to the server PEM-encoded X.509 certificate data file or token value identifier (Default: `/etc/nginx/conf/server.crt`) | 
-| PROXT_SSL_CIPHERS|A String value specifing the enabled ciphers. The ciphers are specified in the format understood by the OpenSSL library. (Default: `ECDH+AESGCM:DH+AESGCM:ECDH+AES256:DH+AES256:ECDH+AES128:DH+AES:ECDH+3DES:DH+3DES:RSA+AESGCM:RSA+AES:RSA+3DES:!aNULL:!MD5:!DSS`|
+| PROXY_SSL_CIPHERS|A String value specifing the enabled ciphers. The ciphers are specified in the format understood by the OpenSSL library. (Default: `ECDH+AESGCM:DH+AESGCM:ECDH+AES256:DH+AES256:ECDH+AES128:DH+AES:ECDH+3DES:DH+3DES:RSA+AESGCM:RSA+AES:RSA+3DES:!aNULL:!MD5:!DSS`|
 | PROXY_SSL_PREFER_CIPHERS | A string value specifing that server ciphers should be preferred over client ciphers when using the SSLv3 and TLS protocols (default: `on`)|
 | PROXY_SSL_PROTOCOLS | A string value specifing the ssl protocols to enable (default: `TLSv1 TLSv1.1 TLSv1.2`)|
 | PROXY_SSL_VERIFY  | A string value indicating if the client certificates should be verified (Default: `on`) | 
