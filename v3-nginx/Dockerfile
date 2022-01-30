@@ -85,10 +85,10 @@ RUN openssl req -x509 -days 365 -new \
      -keyout /usr/share/TLS/server.key \
      -out /usr/share/TLS/server.crt
 
-# Generate Diffie-Hellman parameter files
+# Generate/Download Diffie-Hellman parameter files
 RUN openssl dhparam -out /usr/share/TLS/dhparam-1024.pem 1024
-RUN openssl dhparam -out /usr/share/TLS/dhparam-2048.pem 2048
-RUN openssl dhparam -out /usr/share/TLS/dhparam-4096.pem 4096
+RUN curl -sSL https://ssl-config.mozilla.org/ffdhe2048.txt -o /usr/share/TLS/dhparam-2048.pem
+RUN curl -sSL https://ssl-config.mozilla.org/ffdhe4096.txt -o /usr/share/TLS/dhparam-4096.pem
 
 FROM nginx:${NGINX_VERSION}
 
@@ -139,7 +139,7 @@ ENV ACCESSLOG=/var/log/nginx/access.log \
     PROXY_SSL_CERT_KEY=/etc/nginx/conf/server.key \
     PROXY_SSL_DH_BITS=2048 \
     PROXY_SSL_PROTOCOLS="TLSv1.2 TLSv1.3" \
-    PROXY_SSL_CIPHERS="ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384;" \
+    PROXY_SSL_CIPHERS="ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384" \
     PROXY_SSL_PREFER_CIPHERS=off \
     PROXY_SSL_VERIFY=off \
     PROXY_SSL_OCSP_STAPLING=off \
