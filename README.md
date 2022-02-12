@@ -75,6 +75,8 @@ $ docker build -t my-modsec .
 $ docker run -p 8443:443 my-modsec
 ```
 
+We use sane intermediate defaults taken from the [Mozilla SSL config tool](https://ssl-config.mozilla.org/). Please check it and choose the best that match your needs.
+
 ### Proxying
 
 ModSecurity is often used as a reverse proxy. This allows one to use ModSecurity without modifying the webserver hosting the underlying application (and also protect web servers that modsecurity cannot currently embedd into). The proxy is set by default to true and the location is defined by BACKEND environment variable. The SSL is enabled by default.
@@ -118,6 +120,14 @@ $ docker run -p 8080:80 -e SERVER_NAME=myhost my-modsec
 | SERVER_ADMIN  | A string value indicating the address where problems with the server should be e-mailed (Default: `root@localhost`) | 
 | REQ_HEADER_FORWARDED_PROTO  | A string indicating the transfer protocol of the initial request (Default: `https`) | 
 | SSL_ENGINE  | A string indicating the SSL Engine Operation Switch (Default: `off`) | 
+| SSL_PORT  | Port number where the SSL enabled webserver is listening (Default: `443`) | 
+| SSL_PROTOCOL | A string for configuring the [usable SSL/TLS protocol versions](https://httpd.apache.org/docs/2.4/mod/mod_ssl.html#sslprotocol). (Default `"all -SSLv3 -TLSv1 -TLSv1.1"`) |
+| SSL_PROXY_PROTOCOL | A string for configuring the [proxy client SSL/TLS protocol versions](https://httpd.apache.org/docs/2.4/mod/mod_ssl.html#sslproxyprotocol) (Default: `"all -SSLv3 -TLSv1 -TLSv1.1"`) |
+| SSL_SESSION_TICKETS | A string to enable or disable the use of [TLS session tickets](https://httpd.apache.org/docs/2.4/mod/mod_ssl.html#sslsessiontickets) (RFC 5077). (Default: `off`) |
+| SSL_USE_STAPLING | A string indicating if [OSCP Stapling](https://httpd.apache.org/docs/2.4/mod/mod_ssl.html#sslusestapling) should be used.(Default: `On`) |
+| SSL_CIPHER_SUITE | A string indicating the cipher suite to use. Uses OpenSSL [list of cipher suites](https://www.openssl.org/docs/manmaster/man3/SSL_CTX_set_ciphersuites.html) (Default: `"ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384"` |
+| SSL_PROXY_CIPHER_SUITE | A string indicating the proxy cipher suite to use (ciphers to use to connect to your backend). (Default `"ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384"` |
+| SSL_HONOR_CIPHER_ORDER | A string indicating if the server should [honor the cipher list provided by the client](https://httpd.apache.org/docs/2.4/mod/mod_ssl.html#sslhonorcipherorder). (Default: `off`) |
 | TIMEOUT  | Number of seconds before receiving and sending timeout (Default: `60`) | 
 | WORKER_CONNECTIONS  | Maximum number of MPM request worker processes (Default: `400`) | 
 
