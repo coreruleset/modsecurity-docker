@@ -134,6 +134,7 @@ ENV ACCESSLOG=/var/log/nginx/access.log \
     MODSEC_TMP_SAVE_UPLOADED_FILES="on" \
     MODSEC_UPLOAD_DIR=/tmp/modsecurity/upload \
     PORT=80 \
+    NGINX_ALWAYS_TLS_REDIRECT=off \
     PROXY_TIMEOUT=60s \
     PROXY_SSL_CERT=/etc/nginx/conf/server.crt \
     PROXY_SSL_CERT_KEY=/etc/nginx/conf/server.key \
@@ -178,6 +179,7 @@ COPY --from=build /etc/modsecurity.d/unicode.mapping /etc/modsecurity.d/unicode.
 COPY --from=build /etc/modsecurity.d/modsecurity.conf /etc/modsecurity.d/modsecurity.conf
 COPY src/etc/modsecurity.d/*.conf /etc/modsecurity.d/
 COPY v3-nginx/conf.d/*.conf /etc/nginx/conf.d/
+COPY v3-nginx/includes /etc/nginx/includes
 COPY v3-nginx/nginx.conf /etc/nginx/
 COPY v3-nginx/docker-entrypoint.sh /
 

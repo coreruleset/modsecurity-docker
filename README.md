@@ -134,6 +134,7 @@ $ docker run -p 8080:80 -e SERVER_NAME=myhost my-modsec
 | METRICS_DENY_FROM  | A string indicating a range of IP adresses that cannot access the metrics (Default: `all`) | 
 | METRICSLOG  | A string value indicating the location of metrics log file (Default: `/dev/null`) | 
 | PORT  | An integer value indicating the port where the webserver is listening to (Default: `80`) | 
+| NGINX_ALWAYS_TLS_REDIRECT | A string value indicating if http should redirect to https (Default: `off`) | 
 | PROXY_SSL_CERT  | A string value indicating the path to the server PEM-encoded X.509 certificate data file or token value identifier (Default: `/etc/nginx/conf/server.crt`) | 
 | PROXY_SSL_CERT_KEY  | A string value indicating the path to the server PEM-encoded private key file (Default: `/etc/nginx/conf/server.key`) | 
 | PROXY_SSL_DH_BITS | A numeric value indicating the size (in bits) to use for the generated DH-params file (Default 2048) |
