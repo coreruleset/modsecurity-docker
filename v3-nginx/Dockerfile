@@ -85,6 +85,11 @@ RUN openssl req -x509 -days 365 -new \
      -keyout /usr/share/TLS/server.key \
      -out /usr/share/TLS/server.crt
 
+# Generate/Download Diffie-Hellman parameter files
+RUN openssl dhparam -out /usr/share/TLS/dhparam-1024.pem 1024
+RUN curl -sSL https://ssl-config.mozilla.org/ffdhe2048.txt -o /usr/share/TLS/dhparam-2048.pem
+RUN curl -sSL https://ssl-config.mozilla.org/ffdhe4096.txt -o /usr/share/TLS/dhparam-4096.pem
+
 FROM nginx:${NGINX_VERSION}
 
 ARG MODSEC_VERSION=3.0.6 \
@@ -129,10 +134,16 @@ ENV ACCESSLOG=/var/log/nginx/access.log \
     MODSEC_TMP_SAVE_UPLOADED_FILES="on" \
     MODSEC_UPLOAD_DIR=/tmp/modsecurity/upload \
     PORT=80 \
+    NGINX_ALWAYS_TLS_REDIRECT=off \
     PROXY_TIMEOUT=60s \
-    PROXY_SSL_CERT_KEY=/etc/nginx/conf/server.key \
     PROXY_SSL_CERT=/etc/nginx/conf/server.crt \
+    PROXY_SSL_CERT_KEY=/etc/nginx/conf/server.key \
+    PROXY_SSL_DH_BITS=2048 \
+    PROXY_SSL_PROTOCOLS="TLSv1.2 TLSv1.3" \
+    PROXY_SSL_CIPHERS="ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384" \
+    PROXY_SSL_PREFER_CIPHERS=off \
     PROXY_SSL_VERIFY=off \
+    PROXY_SSL_OCSP_STAPLING=off \
     SERVER_NAME=localhost \
     SSL_PORT=443 \
     TIMEOUT=60s \
@@ -162,11 +173,13 @@ COPY --from=build /usr/local/lib/libyajl.so.${YAJL_VERSION} /usr/local/lib/
 COPY --from=build /usr/local/lib/liblmdb.so /usr/local/lib/
 COPY --from=build /usr/share/TLS/server.key /etc/nginx/conf/server.key
 COPY --from=build /usr/share/TLS/server.crt /etc/nginx/conf/server.crt
+COPY --from=build /usr/share/TLS/dhparam-* /etc/ssl/certs/
 COPY --from=build /etc/nginx/modules/ngx_http_modsecurity_module.so /etc/nginx/modules/ngx_http_modsecurity_module.so
 COPY --from=build /etc/modsecurity.d/unicode.mapping /etc/modsecurity.d/unicode.mapping
 COPY --from=build /etc/modsecurity.d/modsecurity.conf /etc/modsecurity.d/modsecurity.conf
 COPY src/etc/modsecurity.d/*.conf /etc/modsecurity.d/
 COPY v3-nginx/conf.d/*.conf /etc/nginx/conf.d/
+COPY v3-nginx/includes /etc/nginx/includes
 COPY v3-nginx/nginx.conf /etc/nginx/
 COPY v3-nginx/docker-entrypoint.sh /
 
