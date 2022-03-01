@@ -8,14 +8,15 @@ services:
     environment:
       BACKEND: http://backend  # https://httpbin.org
       PORT: "8080"
-      SSL_PORT: "4443"
+      SSL_PORT: "8443"
       METRICS_ALLOW_FROM: All
+      APACHE_ALWAYS_TLS_REDIRECT: "on"
     ports:
-    - "8080:8080"
-    - "4443:4443"
+      - "8080:8080"
+      - "8443:8443"
     user: "10001"
     depends_on:
-    - backend
+      - backend
 
   apache-waf-alpine:
     build:
@@ -27,11 +28,11 @@ services:
       SSL_PORT: "4443"
       METRICS_ALLOW_FROM: All
     ports:
-    - "8080:8080"
-    - "4443:4443"
+      - "8080:8080"
+      - "4443:4443"
     user: "10001"
     depends_on:
-    - backend
+      - backend
 
   nginx-waf:
     build:
@@ -44,11 +45,11 @@ services:
       DNS_SERVER: "1.1.1.1"
       METRICS_ALLOW_FROM: all
     ports:
-    - "8081:8080"
-    - "4444:4443"
+      - "8081:8080"
+      - "4444:4443"
     user: "10001"
     depends_on:
-    - backend
+      - backend
 
   nginx-waf-alpine:
     build:
@@ -61,13 +62,11 @@ services:
       DNS_SERVER: "1.1.1.1"
       METRICS_ALLOW_FROM: all
     ports:
-    - "8081:8080"
-    - "4444:4443"
+      - "8081:8080"
+      - "4444:4443"
     user: "10001"
     depends_on:
-    - backend
+      - backend
 
   backend:
     image: docker.io/kennethreitz/httpbin
-    ports:
-    - "80"

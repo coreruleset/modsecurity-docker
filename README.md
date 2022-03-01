@@ -77,6 +77,8 @@ $ docker run -p 8443:443 my-modsec
 
 We use sane intermediate defaults taken from the [Mozilla SSL config tool](https://ssl-config.mozilla.org/). Please check it and choose the best that match your needs.
 
+You can use variables on nginx and apache to always redirect from http to https if needed (see APACHE_ALWAYS_TLS_REDIRECT and NGINX_ALWAYS_TLS_REDIRECT below).
+
 ### Proxying
 
 ModSecurity is often used as a reverse proxy. This allows one to use ModSecurity without modifying the webserver hosting the underlying application (and also protect web servers that modsecurity cannot currently embedd into). The proxy is set by default to true and the location is defined by BACKEND environment variable. The SSL is enabled by default.
@@ -119,6 +121,7 @@ $ docker run -p 8080:80 -e SERVER_NAME=myhost my-modsec
 | REMOTEIP_INT_PROXY  | A string indicating the client intranet IP addresses trusted to present the RemoteIPHeader value (Default: `10.1.0.0/16`) | 
 | SERVER_ADMIN  | A string value indicating the address where problems with the server should be e-mailed (Default: `root@localhost`) | 
 | REQ_HEADER_FORWARDED_PROTO  | A string indicating the transfer protocol of the initial request (Default: `https`) | 
+| APACHE_ALWAYS_TLS_REDIRECT | A string value indicating if http should redirect to https (Allowed values: `on`, `off`. Default: `off`) | 
 | SSL_ENGINE  | A string indicating the SSL Engine Operation Switch (Default: `off`) | 
 | SSL_PORT  | Port number where the SSL enabled webserver is listening (Default: `443`) | 
 | SSL_PROTOCOL | A string for configuring the [usable SSL/TLS protocol versions](https://httpd.apache.org/docs/2.4/mod/mod_ssl.html#sslprotocol). (Default `"all -SSLv3 -TLSv1 -TLSv1.1"`) |
