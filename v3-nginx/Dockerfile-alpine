@@ -116,6 +116,7 @@ ENV ACCESSLOG=/var/log/nginx/access.log \
     MODSEC_RESP_BODY_LIMIT=1048576 \
     MODSEC_RESP_BODY_LIMIT_ACTION="ProcessPartial" \
     MODSEC_RESP_BODY_MIMETYPE="text/plain text/html text/xml" \
+    MODSEC_STATUS_ENGINE="Off" \
     MODSEC_RULE_ENGINE=on \
     MODSEC_TAG=modsecurity \
     MODSEC_TMP_DIR=/tmp/modsecurity/tmp \
