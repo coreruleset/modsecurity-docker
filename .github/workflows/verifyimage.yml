@@ -48,14 +48,14 @@ jobs:
           set: |
             "${{ matrix.image }}${{ matrix.variant }}.tags=${{ matrix.image }}${{ matrix.variant }}-test"
             "${{ matrix.image }}${{ matrix.variant }}.platform=${{ matrix.platform }}"
+          pull: true
           load: true
-          push: false
 
       - name: Run ${{ matrix.image }}${{ matrix.variant }}
         run: |
           docker run -d --name ${{ matrix.image }}${{ matrix.variant }}-test ${{ matrix.image }}${{ matrix.variant }}-test
           docker logs ${{ matrix.image }}${{ matrix.variant }}-test
-
       - name: Verify ${{ matrix.image }}${{ matrix.variant }}
         run: |
+          docker logs ${{ matrix.image }}${{ matrix.variant }}-test
           [ $(docker inspect ${{ matrix.image }}${{ matrix.variant }}-test --format='{{.State.Running}}') = 'true' ]

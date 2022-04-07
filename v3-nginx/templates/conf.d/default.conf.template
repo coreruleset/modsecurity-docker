@@ -8,7 +8,6 @@ map $http_upgrade $connection_upgrade {
 server {
     listen ${PORT} default_server;
 
-    resolver ${DNS_SERVER} valid=5s;
     server_name ${SERVER_NAME};
     set $upstream ${BACKEND};
     set $always_redirect ${NGINX_ALWAYS_TLS_REDIRECT};
@@ -33,7 +32,6 @@ server {
 server {
     listen ${SSL_PORT} ssl;
 
-    resolver ${DNS_SERVER} valid=5s;
     server_name ${SERVER_NAME};
     set $upstream ${BACKEND};
 

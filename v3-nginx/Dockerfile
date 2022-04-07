@@ -10,6 +10,7 @@ ARG MODSEC_VERSION=3.0.6 \
 
 RUN set -eux; \
     apt-get update; \
+    unset LD_LIBRARY_PATH; \
     apt-get install -y --no-install-recommends \
         automake \
         cmake \
@@ -149,10 +150,12 @@ ENV ACCESSLOG=/var/log/nginx/access.log \
     SSL_PORT=443 \
     TIMEOUT=60s \
     WORKER_CONNECTIONS=1024 \
-    LD_LIBRARY_PATH=/lib:/usr/lib:/usr/local/lib
+    LD_LIBRARY_PATH=/lib:/usr/lib:/usr/local/lib \
+    NGINX_ENVSUBST_OUTPUT_DIR=/etc/nginx
 
 RUN set -eux; \
     apt-get update; \
+    unset LD_LIBRARY_PATH; \
     apt-get install -y --no-install-recommends \
         ca-certificates \
         libcurl4-gnutls-dev \
@@ -178,11 +181,10 @@ COPY --from=build /usr/share/TLS/dhparam-* /etc/ssl/certs/
 COPY --from=build /etc/nginx/modules/ngx_http_modsecurity_module.so /etc/nginx/modules/ngx_http_modsecurity_module.so
 COPY --from=build /etc/modsecurity.d/unicode.mapping /etc/modsecurity.d/unicode.mapping
 COPY --from=build /etc/modsecurity.d/modsecurity.conf /etc/modsecurity.d/modsecurity.conf
-COPY src/etc/modsecurity.d/*.conf /etc/modsecurity.d/
-COPY v3-nginx/conf.d/*.conf /etc/nginx/conf.d/
-COPY v3-nginx/includes /etc/nginx/includes
-COPY v3-nginx/nginx.conf /etc/nginx/
-COPY v3-nginx/docker-entrypoint.sh /
+COPY v3-nginx/templates /etc/nginx/templates/
+COPY src/etc/modsecurity.d/modsecurity-override.conf /etc/nginx/templates/modsecurity.d/modsecurity-override.conf.template
+COPY src/etc/modsecurity.d/setup.conf /etc/nginx/templates/modsecurity.d/setup.conf.template
+COPY v3-nginx/docker-entrypoint.d/*.sh /docker-entrypoint.d/
 
 RUN set -eux; \
     ln -s /usr/local/modsecurity/lib/libmodsecurity.so.${MODSEC_VERSION} /usr/local/modsecurity/lib/libmodsecurity.so.3.0; \
@@ -194,7 +196,4 @@ RUN set -eux; \
     ln -s /usr/local/lib/libyajl.so.${YAJL_VERSION} /usr/local/lib/libyajl.so.2; \
     chgrp -R 0 /var/cache/nginx/ /var/log/ /var/run/ /usr/share/nginx/ /etc/nginx/ /etc/modsecurity.d/; \
     chmod -R g=u /var/cache/nginx/ /var/log/ /var/run/ /usr/share/nginx/ /etc/nginx/ /etc/modsecurity.d/
-
-ENTRYPOINT ["/docker-entrypoint.sh"]
-CMD ["nginx", "-g", "daemon off;"]
 
