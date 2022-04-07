@@ -155,7 +155,6 @@ ENV ACCESSLOG=/var/log/nginx/access.log \
 
 RUN set -eux; \
     apt-get update; \
-    unset LD_LIBRARY_PATH; \
     apt-get install -y --no-install-recommends \
         ca-certificates \
         libcurl4-gnutls-dev \
