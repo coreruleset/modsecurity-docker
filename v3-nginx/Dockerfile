@@ -10,7 +10,6 @@ ARG MODSEC_VERSION=3.0.6 \
 
 RUN set -eux; \
     apt-get update; \
-    unset LD_LIBRARY_PATH; \
     apt-get install -y --no-install-recommends \
         automake \
         cmake \
