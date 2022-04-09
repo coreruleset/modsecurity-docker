@@ -1,0 +1,21 @@
+name: CI notify
+
+# Only trigger, when the build workflow succeeded
+on:
+  workflow_run:
+    workflows: ["build"]
+    types:
+      - completed
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Repository Dispatch
+        uses: myrotvorets/trigger-repository-dispatch-action@1.0.0
+        with:
+          token: ${{ secrets.REPOSITORY_ACCESS_TOKEN }}
+          repo: coreruleset/modsecurity-crs-docker
+          type: base-container-updated
+          payload: '{ "ref": "${{ github.ref }}", "sha": "${{ github.sha }}" }'
