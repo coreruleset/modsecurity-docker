@@ -1,6 +1,6 @@
 load_module modules/ngx_http_modsecurity_module.so;
 
-worker_processes 1;
+worker_processes auto;
 pid /var/run/nginx.pid;
 
 events {
@@ -13,5 +13,6 @@ http {
     keepalive_timeout ${TIMEOUT};
     sendfile on;
 
+    resolver DNS_SERVER valid=5s;
     include /etc/nginx/conf.d/*.conf;
 }
