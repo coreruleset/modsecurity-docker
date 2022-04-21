@@ -66,6 +66,19 @@ This image only contains ModSecurity built from the code provided on the [ModSec
 
 3. Visit http://localhost:8080 and your page.
 
+### Nginx based images breaking change
+
+| ⚠️ WARNING          |
+|:---------------------------|
+| Nginx based images are now based on upstream nginx. This changed the way the config file for nginx is generated.  |
+
+If using the [Nginx environment variables](https://github.com/coreruleset/modsecurity-docker#nginx-env-variables) is not enough for your use case, you can mount your own `nginx.conf` file as the new template for generating the base config.
+
+An example can be seen in the [docker-compose](https://github.com/coreruleset/modsecurity-docker/blob/master/docker-compose.yml) file.
+
+> 💬 What happens if I want to make changes in a different file, like `/etc/nging/conf.d/default.conf`?
+> You mount your local file, e.g. `nginx/default.conf` as the new template: `/etc/nginx/templates/conf.d/default.conf.template`. You can do the similar to other files. Files in the templates directory will be copied preserving the subdirectories structure.
+
 ### TLS/HTTPS
 
 The TLS is configured by default on port 443. Note: The default configuration uses self signed certificates, to use your own certificates (recommended) COPY or mount (-v) your server.crt and server.key into `/usr/local/apache2/conf/`. Please remember you'll need to forward the HTTPS port.

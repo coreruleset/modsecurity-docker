@@ -48,6 +48,9 @@ services:
     user: "10001"
     depends_on:
       - backend
+    # If you need to modify nginx config, mount your volume as the template file
+    # volumes:
+    #  - ./nginx/nginx.conf:/etc/nginx/templates/nginx.conf.template:rw
   nginx-waf-alpine:
     build:
       context: .
@@ -64,5 +67,8 @@ services:
     user: "10001"
     depends_on:
       - backend
+    # If you need to modify nginx config, mount your volume as the template file
+    # volumes:
+    #  - ./nginx/nginx.conf:/etc/nginx/templates/nginx.conf.template:rw
   backend:
     image: docker.io/kennethreitz/httpbin
