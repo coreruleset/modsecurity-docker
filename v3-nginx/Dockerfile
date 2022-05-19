@@ -120,7 +120,6 @@ ENV ACCESSLOG=/var/log/nginx/access.log \
     MODSEC_DEBUG_LOGLEVEL=0 \
     MODSEC_DEFAULT_PHASE1_ACTION="phase:1,pass,log,tag:'\${MODSEC_TAG}'" \
     MODSEC_DEFAULT_PHASE2_ACTION="phase:2,pass,log,tag:'\${MODSEC_TAG}'" \
-    MODSEC_DISABLE_BACKEND_COMPRESSION="Off" \
     MODSEC_PCRE_MATCH_LIMIT_RECURSION=100000 \
     MODSEC_PCRE_MATCH_LIMIT=100000 \
     MODSEC_REQ_BODY_ACCESS=on \
@@ -191,6 +190,9 @@ COPY v3-nginx/templates /etc/nginx/templates/
 COPY src/etc/modsecurity.d/modsecurity-override.conf /etc/nginx/templates/modsecurity.d/modsecurity-override.conf.template
 COPY src/etc/modsecurity.d/setup.conf /etc/nginx/templates/modsecurity.d/setup.conf.template
 COPY v3-nginx/docker-entrypoint.d/*.sh /docker-entrypoint.d/
+
+# Comment out the SecDisableBackendCompression option since it is not supported in V3
+RUN sed -i 's/^\(SecDisableBackendCompression .*\)/# \1/' /etc/nginx/templates/modsecurity.d/modsecurity-override.conf.template
 
 RUN set -eux; \
     ln -s /usr/local/modsecurity/lib/libmodsecurity.so.${MODSEC_VERSION} /usr/local/modsecurity/lib/libmodsecurity.so.3.0; \
