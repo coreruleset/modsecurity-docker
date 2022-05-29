@@ -148,7 +148,7 @@ RUN set -eux; \
 COPY --from=build /usr/local/apache2/modules/mod_security2.so                  /usr/local/apache2/modules/mod_security2.so
 COPY --from=build /usr/local/apache2/ModSecurity-${MODSEC_VERSION}/modsecurity.conf-recommended  /etc/modsecurity.d/modsecurity.conf
 COPY --from=build /usr/local/apache2/ModSecurity-${MODSEC_VERSION}/unicode.mapping               /etc/modsecurity.d/unicode.mapping
-COPY --from=build /usr/local/lib/libfuzzy.so.${FUZZY_VERSION}                             /usr/local/lib/libfuzzy.so.${FUZZY_VERSION}
+COPY --from=build /usr/local/lib/libfuzzy.so.${FUZZY_VERSION}                  /usr/local/lib/libfuzzy.so.${FUZZY_VERSION}
 COPY --from=build /usr/local/bin/ssdeep                                        /usr/local/bin/ssdeep
 COPY --from=build /usr/share/TLS/server.key                                    /usr/local/apache2/conf/server.key
 COPY --from=build /usr/share/TLS/server.crt                                    /usr/local/apache2/conf/server.crt

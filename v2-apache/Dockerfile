@@ -26,9 +26,9 @@ RUN set -eux; \
         pkgconf \
         wget
 
-    RUN set -eux; \
+RUN set -eux; \
     wget --quiet https://github.com/ssdeep-project/ssdeep/releases/download/release-${SSDEEP_VERSION}/ssdeep-${SSDEEP_VERSION}.tar.gz; \
-    tar -xzf ssdeep-${SSDEEP_VERSION}.tar.gz; \
+    tar -xvzf ssdeep-${SSDEEP_VERSION}.tar.gz; \
     cd ssdeep-${SSDEEP_VERSION}; \
     ./configure; \
     make; \
@@ -79,13 +79,15 @@ ENV APACHE_ALWAYS_TLS_REDIRECT=off \
     MODSEC_DATA_DIR=/tmp/modsecurity/data \
     MODSEC_DEBUG_LOG=/dev/null \
     MODSEC_DEBUG_LOGLEVEL=0 \
+    MODSEC_DEFAULT_PHASE1_ACTION="phase:1,pass,log,tag:'\${MODSEC_TAG}'" \
+    MODSEC_DEFAULT_PHASE2_ACTION="phase:2,pass,log,tag:'\${MODSEC_TAG}'" \
     MODSEC_PCRE_MATCH_LIMIT_RECURSION=500000 \
     MODSEC_PCRE_MATCH_LIMIT=500000 \
     MODSEC_REQ_BODY_ACCESS=on \
     MODSEC_REQ_BODY_LIMIT=13107200 \
     MODSEC_REQ_BODY_LIMIT_ACTION="Reject" \
-    MODSEC_REQ_BODY_NOFILES_LIMIT=131072 \
     MODSEC_REQ_BODY_JSON_DEPTH_LIMIT=512 \
+    MODSEC_REQ_BODY_NOFILES_LIMIT=131072 \
     MODSEC_RESP_BODY_ACCESS=on \
     MODSEC_RESP_BODY_LIMIT=1048576 \
     MODSEC_RESP_BODY_LIMIT_ACTION="ProcessPartial" \

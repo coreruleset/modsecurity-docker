@@ -52,7 +52,7 @@ RUN set -eux; \
     strip /usr/local/lib/libfuzzy*.so*
 
 RUN set -eux; \
-    git clone https://github.com/SpiderLabs/ModSecurity --branch v${MODSEC_VERSION} --depth 1; \
+    git clone https://github.com/SpiderLabs/ModSecurity --branch v"${MODSEC_VERSION}" --depth 1; \
     cd ModSecurity; \
     ./build.sh; \
     git submodule init; \
@@ -81,9 +81,9 @@ RUN set -eux; \
 RUN mkdir -p /usr/share/TLS
 COPY v3-nginx/openssl.conf /usr/share/TLS
 RUN openssl req -x509 -days 365 -new \
-     -config /usr/share/TLS/openssl.conf \
-     -keyout /usr/share/TLS/server.key \
-     -out /usr/share/TLS/server.crt
+    -config /usr/share/TLS/openssl.conf \
+    -keyout /usr/share/TLS/server.key \
+    -out /usr/share/TLS/server.crt
 
 # Generate/Download Diffie-Hellman parameter files
 RUN openssl dhparam -out /usr/share/TLS/dhparam-1024.pem 1024
@@ -117,6 +117,8 @@ ENV ACCESSLOG=/var/log/nginx/access.log \
     MODSEC_DATA_DIR=/tmp/modsecurity/data \
     MODSEC_DEBUG_LOG=/dev/null \
     MODSEC_DEBUG_LOGLEVEL=0 \
+    MODSEC_DEFAULT_PHASE1_ACTION="phase:1,pass,log,tag:'\${MODSEC_TAG}'" \
+    MODSEC_DEFAULT_PHASE2_ACTION="phase:2,pass,log,tag:'\${MODSEC_TAG}'" \
     MODSEC_PCRE_MATCH_LIMIT_RECURSION=100000 \
     MODSEC_PCRE_MATCH_LIMIT=100000 \
     MODSEC_REQ_BODY_ACCESS=on \
@@ -171,12 +173,12 @@ RUN set -eux; \
 
 COPY --from=build /usr/local/modsecurity/lib/libmodsecurity.so.${MODSEC_VERSION} /usr/local/modsecurity/lib/
 COPY --from=build /usr/local/lib/libfuzzy.so.${FUZZY_VERSION} /usr/local/lib/
+COPY --from=build /etc/nginx/modules/ngx_http_modsecurity_module.so /etc/nginx/modules/ngx_http_modsecurity_module.so
 COPY --from=build /usr/local/lib/libyajl.so.${YAJL_VERSION} /usr/local/lib/
 COPY --from=build /usr/local/lib/liblmdb.so /usr/local/lib/
 COPY --from=build /usr/share/TLS/server.key /etc/nginx/conf/server.key
 COPY --from=build /usr/share/TLS/server.crt /etc/nginx/conf/server.crt
 COPY --from=build /usr/share/TLS/dhparam-* /etc/ssl/certs/
-COPY --from=build /etc/nginx/modules/ngx_http_modsecurity_module.so /etc/nginx/modules/ngx_http_modsecurity_module.so
 COPY --from=build /etc/modsecurity.d/unicode.mapping /etc/modsecurity.d/unicode.mapping
 COPY --from=build /etc/modsecurity.d/modsecurity.conf /etc/modsecurity.d/modsecurity.conf
 COPY v3-nginx/templates /etc/nginx/templates/
