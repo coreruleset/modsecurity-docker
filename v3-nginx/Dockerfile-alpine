@@ -42,9 +42,9 @@ RUN set -eux; \
     make install
 
 RUN set -eux; \
-    git clone https://github.com/SpiderLabs/ModSecurity --branch v"$MODSEC_VERSION" --depth 1; \
+    git clone https://github.com/SpiderLabs/ModSecurity --branch v"${MODSEC_VERSION}" --depth 1; \
     cd ModSecurity; \
-    ./build.sh;\
+    ./build.sh; \
     git submodule init; \
     git submodule update; \
     ./configure --with-yajl --with-ssdeep --with-lmdb --with-geoip; \
@@ -116,8 +116,8 @@ ENV ACCESSLOG=/var/log/nginx/access.log \
     MODSEC_RESP_BODY_LIMIT=1048576 \
     MODSEC_RESP_BODY_LIMIT_ACTION="ProcessPartial" \
     MODSEC_RESP_BODY_MIMETYPE="text/plain text/html text/xml" \
-    MODSEC_STATUS_ENGINE="Off" \
     MODSEC_RULE_ENGINE=on \
+    MODSEC_STATUS_ENGINE="Off" \
     MODSEC_TAG=modsecurity \
     MODSEC_TMP_DIR=/tmp/modsecurity/tmp \
     MODSEC_TMP_SAVE_UPLOADED_FILES="on" \
@@ -158,13 +158,12 @@ RUN set -eux; \
 
 COPY --from=build /usr/local/modsecurity/lib/libmodsecurity.so.${MODSEC_VERSION} /usr/local/modsecurity/lib/
 COPY --from=build /usr/local/lib/libfuzzy.so.${FUZZY_VERSION} /usr/local/lib/
-COPY --from=build /etc/nginx/modules/ngx_http_modsecurity_module.so /etc/nginx/modules/ngx_http_modsecurity_module.so 
+COPY --from=build /etc/nginx/modules/ngx_http_modsecurity_module.so /etc/nginx/modules/ngx_http_modsecurity_module.so
 COPY --from=build /usr/share/TLS/server.key /etc/nginx/conf/server.key
 COPY --from=build /usr/share/TLS/server.crt /etc/nginx/conf/server.crt
 COPY --from=build /usr/share/TLS/dhparam-* /etc/ssl/certs/
 COPY --from=build /etc/modsecurity.d/unicode.mapping /etc/modsecurity.d/unicode.mapping
 COPY --from=build /etc/modsecurity.d/modsecurity.conf /etc/modsecurity.d/modsecurity.conf
-COPY src/etc/modsecurity.d/*.template /etc/modsecurity.d/templates/
 COPY v3-nginx/templates /etc/nginx/templates/
 COPY src/etc/modsecurity.d/modsecurity-override.conf /etc/nginx/templates/modsecurity.d/modsecurity-override.conf.template
 COPY src/etc/modsecurity.d/setup.conf /etc/nginx/templates/modsecurity.d/setup.conf.template
