@@ -4,7 +4,7 @@ variable "apache_modsec_version" {
 }
 
 variable "nginx_modsec_version" {
-    default = "3.0.6"
+    default = "3.0.7"
 }
 
 function "major" {
