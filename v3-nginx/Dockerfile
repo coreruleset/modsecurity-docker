@@ -138,6 +138,9 @@ ENV ACCESSLOG=/var/log/nginx/access.log \
     MODSEC_UPLOAD_DIR=/tmp/modsecurity/upload \
     PORT=80 \
     NGINX_ALWAYS_TLS_REDIRECT=off \
+    SET_REAL_IP_FROM="127.0.0.1" \
+    REAL_IP_HEADER="X-REAL-IP" \
+    REAL_IP_RECURSIVE="on" \
     PROXY_TIMEOUT=60s \
     PROXY_SSL_CERT=/etc/nginx/conf/server.crt \
     PROXY_SSL_CERT_KEY=/etc/nginx/conf/server.key \
@@ -196,4 +199,3 @@ RUN set -eux; \
     ln -s /usr/local/lib/libyajl.so.${YAJL_VERSION} /usr/local/lib/libyajl.so.2; \
     chgrp -R 0 /var/cache/nginx/ /var/log/ /var/run/ /usr/share/nginx/ /etc/nginx/ /etc/modsecurity.d/; \
     chmod -R g=u /var/cache/nginx/ /var/log/ /var/run/ /usr/share/nginx/ /etc/nginx/ /etc/modsecurity.d/
-
