@@ -2,7 +2,7 @@ ARG NGINX_VERSION="1.20.2"
 
 FROM nginx:${NGINX_VERSION} as build
 
-ARG MODSEC_VERSION=3.0.6 \
+ARG MODSEC_VERSION=3.0.7 \
     YAJL_VERSION=2.1.0 \
     FUZZY_VERSION=2.1.0 \
     LMDB_VERSION=0.9.29 \
@@ -92,7 +92,7 @@ RUN curl -sSL https://ssl-config.mozilla.org/ffdhe4096.txt -o /usr/share/TLS/dhp
 
 FROM nginx:${NGINX_VERSION}
 
-ARG MODSEC_VERSION=3.0.6 \
+ARG MODSEC_VERSION=3.0.7 \
     YAJL_VERSION=2.1.0 \
     FUZZY_VERSION=2.1.0 \
     LMDB_VERSION=0.9.29 \
