@@ -65,6 +65,7 @@ ENV APACHE_ALWAYS_TLS_REDIRECT=off \
     BACKEND=http://localhost:80 \
     BACKEND_WS=ws://localhost:8080 \
     ERRORLOG=/var/log/apache2/error.log \
+    APACHE_LOGFORMAT='"%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-agent}i\""' \
     H2_PROTOCOLS='h2 http/1.1' \
     LOGLEVEL=warn \
     METRICS_ALLOW_FROM='127.0.0.0/255.0.0.0 ::1/128' \
@@ -161,6 +162,9 @@ RUN set -eux; \
     sed -i -E 's|(ServerTokens) Full|\1 Prod|' /usr/local/apache2/conf/extra/httpd-default.conf; \
     sed -i -E 's|#(ServerName) www.example.com:80|\1 ${SERVER_NAME}|' /usr/local/apache2/conf/httpd.conf; \
     sed -i -E 's|(ServerAdmin) you@example.com|\1 ${SERVER_ADMIN}|' /usr/local/apache2/conf/httpd.conf; \
+    sed -i -E 's|^(\s*CustomLog)(\s+\S+)+|\1 ${ACCESSLOG} modsec "env=!nologging"|g' /usr/local/apache2/conf/httpd.conf; \
+	sed -i -E 's|^(\s*ErrorLog)\s+\S+|\1 ${ERRORLOG}|g' /usr/local/apache2/conf/httpd.conf; \
+	sed -i -E 's|^(\s*TransferLog)\s+\S+|\1 ${ACCESSLOG}|g' /usr/local/apache2/conf/httpd.conf; \
     sed -i -E 's|#(LoadModule unique_id_module)|\1|' /usr/local/apache2/conf/httpd.conf; \
     sed -i -E 's|#(LoadModule rewrite_module modules/mod_rewrite.so)|\1|' /usr/local/apache2/conf/httpd.conf; \
     sed -i -E 's|#(LoadModule proxy_module modules/mod_proxy.so)|\1|' /usr/local/apache2/conf/httpd.conf; \
