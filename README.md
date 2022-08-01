@@ -113,8 +113,9 @@ $ docker run -p 8080:80 -e SERVER_NAME=myhost my-modsec
 
 | Name     | Description|
 | -------- | ------------------------------------------------------------------- |
-| ACCESSLOG | A string value indicating the location of the custom log file (Default: `/var/ log/apache2/access.log`) |
-| APACHE_ALWAYS_TLS_REDIRECT | A string value indicating if http should redirect to https (Allowed values: `on`, `off`. Default: `off`) | 
+| ACCESSLOG | A string value indicating the location of the custom log file (Default: `/var/log/apache2/access.log`) |
+| APACHE_ALWAYS_TLS_REDIRECT | A string value indicating if http should redirect to https (Allowed values: `on`, `off`. Default: `off`) |
+| APACHE_LOGFORMAT | A string value indicating the LogFormat that apache should use. (Default: `'"%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-agent}i\""'` (combined). Tip: use single quotes outside your double quoted format string.) ⚠️ Do not add a `|` as part of the log format. It is used internally.  |
 | BACKEND | A string indicating the partial URL for the remote server of the `ProxyPass` directive (Default: `http://localhost:80`) |
 | BACKEND_WS | A string indicating the IP/URL of the WebSocket service (Default: `ws://localhost:8080`) |
 | ERRORLOG  | A string value indicating the location of the error log file (Default: `/var/log/apache2/error.log`) | 
@@ -123,7 +124,7 @@ $ docker run -p 8080:80 -e SERVER_NAME=myhost my-modsec
 | METRICS_ALLOW_FROM  | A string indicating a range of IP adresses that can access the metrics (Default: `127.0.0.0/255.0.0.0 ::1/128`) | 
 | METRICS_DENY_FROM  | A string indicating a range of IP adresses that cannot access the metrics (Default: `All`) | 
 | METRICSLOG  | A string indicating the path of the metrics log (Default: `/dev/null combined`) | 
-| PERFLOG  | A string indicating the path of the performance log (Default: `/dev/stdout  perflogjson env=write_perflog`) |
+| PERFLOG  | A string indicating the path of the performance log (Default: `/dev/stdout perflogjson env=write_perflog`) |
 | PORT  | An integer value indicating the port where the webserver is listening to (Default: `80`) | 
 | PROXY_PRESERVE_HOST  | A string indicating the use of incoming Host HTTP request header for proxy request (Default: `on`) | 
 | PROXY_SSL_CERT_KEY  | A string indicating the path to the server PEM-encoded private key file (Default: `/usr/local/apache2/conf/server.key`) | 
@@ -146,7 +147,9 @@ $ docker run -p 8080:80 -e SERVER_NAME=myhost my-modsec
 | SSL_SESSION_TICKETS | A string to enable or disable the use of [TLS session tickets](https://httpd.apache.org/docs/2.4/mod/mod_ssl.html#sslsessiontickets) (RFC 5077). (Default: `off`) |
 | SSL_USE_STAPLING | A string indicating if [OSCP Stapling](https://httpd.apache.org/docs/2.4/mod/mod_ssl.html#sslusestapling) should be used (Allowed values: `on`, `off`. Default: `on`) |
 | TIMEOUT  | Number of seconds before receiving and sending timeout (Default: `60`) | 
-| WORKER_CONNECTIONS  | Maximum number of MPM request worker processes (Default: `400`) | 
+| WORKER_CONNECTIONS  | Maximum number of MPM request worker processes (Default: `400`) |
+
+Note: Apache access and metric logs can be disabled by exporting the `nologging=1` environment variable, or using `ACCESSLOG=/dev/null` and `METRICSLOG=/dev/null`.
 
 ### Nginx ENV Variables
 

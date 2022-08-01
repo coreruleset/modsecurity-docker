@@ -74,6 +74,7 @@ ARG MODSEC_VERSION=2.9.5 \
 LABEL maintainer="Felipe Zipitria <felipe.zipitria@owasp.org>"
 
 ENV APACHE_ALWAYS_TLS_REDIRECT=off \
+    APACHE_LOGFORMAT='"%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-agent}i\""' \
     ACCESSLOG=/var/log/apache2/access.log \
     BACKEND=http://localhost:80 \
     BACKEND_WS=ws://localhost:8080 \
@@ -161,6 +162,9 @@ RUN set -eux; \
     sed -i -E 's|(ServerTokens) Full|\1 Prod|' /usr/local/apache2/conf/extra/httpd-default.conf; \
     sed -i -E 's|#(ServerName) www.example.com:80|\1 ${SERVER_NAME}|' /usr/local/apache2/conf/httpd.conf; \
     sed -i -E 's|(ServerAdmin) you@example.com|\1 ${SERVER_ADMIN}|' /usr/local/apache2/conf/httpd.conf; \
+    sed -i -E 's|^(\s*CustomLog)(\s+\S+)+|\1 ${ACCESSLOG} modsec "env=!nologging"|g' /usr/local/apache2/conf/httpd.conf; \
+	sed -i -E 's|^(\s*ErrorLog)\s+\S+|\1 ${ERRORLOG}|g' /usr/local/apache2/conf/httpd.conf; \
+	sed -i -E 's|^(\s*TransferLog)\s+\S+|\1 ${ACCESSLOG}|g' /usr/local/apache2/conf/httpd.conf; \
     sed -i -E 's|#(LoadModule unique_id_module)|\1|' /usr/local/apache2/conf/httpd.conf; \
     sed -i -E 's|#(LoadModule rewrite_module modules/mod_rewrite.so)|\1|' /usr/local/apache2/conf/httpd.conf; \
     sed -i -E 's|#(LoadModule proxy_module modules/mod_proxy.so)|\1|' /usr/local/apache2/conf/httpd.conf; \
