@@ -1,4 +1,4 @@
-ARG NGINX_VERSION="1.22.0"
+ARG NGINX_VERSION="1.20.2"
 
 FROM nginx:${NGINX_VERSION} as build
 
@@ -19,8 +19,7 @@ RUN set -eux; \
         libcurl4-gnutls-dev \
         libgeoip-dev \
         liblua5.3-dev \
-        libpcre3-dev \
-        libpcre2-dev \
+        libpcre++-dev \
         libtool \
         libxml2-dev \
         make \
@@ -58,7 +57,7 @@ RUN set -eux; \
     ./build.sh; \
     git submodule init; \
     git submodule update; \
-    ./configure --with-yajl=/sources/yajl/build/yajl-${YAJL_VERSION}/ --with-geoip --with-pcre2; \
+    ./configure --with-yajl=/sources/yajl/build/yajl-${YAJL_VERSION}/ --with-geoip; \
     make install; \
     strip /usr/local/modsecurity/lib/lib*.so*
 
