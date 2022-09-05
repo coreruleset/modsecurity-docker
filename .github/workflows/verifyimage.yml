@@ -20,28 +20,28 @@ jobs:
           - linux/amd64
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 1
 
       # https://github.com/docker/setup-qemu-action
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v1
+        uses: docker/setup-qemu-action@v2
 
       # https://github.com/docker/setup-buildx-action
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v2
         with:
           driver-opts: image=moby/buildkit:master
 
       - name: Docker meta
-        uses: docker/metadata-action@v3
+        uses: docker/metadata-action@v4
         id: meta
         with:
           images: owasp/modsecurity
 
       - name: Build ${{ matrix.image }}${{ matrix.variant }} - ${{ matrix.platform }}
-        uses: docker/bake-action@v1.5.0
+        uses: docker/bake-action@v2.2.0
         with:
           files: docker-bake.hcl
           targets: ${{ matrix.image }}${{ matrix.variant }}
