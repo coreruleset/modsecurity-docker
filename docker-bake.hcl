@@ -1,10 +1,10 @@
 # docker-bake.hcl
 variable "apache_modsec_version" {
-    default = "2.9.5"
+    default = "2.9.6"
 }
 
 variable "nginx_modsec_version" {
-    default = "3.0.7"
+    default = "3.0.8"
 }
 
 function "major" {
