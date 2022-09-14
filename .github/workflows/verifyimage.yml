@@ -46,15 +46,16 @@ jobs:
           files: docker-bake.hcl
           targets: ${{ matrix.image }}${{ matrix.variant }}
           set: |
-            "${{ matrix.image }}${{ matrix.variant }}.tags=${{ matrix.image }}${{ matrix.variant }}-test"
             "${{ matrix.image }}${{ matrix.variant }}.platform=${{ matrix.platform }}"
           pull: true
           load: true
 
       - name: Run ${{ matrix.image }}${{ matrix.variant }}
         run: |
-          docker run -d --name ${{ matrix.image }}${{ matrix.variant }}-test ${{ matrix.image }}${{ matrix.variant }}-test
+          TAG=$(docker buildx bake -f docker-bake.hcl --print | jq -r '.target["${{ matrix.image }}${{ matrix.variant }}"].tags[2]')
+          docker run -d --name ${{ matrix.image }}${{ matrix.variant }}-test "${TAG}"
           docker logs ${{ matrix.image }}${{ matrix.variant }}-test
+
       - name: Verify ${{ matrix.image }}${{ matrix.variant }}
         run: |
           docker logs ${{ matrix.image }}${{ matrix.variant }}-test

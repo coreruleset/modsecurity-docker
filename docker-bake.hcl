@@ -7,6 +7,10 @@ variable "nginx_modsec_version" {
     default = "3.0.8"
 }
 
+variable "REPO" {
+  default = "owasp/modsecurity"
+}
+
 function "major" {
     params = [version]
     result = split(".", version)[0]
@@ -22,6 +26,25 @@ function "patch" {
     result = join(".", slice(split(".", version),0,3))
 }
 
+function "tag" {
+    params = [tag]
+    result = ["${REPO}:${tag}"]
+}
+
+function "vtag" {
+    params = [semver, variant]
+    result = concat(
+        tag("${major(semver)}${variant}-${formatdate("YYYYMMDDHHMM", timestamp())}"),
+        tag("${minor(semver)}${variant}-${formatdate("YYYYMMDDHHMM", timestamp())}"),
+        tag("${patch(semver)}${variant}-${formatdate("YYYYMMDDHHMM", timestamp())}")
+    )
+}
+
+// function "tag" {
+//   params = [tag]
+//   result = ["${REPO}:${tag}"]
+// }
+
 group "default" {
     targets = [
         "apache",
@@ -34,12 +57,9 @@ group "default" {
 target "apache" {
     context="."
     dockerfile="v2-apache/Dockerfile"
-    tags = [
-        "owasp/modsecurity:apache",
-        "owasp/modsecurity:${major(apache_modsec_version)}",
-        "owasp/modsecurity:${minor(apache_modsec_version)}",
-        "owasp/modsecurity:${patch(apache_modsec_version)}"
-    ]
+    tags = concat(tag("apache"),
+        vtag("${apache_modsec_version}", "")
+    )
     platforms = ["linux/amd64", "linux/arm64/v8", "linux/arm/v7", "linux/i386"]
     args = {
         MODSEC_VERSION = "${apache_modsec_version}"
@@ -49,13 +69,9 @@ target "apache" {
 target "apache-alpine" {
     context="."    
     dockerfile="v2-apache/Dockerfile-alpine"
-    tags = [
-        "owasp/modsecurity:apache-alpine",
-        "owasp/modsecurity:${major(apache_modsec_version)}-alpine",
-        "owasp/modsecurity:${minor(apache_modsec_version)}-alpine",
-        "owasp/modsecurity:${patch(apache_modsec_version)}-alpine"
-    ]
-    platforms = ["linux/amd64", "linux/arm64/v8", "linux/arm/v7", "linux/i386"]
+    tags = concat(tag("apache"),
+        vtag("${apache_modsec_version}", "-alpine")
+    )
     args = {
         MODSEC_VERSION = "${apache_modsec_version}"
     }
@@ -64,13 +80,9 @@ target "apache-alpine" {
 target "nginx" {
     context="."    
     dockerfile="v3-nginx/Dockerfile"
-    tags = [
-        "owasp/modsecurity:nginx",
-        "owasp/modsecurity:${major(nginx_modsec_version)}",
-        "owasp/modsecurity:${minor(nginx_modsec_version)}",
-        "owasp/modsecurity:${patch(nginx_modsec_version)}"
-    ]
-    platforms = ["linux/amd64", "linux/arm64/v8", "linux/arm/v7", "linux/i386"]
+    tags = concat(tag("nginx"),
+        vtag("${nginx_modsec_version}", "")
+    )
     args = {
         MODSEC_VERSION = "${nginx_modsec_version}"
     }
@@ -79,13 +91,9 @@ target "nginx" {
 target "nginx-alpine" {
     context="."    
     dockerfile="v3-nginx/Dockerfile-alpine"
-    tags = [
-        "owasp/modsecurity:nginx-alpine",
-        "owasp/modsecurity:${major(nginx_modsec_version)}-alpine",
-        "owasp/modsecurity:${minor(nginx_modsec_version)}-alpine",
-        "owasp/modsecurity:${patch(nginx_modsec_version)}-alpine"
-    ]
-    platforms = ["linux/amd64", "linux/arm64/v8", "linux/arm/v7", "linux/i386"]
+    tags = concat(tag("nginx"),
+        vtag("${nginx_modsec_version}", "-alpine")
+    )
     args = {
         MODSEC_VERSION = "${nginx_modsec_version}"
     }
