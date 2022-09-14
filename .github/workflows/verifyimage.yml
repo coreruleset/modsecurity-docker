@@ -3,19 +3,22 @@ on:
   pull_request:
     branches:
       - master
+
+env:
+  REPO: "owasp/modsecurity"
+
 jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        image:
-          - apache
-          - nginx
-        variant:
-          - ""
-          - "-alpine"
-        # Verification can only be done using one platform.
-        # This is a limitation on buildx
+        image: ["apache", "nginx"]
+        variant: ["", "-alpine"]
+        include:
+          - image: apache
+            modsec_version: "2.9.6"
+          - image: nginx
+            modsec_version: "3.0.8"
         platform:
           - linux/amd64
     steps:
@@ -34,26 +37,36 @@ jobs:
         with:
           driver-opts: image=moby/buildkit:master
 
-      - name: Docker meta
-        uses: docker/metadata-action@v4
+      - name: Docker meta ${{ matrix.image }}${{ matrix.variant }} - ${{ matrix.modsec_version }}"
         id: meta
+        uses: docker/metadata-action@v4
         with:
-          images: owasp/modsecurity
-
+          images: |
+            ${{ env.REPO }}
+          flavor: |
+            latest=false
+          tags: |
+            type=raw,value=${{ matrix.image }}${{ matrix.variant }}
+            type=semver,pattern={{major}},value=v${{ matrix.modsec_version }},suffix=-{{date 'YYYYMMDDHHMM'}}
+            type=semver,pattern={{major}}.{{minor}},value=v${{ matrix.modsec_version }},suffix=-{{date 'YYYYMMDDHHMM'}}
+            type=semver,pattern={{version}},value=v${{ matrix.modsec_version }},suffix=-{{date 'YYYYMMDDHHMM'}}
+        
       - name: Build ${{ matrix.image }}${{ matrix.variant }} - ${{ matrix.platform }}
         uses: docker/bake-action@v2.2.0
         with:
-          files: docker-bake.hcl
+          files: |
+            ./docker-bake.hcl
+            ${{ steps.meta.outputs.bake-file }}
           targets: ${{ matrix.image }}${{ matrix.variant }}
           set: |
             "${{ matrix.image }}${{ matrix.variant }}.platform=${{ matrix.platform }}"
+            "${{ matrix.image }}${{ matrix.variant }}.args.MODSEC_VERSION=${{ matrix.modsec_version }}"
           pull: true
           load: true
 
       - name: Run ${{ matrix.image }}${{ matrix.variant }}
         run: |
-          TAG=$(docker buildx bake -f docker-bake.hcl --print | jq -r '.target["${{ matrix.image }}${{ matrix.variant }}"].tags[2]')
-          docker run -d --name ${{ matrix.image }}${{ matrix.variant }}-test "${TAG}"
+          docker run -d --name ${{ matrix.image }}${{ matrix.variant }}-test "${{ env.REPO }}:${{ matrix.image }}${{ matrix.variant }}"
           docker logs ${{ matrix.image }}${{ matrix.variant }}-test
 
       - name: Verify ${{ matrix.image }}${{ matrix.variant }}

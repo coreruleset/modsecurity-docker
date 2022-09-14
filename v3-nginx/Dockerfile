@@ -9,8 +9,9 @@ ARG MODSEC_VERSION=3.0.8 \
     SSDEEP_VERSION=2.14.1
 
 RUN set -eux; \
-    apt-get update; \
-    apt-get install -y --no-install-recommends \
+    echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections; \
+    apt-get update -qq; \
+    LD_LIBRARY_PATH="" apt-get install -y -qq --no-install-recommends --no-install-suggests \
         automake \
         cmake \
         doxygen \
@@ -158,8 +159,9 @@ ENV ACCESSLOG=/var/log/nginx/access.log \
     NGINX_ENVSUBST_OUTPUT_DIR=/etc/nginx
 
 RUN set -eux; \
-    apt-get update; \
-    apt-get install -y --no-install-recommends \
+    echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections; \
+    apt-get update -qq; \
+    LD_LIBRARY_PATH="" apt-get install -y -qq --no-install-recommends --no-install-suggests \
         ca-certificates \
         libcurl4-gnutls-dev \
         liblua5.3 \
