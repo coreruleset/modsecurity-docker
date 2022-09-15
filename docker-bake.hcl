@@ -76,7 +76,7 @@ target "apache" {
 target "apache-alpine" {
     inherits = ["build"]
     dockerfile="v2-apache/Dockerfile-alpine"
-    tags = concat(tag("apache"),
+    tags = concat(tag("apache-alpine"),
         vtag("${apache_modsec_version}", "-alpine")
     )
     args = {
@@ -98,7 +98,7 @@ target "nginx" {
 target "nginx-alpine" {
     inherits = ["build"]
     dockerfile="v3-nginx/Dockerfile-alpine"
-    tags = concat(tag("nginx"),
+    tags = concat(tag("nginx-alpine"),
         vtag("${nginx_modsec_version}", "-alpine")
     )
     args = {
