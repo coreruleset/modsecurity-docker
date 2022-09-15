@@ -12,7 +12,7 @@
 * `3-YYYYMMDDHHMM`, `3.0-YYYYMMDDHHMM`, `3.0.8-YYYYMMDDHHMM`, `nginx` ([master/v3-nginx/Dockerfile](https://github.com/coreruleset/modsecurity-docker/blob/master/v3-nginx/Dockerfile)) – *last stable ModSecurity v3 on Nginx 1.20 official stable base image*
 * `2-YYYYMMDDHHMM`, `2.9-YYYYMMDDHHMM`, `2.9.6-YYYYMMDDHHMM`, `apache` ([master/v2-apache/Dockerfile](https://github.com/coreruleset/modsecurity-docker/blob/master/v2-apache/Dockerfile)) – *last stable ModSecurity v2 on Apache 2.4 official stable base image*
 
-⚠️ We changed tags to [support production usage](https://github.com/coreruleset/modsecurity-crs-docker/issues/67). Now, if you want to use the "rolling version", use the tag `owasp/modsecurity:nginx` or `owasp/modsecurity/apache`. If you need a stable long term image, use the one with the build date in `YYYYMMDDHHMM` format, example `owasp/modsecurity:3-202209141209` or `owasp/modsecurity:2.9.6-alpine-202209141209` for example. You have been warned.
+⚠️ We changed tags to [support production usage](https://github.com/coreruleset/modsecurity-crs-docker/issues/67). Now, if you want to use the "rolling version", use the tag `owasp/modsecurity:nginx` or `owasp/modsecurity:apache`. If you need a stable long term image, use the one with the build date in `YYYYMMDDHHMM` format, example `owasp/modsecurity:3-202209141209` or `owasp/modsecurity:2.9.6-alpine-202209141209` for example. You have been warned.
 
 ## Supported variants
 
@@ -21,7 +21,7 @@ We have support for [alpine linux](https://www.alpinelinux.org/) variants of the
 * `3-alpine-YYYYMMDDHHMM`, `3.0-alpine-YYYYMMDDHHMM`, `3.0.8-alpine-YYYYMMDDHHMM`, `nginx-alpine` ([master/v3-nginx/Dockerfile-alpine](https://github.com/coreruleset/modsecurity-docker/blob/master/v3-nginx/Dockerfile-alpine) – *last stable ModSecurity v3 on Nginx 1.20 Alpine official stable base image*
 * `2-alpine-YYYYMMDDHHMM`, `2.9-alpine-YYYYMMDDHHMM`, `2.9.6-alpine-YYYYMMDDHHMM`, `apache-alpine` ([master/v2-apache/Dockerfile-alpine](https://github.com/coreruleset/modsecurity-docker/blob/master/v2-apache/Dockerfile-alpine)) – *last stable ModSecurity v2 on Apache 2.4 Alpine official stable base image*
 
-⚠️ We changed tags to [support production usage](https://github.com/coreruleset/modsecurity-crs-docker/issues/67). Now, if you want to use the "rolling version", use the tag `owasp/modsecurity:nginx-alpine` or `owasp/modsecurity/apache-alpine`. If you need a stable long term image, use the one with the build date in `YYYYMMDDHHMM` format, example `owasp/modsecurity:3-202209141209-alpine` or `owasp/modsecurity:2.9.6-202209141209` for example. You have been warned.
+⚠️ We changed tags to [support production usage](https://github.com/coreruleset/modsecurity-crs-docker/issues/67). Now, if you want to use the "rolling version", use the tag `owasp/modsecurity:nginx-alpine` or `owasp/modsecurity:apache-alpine`. If you need a stable long term image, use the one with the build date in `YYYYMMDDHHMM` format, example `owasp/modsecurity:3-202209141209-alpine` or `owasp/modsecurity:2.9.6-202209141209` for example. You have been warned.
 
 ## Supported architectures
 
@@ -34,11 +34,24 @@ $ docker buildx use $(docker buildx create --platform linux/amd64,linux/arm64,li
 $ docker buildx bake -f docker-bake.hcl
 ```
 
+We require a version of buildx >= v0.9.1. You can check which version you have using:
+```
+❯ docker buildx version
+github.com/docker/buildx v0.9.1 ed00243a0ce2a0aee75311b06e32d33b44729689
+```
+
+If you want to see the targets of the build, use:
+```
+docker buildx bake -f ./docker-bake.hcl --print
+```
+
 We are building now for these architectures:
   - linux/amd64
   - linux/i386
   - linux/arm64
   - linux/arm/v7
+
+For additional settings, you can check this repository github actions to see its usage.
 
 ## Quick reference
 
