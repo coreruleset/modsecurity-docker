@@ -37,7 +37,7 @@ jobs:
         with:
           driver-opts: image=moby/buildkit:master
 
-      - name: Docker meta ${{ matrix.image }}${{ matrix.variant }} - ${{ matrix.modsec_version }}"
+      - name: Docker meta ${{ matrix.image }}${{ matrix.variant }} - ${{ matrix.modsec_version }}
         id: meta
         uses: docker/metadata-action@v4
         with:
@@ -66,7 +66,9 @@ jobs:
 
       - name: Run ${{ matrix.image }}${{ matrix.variant }}
         run: |
-          docker run -d --name ${{ matrix.image }}${{ matrix.variant }}-test "${{ env.REPO }}:${{ matrix.image }}${{ matrix.variant }}"
+          TAG=$(docker image inspect -f '{{ json .RepoTags }}' ${{ env.REPO }}:${{ matrix.image }}${{ matrix.variant }} | jq -r '.[0]')
+          echo "Starting container with TAG=$TAG"
+          docker run --pull "never" -d --name ${{ matrix.image }}${{ matrix.variant }}-test "$TAG"
           docker logs ${{ matrix.image }}${{ matrix.variant }}-test
 
       - name: Verify ${{ matrix.image }}${{ matrix.variant }}
