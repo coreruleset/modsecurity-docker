@@ -128,6 +128,7 @@ ENV APACHE_ALWAYS_TLS_REDIRECT=off \
 RUN set -eux; \
     apk add --no-cache \
     ca-certificates \
+    curl \
     libfuzzy2 \
     libxml2 \
     moreutils \
@@ -140,6 +141,7 @@ COPY --from=build /usr/local/apache2/ModSecurity-${MODSEC_VERSION}/unicode.mappi
 COPY --from=build /usr/share/TLS/server.key                                    /usr/local/apache2/conf/server.key
 COPY --from=build /usr/share/TLS/server.crt                                    /usr/local/apache2/conf/server.crt
 COPY src/etc/modsecurity.d/*.conf /etc/modsecurity.d/
+COPY src/bin/healthcheck /usr/local/bin/healthcheck
 COPY v2-apache/conf/extra/*.conf /usr/local/apache2/conf/extra/
 
 RUN set -eux; \
@@ -174,5 +176,7 @@ RUN set -eux; \
     chown -R $(awk '/^User/ { print $2;}' /usr/local/apache2/conf/httpd.conf) /tmp/modsecurity /var/log/apache2; \
     chgrp -R 0 /var/log/ /usr/local/apache2/; \
     chmod -R g=u /var/log/ /usr/local/apache2/
+
+HEALTHCHECK CMD /usr/local/bin/healthcheck
 
 # Use httpd-foreground from upstream

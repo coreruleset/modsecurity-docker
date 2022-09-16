@@ -120,6 +120,7 @@ RUN set -eux; \
     apt-get update -qq; \
     apt-get install -qq -y --no-install-recommends --no-install-suggests \
         ca-certificates \
+        curl \
         libcurl3-gnutls \
         libfuzzy2 \
         libxml2 \
@@ -139,6 +140,7 @@ COPY --from=build /usr/local/apache2/ModSecurity-${MODSEC_VERSION}/unicode.mappi
 COPY --from=build /usr/share/TLS/server.key                                    /usr/local/apache2/conf/server.key
 COPY --from=build /usr/share/TLS/server.crt                                    /usr/local/apache2/conf/server.crt
 COPY src/etc/modsecurity.d/*.conf /etc/modsecurity.d/
+COPY src/bin/healthcheck /usr/local/bin/healthcheck
 COPY v2-apache/conf/extra/*.conf /usr/local/apache2/conf/extra/
 
 RUN set -eux; \
@@ -166,5 +168,7 @@ RUN set -eux; \
     sed -i -E 's|(MaxRequestWorkers[ ]*)[0-9]*|\1${WORKER_CONNECTIONS}|' /usr/local/apache2/conf/extra/httpd-mpm.conf; \
     chgrp -R 0 /var/log/ /usr/local/apache2/; \
     chmod -R g=u /var/log/ /usr/local/apache2/
+
+HEALTHCHECK CMD /usr/local/bin/healthcheck
 
 # Use httpd-foreground from upstream
