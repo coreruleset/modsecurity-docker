@@ -34,9 +34,9 @@ $ docker buildx use $(docker buildx create --platform linux/amd64,linux/arm64,li
 $ docker buildx bake -f docker-bake.hcl
 ```
 
-We require a version of buildx >= v0.9.1. You can check which version you have using:
+We require a version of `buildx` >= v0.9.1. [Visit the official documentation](https://docs.docker.com/build/buildx/install/) for instructions on installing and upgrading `buildx`. You can check which version you have using:
 ```
-❯ docker buildx version
+docker buildx version
 github.com/docker/buildx v0.9.1 ed00243a0ce2a0aee75311b06e32d33b44729689
 ```
 
@@ -51,7 +51,7 @@ We are building now for these architectures:
   - linux/arm64
   - linux/arm/v7
 
-For additional settings, you can check this repository github actions to see its usage.
+You can find additional examples on how to use `buildx` in this repository's GitHub actions.
 
 ## Quick reference
 
