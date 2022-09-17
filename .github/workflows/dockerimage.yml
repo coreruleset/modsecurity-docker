@@ -3,20 +3,24 @@ on:
   push:
     branches:
       - master
-  schedule:
-    - cron: "0 12 * * MON" # Run every Monday
+
+env:
+  REPO: "owasp/modsecurity"
 
 jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        image:
-          - apache
-          - nginx
-        variant:
-          - ""
-          - "-alpine"
+        image: ["apache", "nginx"]
+        variant: ["", "-alpine"]
+        include:
+          - image: apache
+            modsec_version: "2.9.6"
+          - image: nginx
+            modsec_version: "3.0.8"
+        platform:
+          - linux/amd64
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -39,9 +43,27 @@ jobs:
           username: ${{ secrets.dockerhub_user }}
           password: ${{ secrets.dockerhub_token }}
 
+      - name: Docker meta ${{ matrix.image }}${{ matrix.variant }} - ${{ matrix.modsec_version }}
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: |
+            ${{ env.REPO }}
+          flavor: |
+            latest=false
+          tags: |
+            type=raw,value=${{ matrix.image }}${{ matrix.variant }}
+            type=semver,pattern={{major}},value=v${{ matrix.modsec_version }},suffix=-{{date 'YYYYMMDDHHMM'}}
+            type=semver,pattern={{major}}.{{minor}},value=v${{ matrix.modsec_version }},suffix=-{{date 'YYYYMMDDHHMM'}}
+            type=semver,pattern={{version}},value=v${{ matrix.modsec_version }},suffix=-{{date 'YYYYMMDDHHMM'}}
+
       - name: Build and push ${{ matrix.image }}${{ matrix.variant }}
         uses: docker/bake-action@v2.2.0
         with:
-          targets: ${{ matrix.image }}${{ matrix.variant }}
-          files: docker-bake.hcl
+          targets: ${{ matrix.image }}${{ matrix.variant }} - ${{ matrix.modsec_version }}
+          set: |
+            "${{ matrix.image }}${{ matrix.variant }}.args.MODSEC_VERSION=${{ matrix.modsec_version }}"
+          files: |
+            ./docker-bake.hcl
+            ${{ steps.meta.outputs.bake-file }}
           push: true
