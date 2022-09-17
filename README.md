@@ -133,6 +133,7 @@ $ docker run -p 8080:80 -e SERVER_NAME=myhost my-modsec
 | ACCESSLOG | A string value indicating the location of the custom log file (Default: `/var/log/apache2/access.log`) |
 | APACHE_ALWAYS_TLS_REDIRECT | A string value indicating if http should redirect to https (Allowed values: `on`, `off`. Default: `off`) |
 | APACHE_LOGFORMAT | A string value indicating the LogFormat that apache should use. (Default: `'"%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-agent}i\""'` (combined). Tip: use single quotes outside your double quoted format string.) ⚠️ Do not add a `|` as part of the log format. It is used internally.  |
+| APACHE_METRICS_LOGFORMAT | A string value indicating the LogFormat that the additional log apache metrics should use. (Default:'"%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-agent}i\""' (combined). Tip: use single quotes outside your double quoted format string.) ⚠️ Do not add a `|` as part of the log format. It is used internally.  |
 | BACKEND | A string indicating the partial URL for the remote server of the `ProxyPass` directive (Default: `http://localhost:80`) |
 | BACKEND_WS | A string indicating the IP/URL of the WebSocket service (Default: `ws://localhost:8080`) |
 | ERRORLOG  | A string value indicating the location of the error log file (Default: `/var/log/apache2/error.log`) | 
@@ -140,8 +141,7 @@ $ docker run -p 8080:80 -e SERVER_NAME=myhost my-modsec
 | LOGLEVEL  | A string value controlling the number of messages logged to the error_log (Default: `warn`) | 
 | METRICS_ALLOW_FROM  | A string indicating a range of IP adresses that can access the metrics (Default: `127.0.0.0/255.0.0.0 ::1/128`) | 
 | METRICS_DENY_FROM  | A string indicating a range of IP adresses that cannot access the metrics (Default: `All`) | 
-| METRICSLOG  | A string indicating the path of the metrics log (Default: `/dev/null combined`) | 
-| PERFLOG  | A string indicating the path of the performance log (Default: `/dev/stdout perflogjson env=write_perflog`) |
+| METRICSLOG  | A string indicating the path of the metrics log (Default: `/dev/null`) | 
 | PORT  | An integer value indicating the port where the webserver is listening to (Default: `80`) | 
 | PROXY_PRESERVE_HOST  | A string indicating the use of incoming Host HTTP request header for proxy request (Default: `on`) | 
 | PROXY_SSL_CERT_KEY  | A string indicating the path to the server PEM-encoded private key file (Default: `/usr/local/apache2/conf/server.key`) | 
