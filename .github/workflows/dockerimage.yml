@@ -3,7 +3,17 @@ on:
   push:
     branches:
       - master
-
+  workflow_dispatch:
+      inputs:
+        logLevel:
+          description: 'Log level'
+          required: true
+          default: 'warning' 
+          type: choice
+          options:
+          - info
+          - warning
+          - debug 
 env:
   REPO: "owasp/modsecurity"
 
@@ -57,10 +67,10 @@ jobs:
             type=semver,pattern={{major}}.{{minor}},value=v${{ matrix.modsec_version }},suffix=-{{date 'YYYYMMDDHHMM'}}
             type=semver,pattern={{version}},value=v${{ matrix.modsec_version }},suffix=-{{date 'YYYYMMDDHHMM'}}
 
-      - name: Build and push ${{ matrix.image }}${{ matrix.variant }}
+      - name: Build and push ${{ matrix.image }}${{ matrix.variant }} - ${{ matrix.modsec_version }}
         uses: docker/bake-action@v2.2.0
         with:
-          targets: ${{ matrix.image }}${{ matrix.variant }} - ${{ matrix.modsec_version }}
+          targets: ${{ matrix.image }}${{ matrix.variant }}
           set: |
             "${{ matrix.image }}${{ matrix.variant }}.args.MODSEC_VERSION=${{ matrix.modsec_version }}"
           files: |
