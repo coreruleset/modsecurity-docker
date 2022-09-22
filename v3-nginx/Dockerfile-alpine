@@ -1,4 +1,4 @@
-ARG NGINX_VERSION="1.20.2"
+ARG NGINX_VERSION="1.22.0"
 
 FROM nginx:${NGINX_VERSION}-alpine as build
 
@@ -29,6 +29,7 @@ RUN set -eux; \
         openssl-dev \
         pkgconfig \
         pcre-dev \
+        pcre2-dev \
         yajl-dev \
         zlib-dev
 
@@ -47,7 +48,7 @@ RUN set -eux; \
     ./build.sh; \
     git submodule init; \
     git submodule update; \
-    ./configure --with-yajl --with-ssdeep --with-lmdb --with-geoip; \
+    ./configure --with-yajl --with-ssdeep --with-lmdb --with-geoip --with-pcre2; \
     make install
 
 # We use master
