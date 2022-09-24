@@ -6,6 +6,8 @@ ARG MODSEC_VERSION=3.0.8 \
     FUZZY_VERSION=2.1.0 \
     SSDEEP_VERSION=2.14.1
 
+# Note: pcre-dev (PCRE3) is required by the build description,
+# even though the build will use PCRE2.
 RUN set -eux; \
     apk add --no-cache --virtual .build-deps \
         autoconf \
