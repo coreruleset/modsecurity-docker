@@ -172,6 +172,9 @@ COPY src/etc/modsecurity.d/modsecurity-override.conf /etc/nginx/templates/modsec
 COPY src/etc/modsecurity.d/setup.conf /etc/nginx/templates/modsecurity.d/setup.conf.template
 COPY v3-nginx/docker-entrypoint.d/*.sh /docker-entrypoint.d/
 
+# Comment out the SecDisableBackendCompression option since it is not supported in V3
+RUN sed -i 's/^\(SecDisableBackendCompression .*\)/# \1/' /etc/nginx/templates/modsecurity.d/modsecurity-override.conf.template
+
 RUN set -eux; \
     ln -s /usr/local/modsecurity/lib/libmodsecurity.so.${MODSEC_VERSION} /usr/local/modsecurity/lib/libmodsecurity.so.3.0; \
     ln -s /usr/local/modsecurity/lib/libmodsecurity.so.${MODSEC_VERSION} /usr/local/modsecurity/lib/libmodsecurity.so.3; \
