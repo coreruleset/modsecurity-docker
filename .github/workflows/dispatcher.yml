@@ -1,0 +1,76 @@
+name: Test all platforms
+on:
+  workflow_dispatch:
+
+env:
+  REPO: "owasp/modsecurity"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    needs:
+      - matrix
+    strategy:
+      matrix:
+        image: ["apache", "nginx"]
+        variant: ["", "-alpine"]
+        platform: ["linux/amd64", "linux/arm64/v8", "linux/arm/v7", "linux/i386"]
+        include:
+          - image: apache
+            modsec_version: "2.9.6"
+          - image: nginx
+            modsec_version: "3.0.8"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+
+      # https://github.com/docker/setup-qemu-action
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      # https://github.com/docker/setup-buildx-action
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+        with:
+          driver-opts: image=moby/buildkit:master
+
+      - name: Docker meta ${{ matrix.image }}${{ matrix.variant }} - ${{ matrix.modsec_version }}
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: |
+            ${{ env.REPO }}
+          flavor: |
+            latest=false
+          tags: |
+            type=raw,value=${{ matrix.image }}${{ matrix.variant }}
+            type=semver,pattern={{major}},value=v${{ matrix.modsec_version }},suffix=-{{date 'YYYYMMDDHHMM'}}
+            type=semver,pattern={{major}}.{{minor}},value=v${{ matrix.modsec_version }},suffix=-{{date 'YYYYMMDDHHMM'}}
+            type=semver,pattern={{version}},value=v${{ matrix.modsec_version }},suffix=-{{date 'YYYYMMDDHHMM'}}
+        
+      - name: Build ${{ matrix.image }}${{ matrix.variant }} - ${{ matrix.platform }}
+        uses: docker/bake-action@v2.2.0
+        with:
+          files: |
+            ./docker-bake.hcl
+            ${{ steps.meta.outputs.bake-file }}
+          targets: ${{ matrix.image }}${{ matrix.variant }}
+          set: |
+            "${{ matrix.image }}${{ matrix.variant }}.platform=${{ matrix.platform }}"
+            "${{ matrix.image }}${{ matrix.variant }}.args.MODSEC_VERSION=${{ matrix.modsec_version }}"
+          pull: true
+          load: true
+
+      - name: Run ${{ matrix.image }}${{ matrix.variant }}
+        run: |
+          TAG=$(docker image inspect -f '{{ json .RepoTags }}' ${{ env.REPO }}:${{ matrix.image }}${{ matrix.variant }} | jq -r '.[0]')
+          echo "Starting container with TAG=$TAG"
+          docker run --pull "never" -d --name ${{ matrix.image }}${{ matrix.variant }}-test "$TAG"
+          docker logs ${{ matrix.image }}${{ matrix.variant }}-test
+
+      - name: Verify ${{ matrix.image }}${{ matrix.variant }}
+        run: |
+          docker logs "${{ matrix.image }}${{ matrix.variant }}-test"
+          [ $(docker inspect ${{ matrix.image }}${{ matrix.variant }}-test --format='{{.State.Running}}') = 'true' ]
