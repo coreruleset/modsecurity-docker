@@ -4,7 +4,6 @@ on:
     branches:
       - master
       - develop
-
 env:
   REPO: "owasp/modsecurity"
 
@@ -15,13 +14,12 @@ jobs:
       matrix:
         image: ["apache", "nginx"]
         variant: ["", "-alpine"]
+        platform: ["linux/amd64"]
         include:
           - image: apache
             modsec_version: "2.9.6"
           - image: nginx
             modsec_version: "3.0.8"
-        platform:
-          - linux/amd64
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -74,5 +72,5 @@ jobs:
 
       - name: Verify ${{ matrix.image }}${{ matrix.variant }}
         run: |
-          docker logs ${{ matrix.image }}${{ matrix.variant }}-test
+          docker logs "${{ matrix.image }}${{ matrix.variant }}-test"
           [ $(docker inspect ${{ matrix.image }}${{ matrix.variant }}-test --format='{{.State.Running}}') = 'true' ]
