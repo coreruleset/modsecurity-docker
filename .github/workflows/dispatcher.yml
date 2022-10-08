@@ -8,8 +8,6 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
-    needs:
-      - matrix
     strategy:
       matrix:
         image: ["apache", "nginx"]
