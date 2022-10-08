@@ -1,4 +1,4 @@
-ARG NGINX_VERSION="1.20.2"
+ARG NGINX_VERSION="1.22.0"
 
 FROM nginx:${NGINX_VERSION} as build
 
@@ -8,6 +8,8 @@ ARG MODSEC_VERSION=3.0.8 \
     LMDB_VERSION=0.9.29 \
     SSDEEP_VERSION=2.14.1
 
+# Note: libpcre++-dev (PCRE3) is required by the build description,
+# even though the build will use PCRE2.
 RUN set -eux; \
     echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections; \
     apt-get update -qq; \
@@ -21,6 +23,7 @@ RUN set -eux; \
         libgeoip-dev \
         liblua5.3-dev \
         libpcre++-dev \
+        libpcre2-dev \
         libtool \
         libxml2-dev \
         make \
@@ -58,7 +61,7 @@ RUN set -eux; \
     ./build.sh; \
     git submodule init; \
     git submodule update; \
-    ./configure --with-yajl=/sources/yajl/build/yajl-${YAJL_VERSION}/ --with-geoip; \
+    ./configure --with-yajl=/sources/yajl/build/yajl-${YAJL_VERSION}/ --with-geoip --with-pcre2; \
     make install; \
     strip /usr/local/modsecurity/lib/lib*.so*
 

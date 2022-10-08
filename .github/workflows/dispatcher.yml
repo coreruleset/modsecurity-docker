@@ -1,20 +1,20 @@
-name: Verify Images
+name: Test all platforms
 on:
-  pull_request:
-    branches:
-      - master
-      - develop
+  workflow_dispatch:
+
 env:
   REPO: "owasp/modsecurity"
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    needs:
+      - matrix
     strategy:
       matrix:
         image: ["apache", "nginx"]
         variant: ["", "-alpine"]
-        platform: ["linux/amd64"]
+        platform: ["linux/amd64", "linux/arm64/v8", "linux/arm/v7", "linux/i386"]
         include:
           - image: apache
             modsec_version: "2.9.6"
