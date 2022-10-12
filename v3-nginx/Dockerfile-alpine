@@ -52,7 +52,7 @@ RUN set -eux; \
     git submodule update; \
     # patch make file to support Debian package names (see https://github.com/SpiderLabs/ModSecurity/issues/2810) \
     sed -i -e 's/^\(PCRE2_POSSIBLE_LIB_NAMES=.*\)"/\1 libpcre2-8"/' build/pcre2.m4; \
-    ./configure --with-yajl --with-ssdeep --with-lmdb --with-geoip --with-pcre2="$(pcre2-config --prefix)"; \
+    ./configure --with-yajl --with-ssdeep --with-lmdb --with-geoip --with-pcre2; \
     make install
 
 # We use master
