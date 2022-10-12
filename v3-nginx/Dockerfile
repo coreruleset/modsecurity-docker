@@ -61,6 +61,8 @@ RUN set -eux; \
     ./build.sh; \
     git submodule init; \
     git submodule update; \
+    # patch make file to support Debian package names (see https://github.com/SpiderLabs/ModSecurity/issues/2810) \
+    sed -i -e 's/^\(PCRE2_POSSIBLE_LIB_NAMES=.*\)"/\1 libpcre2-8"/' build/pcre2.m4; \
     ./configure --with-yajl=/sources/yajl/build/yajl-${YAJL_VERSION}/ --with-geoip --with-pcre2; \
     make install; \
     strip /usr/local/modsecurity/lib/lib*.so*
