@@ -156,6 +156,8 @@ RUN set -eux; \
         lmdb-dev \
         moreutils \
         tzdata \
+        pcre \
+        pcre2 \
         yajl; \
     mkdir /etc/nginx/ssl/; \
     mkdir -p /tmp/modsecurity/data; \
