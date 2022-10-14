@@ -61,7 +61,7 @@ RUN set -eux; \
     cd ModSecurity; \
     curl -sSL https://github.com/SpiderLabs/ModSecurity/pull/2813.patch -o - | patch -p1; \
     ./build.sh; \
-    ./configure --with-yajl=/sources/yajl/build/yajl-${YAJL_VERSION}/ --with-geoip --with-pcre2  --enable-silent-rules; \
+    ./configure --with-yajl=/sources/yajl/build/yajl-${YAJL_VERSION}/ --with-geoip --with-pcre2 --enable-silent-rules; \
     make install; \
     strip /usr/local/modsecurity/lib/lib*.so*
 
