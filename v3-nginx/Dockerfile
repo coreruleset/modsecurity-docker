@@ -27,8 +27,9 @@ RUN set -eux; \
         libtool \
         libxml2-dev \
         make \
-        ruby \
+        patch \
         pkg-config \
+        ruby \
         zlib1g-dev; \
      apt-get clean; \
      rm -rf /var/lib/apt/lists/*
@@ -56,14 +57,11 @@ RUN set -eux; \
     strip /usr/local/lib/libfuzzy*.so*
 
 RUN set -eux; \
-    git clone https://github.com/SpiderLabs/ModSecurity --branch v"${MODSEC_VERSION}" --depth 1; \
+    git clone https://github.com/SpiderLabs/ModSecurity --branch v"${MODSEC_VERSION}" --depth 1 --recursive; \
     cd ModSecurity; \
+    curl -sSL https://github.com/SpiderLabs/ModSecurity/pull/2813.patch -o - | patch -p1; \
     ./build.sh; \
-    git submodule init; \
-    git submodule update; \
-    # patch make file to support Debian package names (see https://github.com/SpiderLabs/ModSecurity/issues/2810) \
-    sed -i -e 's/^\(PCRE2_POSSIBLE_LIB_NAMES=.*\)"/\1 libpcre2-8"/' build/pcre2.m4; \
-    ./configure --with-yajl=/sources/yajl/build/yajl-${YAJL_VERSION}/ --with-geoip --with-pcre2; \
+    ./configure --with-yajl=/sources/yajl/build/yajl-${YAJL_VERSION}/ --with-geoip --with-pcre2 --enable-silent-rules; \
     make install; \
     strip /usr/local/modsecurity/lib/lib*.so*
 
