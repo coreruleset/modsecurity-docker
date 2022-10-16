@@ -2,9 +2,7 @@ ARG APACHE_VERSION=2.4
 
 FROM httpd:${APACHE_VERSION} as build
 
-ARG MODSEC_VERSION=2.9.6 \
-    SSDEEP_VERSION=2.14.1 \
-    FUZZY_VERSION=2.1.0
+ARG MODSEC_VERSION=2.9.6
 
 RUN set -eux; \
     echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections; \
@@ -17,6 +15,7 @@ RUN set -eux; \
         libapr1-dev \
         libaprutil1-dev \
         libcurl4-gnutls-dev \
+        libfuzzy-dev \
         libpcre++-dev \
         libtool \
         libxml2-dev \
@@ -27,19 +26,11 @@ RUN set -eux; \
         wget
 
 RUN set -eux; \
-    wget --quiet https://github.com/ssdeep-project/ssdeep/releases/download/release-${SSDEEP_VERSION}/ssdeep-${SSDEEP_VERSION}.tar.gz; \
-    tar -xvzf ssdeep-${SSDEEP_VERSION}.tar.gz; \
-    cd ssdeep-${SSDEEP_VERSION}; \
-    ./configure; \
-    make; \
-    make install; \
-    make clean
-
-RUN set -eux; \
-    git clone https://github.com/SpiderLabs/ModSecurity --branch v${MODSEC_VERSION} --depth 1; \
-    cd ModSecurity; \
+    wget --quiet https://github.com/SpiderLabs/ModSecurity/archive/refs/tags/v${MODSEC_VERSION}.tar.gz; \
+    tar -zxvf v${MODSEC_VERSION}.tar.gz; \
+    cd ModSecurity-${MODSEC_VERSION}; \
     ./autogen.sh; \
-    ./configure; \
+    ./configure --with-yajl --with-ssdeep; \
     make; \
     make install; \
     make clean
@@ -54,9 +45,7 @@ RUN openssl req -x509 -days 365 -new \
 
 FROM httpd:${APACHE_VERSION}
 
-ARG MODSEC_VERSION=2.9.6 \
-    SSDEEP_VERSION=2.14.1 \
-    FUZZY_VERSION=2.1.0
+ARG MODSEC_VERSION=2.9.6
 
 LABEL maintainer="Felipe Zipitria <felipe.zipitria@owasp.org>"
 
@@ -132,6 +121,7 @@ RUN set -eux; \
     apt-get install -qq -y --no-install-recommends --no-install-suggests \
         ca-certificates \
         libcurl3-gnutls \
+        libfuzzy2 \
         libxml2 \
         libyajl2; \
     apt-get clean; \
@@ -144,19 +134,12 @@ RUN set -eux; \
     mkdir -p /var/log/apache2/
 
 COPY --from=build /usr/local/apache2/modules/mod_security2.so                  /usr/local/apache2/modules/mod_security2.so
-COPY --from=build /usr/local/apache2/ModSecurity/modsecurity.conf-recommended  /etc/modsecurity.d/modsecurity.conf
-COPY --from=build /usr/local/apache2/ModSecurity/unicode.mapping               /etc/modsecurity.d/unicode.mapping
-COPY --from=build /usr/local/lib/libfuzzy.so.${FUZZY_VERSION}                  /usr/local/lib/libfuzzy.so.${FUZZY_VERSION}
-COPY --from=build /usr/local/bin/ssdeep                                        /usr/local/bin/ssdeep
+COPY --from=build /usr/local/apache2/ModSecurity-${MODSEC_VERSION}/modsecurity.conf-recommended  /etc/modsecurity.d/modsecurity.conf
+COPY --from=build /usr/local/apache2/ModSecurity-${MODSEC_VERSION}/unicode.mapping               /etc/modsecurity.d/unicode.mapping
 COPY --from=build /usr/share/TLS/server.key                                    /usr/local/apache2/conf/server.key
 COPY --from=build /usr/share/TLS/server.crt                                    /usr/local/apache2/conf/server.crt
 COPY src/etc/modsecurity.d/*.conf /etc/modsecurity.d/
 COPY v2-apache/conf/extra/*.conf /usr/local/apache2/conf/extra/
-
-RUN set -eux; \
-    ln -s libfuzzy.so.${FUZZY_VERSION} /usr/local/lib/libfuzzy.so; \
-    ln -s libfuzzy.so.${FUZZY_VERSION} /usr/local/lib/libfuzzy.so.2; \
-    ldconfig
 
 RUN set -eux; \
     sed -i -E 's|(Listen) [0-9]+|\1 ${PORT}|' /usr/local/apache2/conf/httpd.conf; \

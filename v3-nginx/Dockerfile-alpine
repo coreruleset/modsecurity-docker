@@ -2,9 +2,7 @@ ARG NGINX_VERSION="1.22.0"
 
 FROM nginx:${NGINX_VERSION}-alpine as build
 
-ARG MODSEC_VERSION=3.0.8 \
-    FUZZY_VERSION=2.1.0 \
-    SSDEEP_VERSION=2.14.1
+ARG MODSEC_VERSION=3.0.8
 
 # Note: pcre-dev (PCRE3) is required by the build description,
 # even though the build will use PCRE2.
@@ -20,6 +18,7 @@ RUN set -eux; \
         geoip-dev \
         git \
         libc-dev \
+        libfuzzy2-dev \        
         libmaxminddb-dev \
         libstdc++ \
         libtool \
@@ -37,13 +36,6 @@ RUN set -eux; \
         zlib-dev
 
 WORKDIR /sources
-
-RUN set -eux; \
-    wget --quiet https://github.com/ssdeep-project/ssdeep/releases/download/release-${SSDEEP_VERSION}/ssdeep-${SSDEEP_VERSION}.tar.gz; \
-    tar -xvzf ssdeep-${SSDEEP_VERSION}.tar.gz; \
-    cd ssdeep-${SSDEEP_VERSION}; \
-    ./configure; \
-    make install
 
 RUN set -eux; \
     git clone https://github.com/SpiderLabs/ModSecurity --branch v"${MODSEC_VERSION}" --depth 1 --recursive; \
@@ -84,9 +76,7 @@ RUN curl -sSL https://ssl-config.mozilla.org/ffdhe4096.txt -o /usr/share/TLS/dhp
 
 FROM nginx:${NGINX_VERSION}-alpine
 
-ARG MODSEC_VERSION=3.0.8 \
-    FUZZY_VERSION=2.1.0 \
-    SSDEEP_VERSION=2.14.1
+ARG MODSEC_VERSION=3.0.8
 
 LABEL maintainer="Felipe Zipitria <felipe.zipitria@owasp.org>"
 
@@ -150,6 +140,7 @@ ENV ACCESSLOG=/var/log/nginx/access.log \
 RUN set -eux; \
     apk add --no-cache \
         curl-dev \
+        libfuzzy2 \
         libmaxminddb-dev \
         libstdc++ \
         libxml2-dev \
@@ -166,7 +157,6 @@ RUN set -eux; \
     chown -R nginx:nginx /usr/share/nginx /tmp/modsecurity
 
 COPY --from=build /usr/local/modsecurity/lib/libmodsecurity.so.${MODSEC_VERSION} /usr/local/modsecurity/lib/
-COPY --from=build /usr/local/lib/libfuzzy.so.${FUZZY_VERSION} /usr/local/lib/
 COPY --from=build /etc/nginx/modules/ngx_http_modsecurity_module.so /etc/nginx/modules/ngx_http_modsecurity_module.so
 COPY --from=build /usr/share/TLS/server.key /etc/nginx/conf/server.key
 COPY --from=build /usr/share/TLS/server.crt /etc/nginx/conf/server.crt
@@ -185,8 +175,6 @@ RUN set -eux; \
     ln -s /usr/local/modsecurity/lib/libmodsecurity.so.${MODSEC_VERSION} /usr/local/modsecurity/lib/libmodsecurity.so.3.0; \
     ln -s /usr/local/modsecurity/lib/libmodsecurity.so.${MODSEC_VERSION} /usr/local/modsecurity/lib/libmodsecurity.so.3; \
     ln -s /usr/local/modsecurity/lib/libmodsecurity.so.${MODSEC_VERSION} /usr/local/modsecurity/lib/libmodsecurity.so; \
-    ln -s /usr/local/lib/libfuzzy.so.${FUZZY_VERSION} /usr/local/lib/libfuzzy.so; \
-    ln -s /usr/local/lib/libfuzzy.so.${FUZZY_VERSION} /usr/local/lib/libfuzzy.so.2; \
     chgrp -R 0 /var/cache/nginx/ /var/log/ /var/run/ /usr/share/nginx/ /etc/nginx/ /etc/modsecurity.d/; \
     chmod -R g=u /var/cache/nginx/ /var/log/ /var/run/ /usr/share/nginx/ /etc/nginx/ /etc/modsecurity.d/
 
