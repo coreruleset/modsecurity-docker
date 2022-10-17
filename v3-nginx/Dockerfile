@@ -43,7 +43,9 @@ RUN set -eux; \
 RUN set -eux; \
     git clone https://github.com/SpiderLabs/ModSecurity --branch v"${MODSEC_VERSION}" --depth 1 --recursive; \
     cd ModSecurity; \
-    curl -sSL https://github.com/SpiderLabs/ModSecurity/pull/2813.patch -o - | patch -p1; \
+    sed -ie 's/\(PKG_PROG_PKG_CONFIG\)/\1\nAC_CANONICAL_HOST/g' configure.ac; \
+    sed -ie 's/i386/${host_cpu}/g' build/ssdeep.m4; \
+    sed -ie 's/i386/${host_cpu}/g' build/pcre2.m4; \
     ./build.sh; \
     ./configure --with-yajl --with-ssdeep --with-geoip --with-pcre2 --enable-silent-rules; \
     make install; \
