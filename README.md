@@ -14,6 +14,8 @@
 
 ⚠️ We changed tags to [support production usage](https://github.com/coreruleset/modsecurity-crs-docker/issues/67). Now, if you want to use the "rolling version", use the tag `owasp/modsecurity:nginx` or `owasp/modsecurity:apache`. If you need a stable long term image, use the one with the build date in `YYYYMMDDHHMM` format, example `owasp/modsecurity:3-202209141209` or `owasp/modsecurity:2.9.6-alpine-202209141209` for example. You have been warned.
 
+🆕 We added a health checking to the images. Containers already return HTTP status code 200 when accesing the `/healthz` URI. When a container has a healthcheck specified, it has a health status in addition to its normal status. This status is initially starting. Whenever a health check passes, it becomes healthy (whatever state it was previously in). After a certain number of consecutive failures, it becomes unhealthy. See https://docs.docker.com/engine/reference/builder/#healthcheck for more information.
+
 ## Supported variants
 
 We have support for [alpine linux](https://www.alpinelinux.org/) variants of the base images. Just add `-alpine` and you will get it. Examples:
