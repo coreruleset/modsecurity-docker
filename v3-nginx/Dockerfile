@@ -149,6 +149,7 @@ RUN set -eux; \
     apt-get update -qq; \
     LD_LIBRARY_PATH="" apt-get install -y -qq --no-install-recommends --no-install-suggests \
         ca-certificates \
+        curl \
         libcurl4-gnutls-dev \
         libfuzzy2 \
         liblua5.3 \
@@ -175,6 +176,7 @@ COPY --from=build /etc/modsecurity.d/modsecurity.conf /etc/modsecurity.d/modsecu
 COPY v3-nginx/templates /etc/nginx/templates/
 COPY src/etc/modsecurity.d/modsecurity-override.conf /etc/nginx/templates/modsecurity.d/modsecurity-override.conf.template
 COPY src/etc/modsecurity.d/setup.conf /etc/nginx/templates/modsecurity.d/setup.conf.template
+COPY src/bin/healthcheck /usr/local/bin/healthcheck
 COPY v3-nginx/docker-entrypoint.d/*.sh /docker-entrypoint.d/
 
 # Comment out the SecDisableBackendCompression option since it is not supported in V3
@@ -186,3 +188,5 @@ RUN set -eux; \
     ln -s /usr/local/modsecurity/lib/libmodsecurity.so.${MODSEC_VERSION} /usr/local/modsecurity/lib/libmodsecurity.so; \
     chgrp -R 0 /var/cache/nginx/ /var/log/ /var/run/ /usr/share/nginx/ /etc/nginx/ /etc/modsecurity.d/; \
     chmod -R g=u /var/cache/nginx/ /var/log/ /var/run/ /usr/share/nginx/ /etc/nginx/ /etc/modsecurity.d/
+
+HEALTHCHECK CMD /usr/local/bin/healthcheck
