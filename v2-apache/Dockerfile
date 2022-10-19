@@ -2,9 +2,7 @@ ARG APACHE_VERSION=2.4
 
 FROM httpd:${APACHE_VERSION} as build
 
-ARG MODSEC_VERSION=2.9.6 \
-    SSDEEP_VERSION=2.14.1 \
-    FUZZY_VERSION=2.1.0
+ARG MODSEC_VERSION=2.9.6
 
 RUN set -eux; \
     echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections; \
@@ -17,6 +15,7 @@ RUN set -eux; \
         libapr1-dev \
         libaprutil1-dev \
         libcurl4-gnutls-dev \
+        libfuzzy-dev \
         libpcre++-dev \
         libtool \
         libxml2-dev \
@@ -27,19 +26,11 @@ RUN set -eux; \
         wget
 
 RUN set -eux; \
-    wget --quiet https://github.com/ssdeep-project/ssdeep/releases/download/release-${SSDEEP_VERSION}/ssdeep-${SSDEEP_VERSION}.tar.gz; \
-    tar -xvzf ssdeep-${SSDEEP_VERSION}.tar.gz; \
-    cd ssdeep-${SSDEEP_VERSION}; \
-    ./configure; \
-    make; \
-    make install; \
-    make clean
-
-RUN set -eux; \
-    git clone https://github.com/SpiderLabs/ModSecurity --branch v${MODSEC_VERSION} --depth 1; \
-    cd ModSecurity; \
+    wget --quiet https://github.com/SpiderLabs/ModSecurity/archive/refs/tags/v${MODSEC_VERSION}.tar.gz; \
+    tar -zxvf v${MODSEC_VERSION}.tar.gz; \
+    cd ModSecurity-${MODSEC_VERSION}; \
     ./autogen.sh; \
-    ./configure; \
+    ./configure --with-yajl --with-ssdeep; \
     make; \
     make install; \
     make clean
@@ -54,9 +45,7 @@ RUN openssl req -x509 -days 365 -new \
 
 FROM httpd:${APACHE_VERSION}
 
-ARG MODSEC_VERSION=2.9.6 \
-    SSDEEP_VERSION=2.14.1 \
-    FUZZY_VERSION=2.1.0
+ARG MODSEC_VERSION=2.9.6
 
 LABEL maintainer="Felipe Zipitria <felipe.zipitria@owasp.org>"
 
@@ -66,11 +55,12 @@ ENV APACHE_ALWAYS_TLS_REDIRECT=off \
     BACKEND_WS=ws://localhost:8080 \
     ERRORLOG=/var/log/apache2/error.log \
     APACHE_LOGFORMAT='"%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-agent}i\""' \
+    APACHE_METRICS_LOGFORMAT='"%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-agent}i\""' \
     H2_PROTOCOLS='h2 http/1.1' \
     LOGLEVEL=warn \
     METRICS_ALLOW_FROM='127.0.0.0/255.0.0.0 ::1/128' \
     METRICS_DENY_FROM='All' \
-    METRICSLOG='/dev/null combined' \
+    METRICSLOG='/dev/null' \
     MODSEC_AUDIT_ENGINE="RelevantOnly" \
     MODSEC_AUDIT_LOG_FORMAT=JSON \
     MODSEC_AUDIT_LOG_TYPE=Serial \
@@ -82,6 +72,7 @@ ENV APACHE_ALWAYS_TLS_REDIRECT=off \
     MODSEC_DEBUG_LOGLEVEL=0 \
     MODSEC_DEFAULT_PHASE1_ACTION="phase:1,pass,log,tag:'\${MODSEC_TAG}'" \
     MODSEC_DEFAULT_PHASE2_ACTION="phase:2,pass,log,tag:'\${MODSEC_TAG}'" \
+    MODSEC_DISABLE_BACKEND_COMPRESSION="Off" \
     MODSEC_PCRE_MATCH_LIMIT_RECURSION=500000 \
     MODSEC_PCRE_MATCH_LIMIT=500000 \
     MODSEC_REQ_BODY_ACCESS=on \
@@ -99,7 +90,6 @@ ENV APACHE_ALWAYS_TLS_REDIRECT=off \
     MODSEC_TMP_DIR=/tmp/modsecurity/tmp \
     MODSEC_TMP_SAVE_UPLOADED_FILES="on" \
     MODSEC_UPLOAD_DIR=/tmp/modsecurity/upload \
-    PERFLOG='/dev/stdout perflogjson env=write_perflog' \
     PORT=80 \
     PROXY_PRESERVE_HOST=on \
     PROXY_SSL_CA_CERT=/etc/ssl/certs/ca-certificates.crt \
@@ -130,7 +120,9 @@ RUN set -eux; \
     apt-get update -qq; \
     apt-get install -qq -y --no-install-recommends --no-install-suggests \
         ca-certificates \
+        curl \
         libcurl3-gnutls \
+        libfuzzy2 \
         libxml2 \
         libyajl2; \
     apt-get clean; \
@@ -143,19 +135,13 @@ RUN set -eux; \
     mkdir -p /var/log/apache2/
 
 COPY --from=build /usr/local/apache2/modules/mod_security2.so                  /usr/local/apache2/modules/mod_security2.so
-COPY --from=build /usr/local/apache2/ModSecurity/modsecurity.conf-recommended  /etc/modsecurity.d/modsecurity.conf
-COPY --from=build /usr/local/apache2/ModSecurity/unicode.mapping               /etc/modsecurity.d/unicode.mapping
-COPY --from=build /usr/local/lib/libfuzzy.so.${FUZZY_VERSION}                  /usr/local/lib/libfuzzy.so.${FUZZY_VERSION}
-COPY --from=build /usr/local/bin/ssdeep                                        /usr/local/bin/ssdeep
+COPY --from=build /usr/local/apache2/ModSecurity-${MODSEC_VERSION}/modsecurity.conf-recommended  /etc/modsecurity.d/modsecurity.conf
+COPY --from=build /usr/local/apache2/ModSecurity-${MODSEC_VERSION}/unicode.mapping               /etc/modsecurity.d/unicode.mapping
 COPY --from=build /usr/share/TLS/server.key                                    /usr/local/apache2/conf/server.key
 COPY --from=build /usr/share/TLS/server.crt                                    /usr/local/apache2/conf/server.crt
 COPY src/etc/modsecurity.d/*.conf /etc/modsecurity.d/
+COPY src/bin/healthcheck /usr/local/bin/healthcheck
 COPY v2-apache/conf/extra/*.conf /usr/local/apache2/conf/extra/
-
-RUN set -eux; \
-    ln -s libfuzzy.so.${FUZZY_VERSION} /usr/local/lib/libfuzzy.so; \
-    ln -s libfuzzy.so.${FUZZY_VERSION} /usr/local/lib/libfuzzy.so.2; \
-    ldconfig
 
 RUN set -eux; \
     sed -i -E 's|(Listen) [0-9]+|\1 ${PORT}|' /usr/local/apache2/conf/httpd.conf; \
@@ -182,5 +168,7 @@ RUN set -eux; \
     sed -i -E 's|(MaxRequestWorkers[ ]*)[0-9]*|\1${WORKER_CONNECTIONS}|' /usr/local/apache2/conf/extra/httpd-mpm.conf; \
     chgrp -R 0 /var/log/ /usr/local/apache2/; \
     chmod -R g=u /var/log/ /usr/local/apache2/
+
+HEALTHCHECK CMD /usr/local/bin/healthcheck
 
 # Use httpd-foreground from upstream

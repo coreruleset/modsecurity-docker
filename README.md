@@ -9,16 +9,18 @@
 
 ## Supported tags and respective `Dockerfile` links
 
-* `3-YYYYMMDDHHMM`, `3.0-YYYYMMDDHHMM`, `3.0.8-YYYYMMDDHHMM`, `nginx` ([master/v3-nginx/Dockerfile](https://github.com/coreruleset/modsecurity-docker/blob/master/v3-nginx/Dockerfile)) – *last stable ModSecurity v3 on Nginx 1.20 official stable base image*
+* `3-YYYYMMDDHHMM`, `3.0-YYYYMMDDHHMM`, `3.0.8-YYYYMMDDHHMM`, `nginx` ([master/v3-nginx/Dockerfile](https://github.com/coreruleset/modsecurity-docker/blob/master/v3-nginx/Dockerfile)) – *last stable ModSecurity v3 on Nginx 1.22 official stable base image*
 * `2-YYYYMMDDHHMM`, `2.9-YYYYMMDDHHMM`, `2.9.6-YYYYMMDDHHMM`, `apache` ([master/v2-apache/Dockerfile](https://github.com/coreruleset/modsecurity-docker/blob/master/v2-apache/Dockerfile)) – *last stable ModSecurity v2 on Apache 2.4 official stable base image*
 
 ⚠️ We changed tags to [support production usage](https://github.com/coreruleset/modsecurity-crs-docker/issues/67). Now, if you want to use the "rolling version", use the tag `owasp/modsecurity:nginx` or `owasp/modsecurity:apache`. If you need a stable long term image, use the one with the build date in `YYYYMMDDHHMM` format, example `owasp/modsecurity:3-202209141209` or `owasp/modsecurity:2.9.6-alpine-202209141209` for example. You have been warned.
+
+🆕 We added healthchecks to the images. Containers already return HTTP status code 200 when accessing the `/healthz` URI. When a container has a healthcheck specified, it has a _health status_ in addition to its normal status. This status is initially `starting`. Whenever a health check passes, it becomes `healthy` (whatever state it was previously in). After a certain number of consecutive failures, it becomes `unhealthy`. See https://docs.docker.com/engine/reference/builder/#healthcheck for more information.
 
 ## Supported variants
 
 We have support for [alpine linux](https://www.alpinelinux.org/) variants of the base images. Just add `-alpine` and you will get it. Examples:
 
-* `3-alpine-YYYYMMDDHHMM`, `3.0-alpine-YYYYMMDDHHMM`, `3.0.8-alpine-YYYYMMDDHHMM`, `nginx-alpine` ([master/v3-nginx/Dockerfile-alpine](https://github.com/coreruleset/modsecurity-docker/blob/master/v3-nginx/Dockerfile-alpine) – *last stable ModSecurity v3 on Nginx 1.20 Alpine official stable base image*
+* `3-alpine-YYYYMMDDHHMM`, `3.0-alpine-YYYYMMDDHHMM`, `3.0.8-alpine-YYYYMMDDHHMM`, `nginx-alpine` ([master/v3-nginx/Dockerfile-alpine](https://github.com/coreruleset/modsecurity-docker/blob/master/v3-nginx/Dockerfile-alpine) – *last stable ModSecurity v3 on Nginx 1.22 Alpine official stable base image*
 * `2-alpine-YYYYMMDDHHMM`, `2.9-alpine-YYYYMMDDHHMM`, `2.9.6-alpine-YYYYMMDDHHMM`, `apache-alpine` ([master/v2-apache/Dockerfile-alpine](https://github.com/coreruleset/modsecurity-docker/blob/master/v2-apache/Dockerfile-alpine)) – *last stable ModSecurity v2 on Apache 2.4 Alpine official stable base image*
 
 ⚠️ We changed tags to [support production usage](https://github.com/coreruleset/modsecurity-crs-docker/issues/67). Now, if you want to use the "rolling version", use the tag `owasp/modsecurity:nginx-alpine` or `owasp/modsecurity:apache-alpine`. If you need a stable long term image, use the one with the build date in `YYYYMMDDHHMM` format, example `owasp/modsecurity:3-202209141209-alpine` or `owasp/modsecurity:2.9.6-202209141209` for example. You have been warned.
@@ -133,6 +135,7 @@ $ docker run -p 8080:80 -e SERVER_NAME=myhost my-modsec
 | ACCESSLOG | A string value indicating the location of the custom log file (Default: `/var/log/apache2/access.log`) |
 | APACHE_ALWAYS_TLS_REDIRECT | A string value indicating if http should redirect to https (Allowed values: `on`, `off`. Default: `off`) |
 | APACHE_LOGFORMAT | A string value indicating the LogFormat that apache should use. (Default: `'"%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-agent}i\""'` (combined). Tip: use single quotes outside your double quoted format string.) ⚠️ Do not add a `|` as part of the log format. It is used internally.  |
+| APACHE_METRICS_LOGFORMAT | A string value indicating the LogFormat that the additional log apache metrics should use. (Default:'"%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-agent}i\""' (combined). Tip: use single quotes outside your double quoted format string.) ⚠️ Do not add a `|` as part of the log format. It is used internally.  |
 | BACKEND | A string indicating the partial URL for the remote server of the `ProxyPass` directive (Default: `http://localhost:80`) |
 | BACKEND_WS | A string indicating the IP/URL of the WebSocket service (Default: `ws://localhost:8080`) |
 | ERRORLOG  | A string value indicating the location of the error log file (Default: `/var/log/apache2/error.log`) | 
@@ -140,8 +143,7 @@ $ docker run -p 8080:80 -e SERVER_NAME=myhost my-modsec
 | LOGLEVEL  | A string value controlling the number of messages logged to the error_log (Default: `warn`) | 
 | METRICS_ALLOW_FROM  | A string indicating a range of IP adresses that can access the metrics (Default: `127.0.0.0/255.0.0.0 ::1/128`) | 
 | METRICS_DENY_FROM  | A string indicating a range of IP adresses that cannot access the metrics (Default: `All`) | 
-| METRICSLOG  | A string indicating the path of the metrics log (Default: `/dev/null combined`) | 
-| PERFLOG  | A string indicating the path of the performance log (Default: `/dev/stdout perflogjson env=write_perflog`) |
+| METRICSLOG  | A string indicating the path of the metrics log (Default: `/dev/null`) | 
 | PORT  | An integer value indicating the port where the webserver is listening to (Default: `80`) | 
 | PROXY_PRESERVE_HOST  | A string indicating the use of incoming Host HTTP request header for proxy request (Default: `on`) | 
 | PROXY_SSL_CERT_KEY  | A string indicating the path to the server PEM-encoded private key file (Default: `/usr/local/apache2/conf/server.key`) | 
@@ -213,6 +215,7 @@ All these variables impact in configuration directives in the modsecurity engine
 | MODSEC_DATA_DIR  | A string indicating the path where persistent data (e.g., IP address data, session data, and so on) is to be stored (Default: `/tmp/modsecurity/data`) | 
 | MODSEC_DEBUG_LOG  | A string indicating the path to the ModSecurity debug log file (Default: `/dev/null`) | 
 | MODSEC_DEBUG_LOGLEVEL  | An integer indicating the verboseness of the debug log data (Default: `0`). Accepted values: `0` - `9`. See [SecDebugLogLevel](https://github.com/SpiderLabs/ModSecurity/wiki/Reference-Manual-(v2.x)#secdebugloglevel). | 
+| MODSEC_DISABLE_BACKEND_COMPRESSION  | A string indicating whether or not to disable backend compression (Default: `Off`). Allowed values: `On`, `Off`. See [SecDisableBackendCompression](https://github.com/SpiderLabs/ModSecurity/wiki/Reference-Manual-(v2.x)#secdisablebackendcompression) for more. Only supported in ModSecurity 2.x, will have not effect on 3.x |
 | MODSEC_PCRE_MATCH_LIMIT  | An integer value indicating the limit for the number of internal executions in the PCRE function (Default: `100000`) (Only valid for Apache - v2). See [SecPcreMatchLimit](https://github.com/SpiderLabs/ModSecurity/wiki/Reference-Manual-(v2.x)#SecPcreMatchLimit) | 
 | MODSEC_PCRE_MATCH_LIMIT_RECURSION  | An integer value indicating the limit for the depth of recursion when calling PCRE function (Default: `100000`) | 
 | MODSEC_REQ_BODY_ACCESS  | A string value allowing ModSecurity to access request bodies (Default: `On`). Allowed values: `On`, `Off`. See [SecRequestBodyAccess](https://github.com/SpiderLabs/ModSecurity/wiki/Reference-Manual-(v2.x)#secrequestbodyaccess) for more information. | 

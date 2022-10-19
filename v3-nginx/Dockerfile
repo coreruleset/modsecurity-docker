@@ -1,13 +1,12 @@
-ARG NGINX_VERSION="1.20.2"
+ARG NGINX_VERSION="1.22.0"
 
 FROM nginx:${NGINX_VERSION} as build
 
 ARG MODSEC_VERSION=3.0.8 \
-    YAJL_VERSION=2.1.0 \
-    FUZZY_VERSION=2.1.0 \
-    LMDB_VERSION=0.9.29 \
-    SSDEEP_VERSION=2.14.1
+    LMDB_VERSION=0.9.29
 
+# Note: libpcre++-dev (PCRE3) is required by the build description,
+# even though the build will use PCRE2.
 RUN set -eux; \
     echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections; \
     apt-get update -qq; \
@@ -18,14 +17,18 @@ RUN set -eux; \
         g++ \
         git \
         libcurl4-gnutls-dev \
+        libfuzzy-dev \
         libgeoip-dev \
         liblua5.3-dev \
         libpcre++-dev \
+        libpcre2-dev \
         libtool \
         libxml2-dev \
+        libyajl-dev \
         make \
-        ruby \
+        patch \
         pkg-config \
+        ruby \
         zlib1g-dev; \
      apt-get clean; \
      rm -rf /var/lib/apt/lists/*
@@ -38,27 +41,13 @@ RUN set -eux; \
     strip /usr/local/lib/liblmdb*.so*
 
 RUN set -eux; \
-    git clone https://github.com/lloyd/yajl --branch ${YAJL_VERSION} --depth 1; \
-    cd yajl; \
-    ./configure; \
-    make install; \
-    strip /usr/local/lib/libyajl*.so*
-
-RUN set -eux; \
-    curl -sSL https://github.com/ssdeep-project/ssdeep/releases/download/release-${SSDEEP_VERSION}/ssdeep-${SSDEEP_VERSION}.tar.gz -o ssdeep-${SSDEEP_VERSION}.tar.gz; \
-    tar -xvzf ssdeep-${SSDEEP_VERSION}.tar.gz; \
-    cd ssdeep-${SSDEEP_VERSION}; \
-    ./configure; \
-    make install; \
-    strip /usr/local/lib/libfuzzy*.so*
-
-RUN set -eux; \
-    git clone https://github.com/SpiderLabs/ModSecurity --branch v"${MODSEC_VERSION}" --depth 1; \
+    git clone https://github.com/SpiderLabs/ModSecurity --branch v"${MODSEC_VERSION}" --depth 1 --recursive; \
     cd ModSecurity; \
+    ARCH=$(gcc -print-multiarch); \
+    sed -ie "s/i386-linux-gnu/${ARCH}/g" build/ssdeep.m4; \
+    sed -ie "s/i386-linux-gnu/${ARCH}/g" build/pcre2.m4; \
     ./build.sh; \
-    git submodule init; \
-    git submodule update; \
-    ./configure --with-yajl=/sources/yajl/build/yajl-${YAJL_VERSION}/ --with-geoip; \
+    ./configure --with-yajl --with-ssdeep --with-geoip --with-pcre2 --enable-silent-rules; \
     make install; \
     strip /usr/local/modsecurity/lib/lib*.so*
 
@@ -94,10 +83,7 @@ RUN curl -sSL https://ssl-config.mozilla.org/ffdhe4096.txt -o /usr/share/TLS/dhp
 FROM nginx:${NGINX_VERSION}
 
 ARG MODSEC_VERSION=3.0.8 \
-    YAJL_VERSION=2.1.0 \
-    FUZZY_VERSION=2.1.0 \
-    LMDB_VERSION=0.9.29 \
-    SSDEEP_VERSION=2.14.1
+    LMDB_VERSION=0.9.29
 
 LABEL maintainer="Felipe Zipitria <felipe.zipitria@owasp.org>"
 
@@ -163,9 +149,12 @@ RUN set -eux; \
     apt-get update -qq; \
     LD_LIBRARY_PATH="" apt-get install -y -qq --no-install-recommends --no-install-suggests \
         ca-certificates \
+        curl \
         libcurl4-gnutls-dev \
+        libfuzzy2 \
         liblua5.3 \
         libxml2 \
+        libyajl2 \
         moreutils; \
     rm -rf /var/lib/apt/lists/*; \
     apt-get clean; \
@@ -177,9 +166,7 @@ RUN set -eux; \
     chown -R nginx:nginx /tmp/modsecurity
 
 COPY --from=build /usr/local/modsecurity/lib/libmodsecurity.so.${MODSEC_VERSION} /usr/local/modsecurity/lib/
-COPY --from=build /usr/local/lib/libfuzzy.so.${FUZZY_VERSION} /usr/local/lib/
 COPY --from=build /etc/nginx/modules/ngx_http_modsecurity_module.so /etc/nginx/modules/ngx_http_modsecurity_module.so
-COPY --from=build /usr/local/lib/libyajl.so.${YAJL_VERSION} /usr/local/lib/
 COPY --from=build /usr/local/lib/liblmdb.so /usr/local/lib/
 COPY --from=build /usr/share/TLS/server.key /etc/nginx/conf/server.key
 COPY --from=build /usr/share/TLS/server.crt /etc/nginx/conf/server.crt
@@ -189,15 +176,17 @@ COPY --from=build /etc/modsecurity.d/modsecurity.conf /etc/modsecurity.d/modsecu
 COPY v3-nginx/templates /etc/nginx/templates/
 COPY src/etc/modsecurity.d/modsecurity-override.conf /etc/nginx/templates/modsecurity.d/modsecurity-override.conf.template
 COPY src/etc/modsecurity.d/setup.conf /etc/nginx/templates/modsecurity.d/setup.conf.template
+COPY src/bin/healthcheck /usr/local/bin/healthcheck
 COPY v3-nginx/docker-entrypoint.d/*.sh /docker-entrypoint.d/
+
+# Comment out the SecDisableBackendCompression option since it is not supported in V3
+RUN sed -i 's/^\(SecDisableBackendCompression .*\)/# \1/' /etc/nginx/templates/modsecurity.d/modsecurity-override.conf.template
 
 RUN set -eux; \
     ln -s /usr/local/modsecurity/lib/libmodsecurity.so.${MODSEC_VERSION} /usr/local/modsecurity/lib/libmodsecurity.so.3.0; \
     ln -s /usr/local/modsecurity/lib/libmodsecurity.so.${MODSEC_VERSION} /usr/local/modsecurity/lib/libmodsecurity.so.3; \
     ln -s /usr/local/modsecurity/lib/libmodsecurity.so.${MODSEC_VERSION} /usr/local/modsecurity/lib/libmodsecurity.so; \
-    ln -s /usr/local/lib/libfuzzy.so.${FUZZY_VERSION} /usr/local/lib/libfuzzy.so; \
-    ln -s /usr/local/lib/libfuzzy.so.${FUZZY_VERSION} /usr/local/lib/libfuzzy.so.2; \
-    ln -s /usr/local/lib/libyajl.so.${YAJL_VERSION} /usr/local/lib/libyajl.so; \
-    ln -s /usr/local/lib/libyajl.so.${YAJL_VERSION} /usr/local/lib/libyajl.so.2; \
     chgrp -R 0 /var/cache/nginx/ /var/log/ /var/run/ /usr/share/nginx/ /etc/nginx/ /etc/modsecurity.d/; \
     chmod -R g=u /var/cache/nginx/ /var/log/ /var/run/ /usr/share/nginx/ /etc/nginx/ /etc/modsecurity.d/
+
+HEALTHCHECK CMD /usr/local/bin/healthcheck
