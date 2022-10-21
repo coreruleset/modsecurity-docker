@@ -145,7 +145,7 @@ $ docker run -p 8080:80 -e SERVER_NAME=myhost my-modsec
 | METRICS_DENY_FROM  | A string indicating a range of IP adresses that cannot access the metrics (Default: `All`) | 
 | METRICSLOG  | A string indicating the path of the metrics log (Default: `/dev/null`) | 
 | PORT  | An integer value indicating the port where the webserver is listening to (Default: `80`) | 
-| PROXY_ERROR_OVERRIDE  | A string indicating that errors from the backend services should be overrided by this proxy server (see [ProxyErrorOverride](https://httpd.apache.org/docs/2.4/mod/mod_proxy.html#proxyerroroverride) directive). (Allowed values: `on`, `off`. Default: `on`) | 
+| PROXY_ERROR_OVERRIDE  | A string indicating that errors from the backend services should be overridden by this proxy server (see [ProxyErrorOverride](https://httpd.apache.org/docs/2.4/mod/mod_proxy.html#proxyerroroverride) directive). (Allowed values: `on`, `off`. Default: `on`) | 
 | PROXY_PRESERVE_HOST  | A string indicating the use of incoming Host HTTP request header for proxy request (Default: `on`) | 
 | PROXY_SSL_CERT_KEY  | A string indicating the path to the server PEM-encoded private key file (Default: `/usr/local/apache2/conf/server.key`) | 
 | PROXY_SSL_CERT  | A string indicating the path to the server PEM-encoded X.509 certificate data file or token identifier (Default: `/usr/local/apache2/conf/server.crt`) | 
