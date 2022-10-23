@@ -91,6 +91,7 @@ ENV APACHE_ALWAYS_TLS_REDIRECT=off \
     MODSEC_TMP_SAVE_UPLOADED_FILES="on" \
     MODSEC_UPLOAD_DIR=/tmp/modsecurity/upload \
     PORT=80 \
+    PROXY_ERROR_OVERRIDE=on \
     PROXY_PRESERVE_HOST=on \
     PROXY_SSL_CA_CERT=/etc/ssl/certs/ca-certificates.crt \
     PROXY_SSL_CERT_KEY=/usr/local/apache2/conf/server.key \
