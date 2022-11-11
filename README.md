@@ -1,5 +1,14 @@
 # ModSecurity Docker Image
 
+> **Note**
+> 
+> ⚠️ This repository has been archived.
+>
+> We used to build `owasp/modsecurity-crs` via `owasp/modsecurity` (this repository), but it has become error prone and cumbersome. We have opted to merge the two repositories and will no longer build `owasp/modescurity`.
+> 
+> Please visit https://github.com/coreruleset/modescurity-docker-crs.
+
+
 [![dockeri.co](http://dockeri.co/image/owasp/modsecurity)](https://hub.docker.com/r/owasp/modsecurity/)
 
 [![Build Status](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Fcoreruleset%2Fmodsecurity-docker%2Fbadge%3Fref%3Dmaster&style=flat)](https://actions-badge.atrox.dev/coreruleset/modsecurity-docker/goto?ref=master
