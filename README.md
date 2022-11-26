@@ -6,7 +6,7 @@
 >
 > We used to build `owasp/modsecurity-crs` via `owasp/modsecurity` (this repository), but it has become error prone and cumbersome. We have opted to merge the two repositories and will no longer build `owasp/modescurity`.
 > 
-> Please visit https://github.com/coreruleset/modescurity-docker-crs.
+> Please visit https://github.com/coreruleset/modsecurity-crs-docker.
 
 
 [![dockeri.co](http://dockeri.co/image/owasp/modsecurity)](https://hub.docker.com/r/owasp/modsecurity/)
